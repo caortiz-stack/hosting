@@ -25,7 +25,7 @@
             
             /* Theme Colors (Light Mode) */
             --color-bg-body: #ffffff;
-            --color-bg-alt: #f8fafc;
+            --color-bg-alt: #f8fafc; /* Very light gray for sections */
             --color-text-main: #232453;
             --color-text-body: #475569;
             
@@ -76,6 +76,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
+            text-decoration: none;
             transition: all 0.3s var(--ease-out);
             font-size: 13px;
             cursor: pointer;
@@ -118,21 +119,16 @@
 
         .nav-content { display: flex; justify-content: space-between; align-items: center; }
 
+        /* Estilos base para el logo (imagen) */
         .logo {
-            font-family: var(--font-display);
-            font-weight: 900;
-            font-size: 24px;
-            color: var(--color-brand-dark);
-            display: flex; align-items: center; gap: 10px;
+            display: block; /* Asegura que el link se comporte como bloque para la imagen */
+            text-decoration: none;
         }
-        .logo-icon {
-            width: 32px; height: 32px;
-            background: var(--color-brand-light);
-            border-radius: 4px;
-            display: grid; place-items: center;
-            color: white;
-            font-size: 16px;
-            transform: skewX(-10deg);
+        .logo img {
+            display: block;
+            /* Altura predeterminada, ajustable en el HTML */
+            height: 50px; 
+            width: auto;
         }
 
         .nav-menu { display: flex; gap: 30px; list-style: none; }
@@ -466,9 +462,12 @@
     <!-- NAVBAR -->
     <nav id="navbar">
         <div class="container nav-content">
+            <!-- LOGO: Reemplaza 'tu-logo-aqui.png' con tu archivo -->
             <a href="#" class="logo">
-                <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div> ISTG
+                <!-- Se usa un SVG de placeholder, pero la estructura está lista para una imagen -->
+                <img src="https://placehold.co/150x50/232453/FFFFFF?text=ISTG+LOGO" alt="ISTG Logo" style="height: 50px; width: auto;">
             </a>
+            
             <ul class="nav-menu">
                 <li><a href="#">Inicio</a></li>
                 <li><a href="#carreras">Oferta Académica</a></li>
@@ -505,10 +504,10 @@
             <!-- Right Visual -->
             <div class="hero-visual reveal-right">
                 <div class="hero-img-wrapper">
+                    <!-- High quality image of students -->
                     <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop" 
                          class="hero-img" 
                          alt="Estudiantes ISTG"
-                         crossorigin="anonymous"
                          onerror="this.src='https://placehold.co/600x500/232453/FFF?text=ISTG'">
                 </div>
             </div>
@@ -532,7 +531,6 @@
                     <img src="https://images.unsplash.com/photo-1572044162444-ad60f128bdea?q=80&w=2070&auto=format&fit=crop" 
                          class="bento-img" 
                          alt="Diseño Gráfico" 
-                         crossorigin="anonymous"
                          onerror="this.src='https://placehold.co/800x600/f97316/FFF?text=Diseno'">
                     <div class="bento-overlay">
                         <div class="bento-icon"><i class="fa-solid fa-pen-nib"></i></div>
@@ -543,10 +541,9 @@
 
                 <!-- 2. DESARROLLO DE SOFTWARE - Azul Oscuro -->
                 <div class="bento-card reveal-item" onclick="swapCareer(this)" style="--card-color: #1e3a8a; --card-color-glow: rgba(30, 58, 138, 0.4);">
-                    <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=2069&auto=format&fit=crop" 
+                    <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2072&auto=format&fit=crop" 
                          class="bento-img" 
                          alt="Software" 
-                         crossorigin="anonymous"
                          onerror="this.src='https://placehold.co/800x600/1e3a8a/FFF?text=Software'">
                     <div class="bento-overlay">
                         <div class="bento-icon"><i class="fa-solid fa-code"></i></div>
@@ -560,7 +557,6 @@
                     <img src="https://images.unsplash.com/photo-1533750349088-cd8773a88763?q=80&w=2070&auto=format&fit=crop" 
                          class="bento-img" 
                          alt="Marketing" 
-                         crossorigin="anonymous"
                          onerror="this.src='https://placehold.co/800x600/d946ef/FFF?text=Marketing'">
                     <div class="bento-overlay">
                         <div class="bento-icon"><i class="fa-solid fa-bullhorn"></i></div>
@@ -574,12 +570,11 @@
                     <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=2072&auto=format&fit=crop" 
                          class="bento-img" 
                          alt="Contabilidad" 
-                         crossorigin="anonymous"
                          onerror="this.src='https://placehold.co/800x600/06b6d4/FFF?text=Contabilidad'">
                     <div class="bento-overlay">
                         <div class="bento-icon"><i class="fa-solid fa-calculator"></i></div>
                         <h3 class="bento-title">Contabilidad</h3>
-                        <p class="bento-desc">Gestión financiera, tributación y auditoría para el éxito empresarial moderno.</p>
+                        <p class="bento-desc">Gestión financiera, tributación y auditoría empresarial.</p>
                     </div>
                 </div>
 
@@ -628,9 +623,11 @@
             <div class="footer-grid">
                 <!-- Col 1 -->
                 <div class="f-col">
-                    <div class="logo" style="color: white; margin-bottom: 20px;">
-                        <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div> ISTG
-                    </div>
+                    <!-- LOGO FOOTER: Reemplaza el src con tu archivo de imagen -->
+                    <a href="#" class="logo" style="margin-bottom: 20px;">
+                        <img src="https://placehold.co/150x50/232453/FFFFFF?text=ISTG+LOGO" alt="ISTG Logo Footer" style="height: 50px; width: auto;">
+                    </a>
+                    
                     <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px; line-height: 1.6;">
                         Formamos profesionales de excelencia con visión tecnológica y humana. Líderes en educación superior técnica.
                     </p>
