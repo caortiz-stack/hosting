@@ -7,7 +7,6 @@
     <title>ISTG | Instituto Superior Tecnológico Guayaquil</title>
     
     <!-- FAVICON -->
-    <!-- [CAMBIAR ICONO] URL del icono de la pestaña -->
     <link rel="icon" href="https://raw.githubusercontent.com/caortiz-stack/hosting/4d0023a4a1e80af12ac0c1725f64f702cc835788/Recurso%201.svg" type="image/svg+xml">
 
     <!-- Fonts -->
@@ -71,7 +70,7 @@
         .text-accent { color: var(--color-brand-light); }
         .text-dark { color: var(--color-brand-dark); }
         
-        /* Protected Image Style (No arrastrar/guardar) */
+        /* Protected Image Style (No arrastrar) */
         .protected-img {
             user-select: none;
             -webkit-user-drag: none;
@@ -229,7 +228,8 @@
             aspect-ratio: 4/3;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: 20px 20px 0px rgba(32, 155, 216, 0.2);
+            /* Sombra Sólida Restaurada */
+            box-shadow: 20px 20px 0px rgba(32, 155, 216, 0.2); 
             position: relative;
         }
         
@@ -247,10 +247,10 @@
 
         .hero-img.active { opacity: 1; z-index: 2; }
 
-        /* --- 5. CARRERAS (BENTO GRID) --- */
-        #carreras { padding: 60px 0; background: var(--color-bg-alt); }
+        /* --- 5. CARRERAS (BENTO GRID - MEDIUM SIZE) --- */
+        #carreras { padding: 80px 0; background: var(--color-bg-alt); }
         
-        .section-header { text-align: center; margin-bottom: 40px; }
+        .section-header { text-align: center; margin-bottom: 50px; }
         .section-tag {
             color: var(--color-brand-light);
             font-weight: 700;
@@ -271,6 +271,8 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 25px;
+            /* REDUCIDO: Altura de fila de 350px a 280px para versión "mediana" */
+            grid-auto-rows: 280px; 
         }
 
         .bento-card {
@@ -282,47 +284,55 @@
             position: relative;
             display: flex;
             flex-direction: column;
-            border: 1px solid #e2e8f0;
             cursor: pointer;
-            height: 350px;
+            height: 100%;
             /* Default variables */
             --card-color: var(--color-brand-light); 
             --card-color-glow: rgba(32, 155, 216, 0.2);
+            border: none; 
         }
 
         .bento-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px -5px var(--card-color-glow);
-            border-color: var(--card-color);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px -5px var(--card-color-glow);
         }
 
         .bento-card.highlight {
             grid-column: span 2;
             grid-row: span 2;
-            height: 725px;
+            /* Se adapta automáticamente a 2 filas (aprox 585px de alto) */
+            background: var(--card-color);
         }
         
         .bento-card.wide {
             grid-column: span 3;
-            height: 250px;
+            /* Altura automática de 1 fila (280px) */
         }
 
         .bento-img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            transition: transform 0.6s;
+            /* COVER: Llena el espacio sin deformar */
+            object-fit: cover; 
+            transition: transform 0.6s, opacity 0.3s;
             position: absolute;
             top: 0; left: 0;
-            filter: brightness(0.9);
+            filter: none;
             z-index: 0;
         }
-        .bento-card:hover .bento-img { transform: scale(1.05); filter: brightness(1); }
+        
+        /* En highlight, usamos cover para llenar el cuadro mediano perfectamente */
+        .bento-card.highlight .bento-img {
+            object-fit: cover; 
+            transform: none;
+        }
+        
+        .bento-card:not(.highlight):hover .bento-img { transform: scale(1.05); }
 
         .bento-overlay {
             position: absolute;
             bottom: 0; left: 0; width: 100%;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
             padding: 30px;
             z-index: 2;
             color: white;
@@ -330,11 +340,11 @@
             flex-direction: column;
             justify-content: flex-end;
             height: 100%;
-            pointer-events: none; /* Allows click through to card */
+            pointer-events: none;
         }
         .bento-card.highlight .bento-overlay {
-            padding-top: 100px;
-            background: linear-gradient(to top, rgba(35, 36, 83, 0.95), transparent);
+            background: linear-gradient(to top, rgba(35, 36, 83, 0.9) 0%, transparent 40%);
+            padding-top: 0;
         }
 
         .bento-icon {
@@ -360,13 +370,14 @@
         }
         .bento-desc { 
             font-size: 14px; 
-            color: rgba(255,255,255,0.9); 
+            color: rgba(255,255,255,1); 
             line-height: 1.4; 
             max-width: 90%;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
         }
 
-        /* --- 6. ADMISIONES --- */
-        #admisiones { padding: 60px 0; background: white; }
+        /* --- 6. ADMISIONES (CLEAN) --- */
+        #admisiones { padding: 80px 0; background: white; }
         
         .process-row {
             display: flex;
@@ -416,12 +427,14 @@
         }
 
         /* --- 7. COMUNIDAD (SOCIAL FEED) --- */
-        #social-feed { padding: 60px 0; background: var(--color-bg-alt); }
+        #social-feed { padding: 80px 0; background: var(--color-bg-alt); }
+
+        .social-container { max-width: 1000px; margin: 0 auto; }
 
         .social-frame {
             border: 3px solid var(--color-brand-light);
             border-radius: 20px;
-            overflow-y: auto;
+            overflow-y: auto; 
             background: white;
             box-shadow: var(--shadow-card);
             height: 500px;
@@ -430,8 +443,9 @@
         }
         
         .sk-ww-facebook-page-posts {
-            height: 100%;
             width: 100%;
+            height: 100%;
+            overflow-y: auto;
         }
         
         .social-frame::-webkit-scrollbar { width: 6px; }
@@ -442,7 +456,7 @@
         footer {
             background: var(--color-brand-dark);
             color: white;
-            padding: 60px 0 30px 0;
+            padding: 80px 0 30px 0;
             position: relative;
         }
         footer::before {
@@ -548,7 +562,7 @@
     <!-- NAVBAR -->
     <nav id="navbar">
         <div class="container nav-content">
-            <!-- [CAMBIAR LOGO] -->
+            <!-- Logo principal protegido -->
             <a href="https://istg.edu.ec/" class="logo">
                 <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/4d0023a4a1e80af12ac0c1725f64f702cc835788/Recurso%201.svg" 
                      alt="ISTG Logo" 
@@ -595,22 +609,21 @@
             <!-- Right Visual (SLIDESHOW) -->
             <div class="hero-visual reveal-right">
                 <div class="hero-img-wrapper">
-                    <!-- [CAMBIAR FOTOS CARRUSEL] -->
-                    <!-- Foto 1 -->
-                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto1.png?q=80&w=1000&auto=format&fit=crop" 
+                    <!-- FOTO 1 -->
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto1.png" 
                          class="hero-img active" 
                          style="object-position: top;"
                          loading="eager"
                          alt="Estudiante Destacado">
 
-                    <!-- Foto 2 -->
-                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto2.png?q=80&w=2070&auto=format&fit=crop" 
+                    <!-- FOTO 2 -->
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto2.png" 
                          class="hero-img" 
                          loading="lazy"
                          alt="Estudiantes ISTG">
                     
-                    <!-- Foto 3 -->
-                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto3.png?q=80&w=2070&auto=format&fit=crop" 
+                    <!-- FOTO 3 -->
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto3.png" 
                          class="hero-img" 
                          loading="lazy"
                          alt="Laboratorio ISTG">
@@ -632,13 +645,12 @@
             <div class="bento-grid" id="careerGrid">
                 
                 <!-- 1. DISEÑO GRÁFICO (Highlight) - Naranja -->
-                <!-- [CAMBIAR IMAGEN] -->
                 <div class="bento-card highlight reveal-item" onclick="swapCareer(this)" style="--card-color: #f97316; --card-color-glow: rgba(249, 115, 22, 0.4);">
-                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/dise%C3%B1o.jpg?q=80&w=2070&auto=format&fit=crop" 
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/dise%C3%B1o.jpg?q=80&w=1350&h=1080&auto=format&fit=crop" 
                          class="bento-img" 
                          loading="lazy"
                          alt="Diseño Gráfico" 
-                         onerror="this.src='https://placehold.co/800x600/f97316/FFF?text=Diseno'">
+                         onerror="this.src='https://placehold.co/1350x1080/f97316/FFF?text=Diseno'">
                     <div class="bento-overlay">
                         <div class="bento-icon"><i class="fa-solid fa-pen-nib"></i></div>
                         <h3 class="bento-title">Diseño Gráfico</h3>
@@ -647,13 +659,12 @@
                 </div>
 
                 <!-- 2. DESARROLLO DE SOFTWARE - Azul Oscuro -->
-                <!-- [CAMBIAR IMAGEN] -->
                 <div class="bento-card reveal-item" onclick="swapCareer(this)" style="--card-color: #1e3a8a; --card-color-glow: rgba(30, 58, 138, 0.4);">
-                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/desarrollo.jpg?q=80&w=2069&auto=format&fit=crop" 
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/desarrollo.jpg?q=80&w=1350&h=1080&auto=format&fit=crop" 
                          class="bento-img" 
                          loading="lazy"
                          alt="Software" 
-                         onerror="this.src='https://placehold.co/800x600/1e3a8a/FFF?text=Software'">
+                         onerror="this.src='https://placehold.co/1350x1080/1e3a8a/FFF?text=Software'">
                     <div class="bento-overlay">
                         <div class="bento-icon"><i class="fa-solid fa-code"></i></div>
                         <h3 class="bento-title">Desarrollo de Software</h3>
@@ -662,13 +673,12 @@
                 </div>
 
                 <!-- 3. MARKETING DIGITAL - Magenta Púrpura -->
-                <!-- [CAMBIAR IMAGEN] -->
                 <div class="bento-card reveal-item" onclick="swapCareer(this)" style="--card-color: #d946ef; --card-color-glow: rgba(217, 70, 239, 0.4);">
-                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/marketing.jpg?q=80&w=2070&auto=format&fit=crop" 
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/marketing.jpg?q=80&w=1350&h=1080&auto=format&fit=crop" 
                          class="bento-img" 
                          loading="lazy"
                          alt="Marketing" 
-                         onerror="this.src='https://placehold.co/800x600/d946ef/FFF?text=Marketing'">
+                         onerror="this.src='https://placehold.co/1350x1080/d946ef/FFF?text=Marketing'">
                     <div class="bento-overlay">
                         <div class="bento-icon"><i class="fa-solid fa-bullhorn"></i></div>
                         <h3 class="bento-title">Marketing Digital</h3>
@@ -677,13 +687,12 @@
                 </div>
 
                 <!-- 4. CONTABILIDAD - Cian -->
-                <!-- [CAMBIAR IMAGEN] -->
                 <div class="bento-card wide reveal-item" onclick="swapCareer(this)" style="--card-color: #06b6d4; --card-color-glow: rgba(6, 182, 212, 0.4);">
-                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/contabilidad.jpg?q=80&w=2070&auto=format&fit=crop" 
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/contabilidad.jpg?q=80&w=1350&h=1080&auto=format&fit=crop" 
                          class="bento-img" 
                          loading="lazy"
                          alt="Contabilidad" 
-                         onerror="this.src='https://placehold.co/800x600/06b6d4/FFF?text=Contabilidad'">
+                         onerror="this.src='https://placehold.co/1350x1080/06b6d4/FFF?text=Contabilidad'">
                     <div class="bento-overlay">
                         <div class="bento-icon"><i class="fa-solid fa-calculator"></i></div>
                         <h3 class="bento-title">Contabilidad</h3>
@@ -807,17 +816,14 @@
                 <!-- Col 4 -->
                 <div class="f-col">
                     <div class="f-title">Contacto</div>
-                    
                     <div class="contact-item">
                         <i class="fa-solid fa-location-dot"></i>
                         <span>Gómez Rendón, entre Quito y José de Antepara.<br>Guayaquil, Ecuador</span>
                     </div>
-                    
                     <div class="contact-item">
                         <i class="fa-solid fa-phone"></i>
                         <span>+593 96 837 4270</span>
                     </div>
-                    
                     <div class="contact-item">
                         <i class="fa-solid fa-envelope"></i>
                         <span>info@istg.edu.ec</span>
