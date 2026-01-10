@@ -3,41 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Instituto Superior Tecnológico Guayaquil - Formación de tercer nivel en Diseño, Software, Marketing y Contabilidad.">
+    <meta name="description" content="Instituto Superior Tecnológico Guayaquil - Formación de tercer nivel en Diseño, Software, Marketing y Contabilidad. Educación de excelencia.">
+    <meta name="keywords" content="ISTG, Instituto Tecnológico, Guayaquil, Diseño Gráfico, Software, Marketing, Contabilidad, Educación Superior">
+    <meta name="author" content="Christian Ortiz">
     <title>ISTG | Instituto Superior Tecnológico Guayaquil</title>
     
-    <!-- FAVICON -->
     <link rel="icon" href="https://raw.githubusercontent.com/caortiz-stack/hosting/4d0023a4a1e80af12ac0c1725f64f702cc835788/Recurso%201.svg" type="image/svg+xml">
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- Icons (FontAwesome) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" defer></script>
-
-    <!-- Scroll Reveal Library -->
     <script src="https://unpkg.com/scrollreveal"></script>
 
     <style>
-        /* --- 1. CORE VARIABLES & RESET --- */
         :root {
-            /* Brand Colors */
-            --color-brand-dark: #232453; /* Azul Profundo */
-            --color-brand-light: #209bd8; /* Cian/Celeste */
-            
-            /* Theme Colors */
+            --color-brand-dark: #232453;
+            --color-brand-light: #209bd8;
             --color-bg-body: #ffffff;
             --color-bg-alt: #f8fafc;
             --color-text-main: #232453;
             --color-text-body: #475569;
-            
-            /* Typography */
             --font-display: 'Montserrat', sans-serif;
             --font-body: 'Lato', sans-serif;
-            
-            /* Effects */
             --shadow-card: 0 10px 30px -5px rgba(35, 36, 83, 0.08);
             --shadow-hover: 0 20px 40px -5px rgba(32, 155, 216, 0.15);
             --ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
@@ -59,7 +48,6 @@
         a { text-decoration: none; }
         iframe { border: none; }
 
-        /* --- 2. UTILITY CLASSES --- */
         .container { 
             max-width: 1200px; 
             margin: 0 auto; 
@@ -70,19 +58,17 @@
         .text-accent { color: var(--color-brand-light); }
         .text-dark { color: var(--color-brand-dark); }
         
-        /* Protected Image Style (No arrastrar) */
         .protected-img {
             user-select: none;
             -webkit-user-drag: none;
             pointer-events: auto;
         }
 
-        /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 14px 35px;
+            padding: 12px 30px;
             border-radius: 50px;
             font-family: var(--font-display);
             font-weight: 700;
@@ -90,7 +76,7 @@
             letter-spacing: 1px;
             text-decoration: none;
             transition: all 0.3s var(--ease-out);
-            font-size: 13px;
+            font-size: 12px;
             cursor: pointer;
             border: 2px solid transparent;
         }
@@ -102,8 +88,8 @@
         }
         .btn-primary:hover {
             background: var(--color-brand-light);
-            box-shadow: 0 10px 25px rgba(32, 155, 216, 0.4);
             transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(32, 155, 216, 0.4);
         }
 
         .btn-outline {
@@ -117,7 +103,7 @@
             transform: translateY(-2px);
         }
 
-        /* --- 3. NAVIGATION --- */
+        /* NAVEGACION */
         #navbar {
             position: fixed;
             top: 0; left: 0; width: 100%;
@@ -137,7 +123,7 @@
         .nav-menu a {
             color: var(--color-text-main);
             font-weight: 600;
-            font-size: 14px;
+            font-size: 13px;
             text-transform: uppercase;
             position: relative;
         }
@@ -149,7 +135,9 @@
         }
         .nav-menu a:hover::after { width: 100%; }
 
-        /* --- 4. HERO SECTION --- */
+        .mobile-menu-btn { display: none; font-size: 24px; color: var(--color-brand-dark); cursor: pointer; }
+
+        /* SECCION HERO */
         .hero {
             position: relative;
             min-height: 100vh;
@@ -171,7 +159,7 @@
         .hero-layout {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 60px;
+            gap: 40px;
             align-items: center;
             width: 100%;
             max-width: 1300px;
@@ -186,34 +174,34 @@
             display: inline-block;
             background: rgba(32, 155, 216, 0.1);
             color: var(--color-brand-light);
-            padding: 8px 16px;
+            padding: 6px 14px;
             border-radius: 30px;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 2px;
             margin-bottom: 20px;
+            border: 1px solid rgba(32, 155, 216, 0.2);
         }
 
         .hero-title {
             font-family: var(--font-display);
-            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            font-size: clamp(2.5rem, 5vw, 4rem);
             line-height: 1.1;
             font-weight: 900;
             color: var(--color-brand-dark);
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         .hero-desc {
             font-size: 1.1rem;
-            max-width: 550px;
-            margin-bottom: 40px;
+            max-width: 500px;
+            margin-bottom: 30px;
             color: #64748b;
             border-left: 4px solid var(--color-brand-light);
             padding-left: 20px;
         }
 
-        /* Hero Image Container */
         .hero-visual {
             position: relative;
             height: 100%;
@@ -224,12 +212,11 @@
 
         .hero-img-wrapper {
             width: 100%;
-            max-width: 600px;
+            max-width: 550px;
             aspect-ratio: 4/3;
             border-radius: 20px;
             overflow: hidden;
-            /* Sombra Sólida Restaurada */
-            box-shadow: 20px 20px 0px rgba(32, 155, 216, 0.2); 
+            box-shadow: 20px 20px 0px rgba(32, 155, 216, 0.2);
             position: relative;
         }
         
@@ -247,32 +234,39 @@
 
         .hero-img.active { opacity: 1; z-index: 2; }
 
-        /* --- 5. CARRERAS (BENTO GRID - MEDIUM SIZE) --- */
-        #carreras { padding: 80px 0; background: var(--color-bg-alt); }
+        /* SECCION CARRERAS */
+        #carreras { padding: 60px 0; background: var(--color-bg-alt); }
         
-        .section-header { text-align: center; margin-bottom: 50px; }
+        .section-header { text-align: center; margin-bottom: 40px; }
+        
         .section-tag {
+            display: inline-block;
+            background: rgba(32, 155, 216, 0.1);
             color: var(--color-brand-light);
+            padding: 6px 14px;
+            border-radius: 30px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 2px;
-            font-size: 13px;
+            font-size: 11px;
             margin-bottom: 10px;
-            display: block;
+            border: 1px solid rgba(32, 155, 216, 0.2);
         }
+
         .section-title {
             font-family: var(--font-display);
-            font-size: 42px;
+            font-size: 36px;
             font-weight: 800;
             color: var(--color-brand-dark);
         }
 
         .bento-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
-            /* REDUCIDO: Altura de fila de 350px a 280px para versión "mediana" */
-            grid-auto-rows: 280px; 
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: repeat(3, 180px);
+            gap: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
         }
 
         .bento-card {
@@ -280,16 +274,17 @@
             border-radius: 16px;
             overflow: hidden;
             box-shadow: var(--shadow-card);
-            transition: all 0.4s var(--ease-out);
+            transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);
             position: relative;
             display: flex;
             flex-direction: column;
+            border: none;
             cursor: pointer;
             height: 100%;
-            /* Default variables */
+            order: 2; /* Orden por defecto para el stack */
+            
             --card-color: var(--color-brand-light); 
             --card-color-glow: rgba(32, 155, 216, 0.2);
-            border: none; 
         }
 
         .bento-card:hover {
@@ -297,23 +292,23 @@
             box-shadow: 0 15px 35px -5px var(--card-color-glow);
         }
 
+        /* HIGHLIGHT: Ocupa columna 1 y las 3 filas */
         .bento-card.highlight {
-            grid-column: span 2;
-            grid-row: span 2;
-            /* Se adapta automáticamente a 2 filas (aprox 585px de alto) */
+            grid-column: 1;
+            grid-row: 1 / span 3;
             background: var(--card-color);
+            order: 1; /* Prioridad en el orden visual */
         }
         
-        .bento-card.wide {
-            grid-column: span 3;
-            /* Altura automática de 1 fila (280px) */
+        /* STACK: Ocupan columna 2, y se apilan automáticamente */
+        .bento-card:not(.highlight) {
+            grid-column: 2;
         }
 
         .bento-img {
             width: 100%;
             height: 100%;
-            /* COVER: Llena el espacio sin deformar */
-            object-fit: cover; 
+            object-fit: cover;
             transition: transform 0.6s, opacity 0.3s;
             position: absolute;
             top: 0; left: 0;
@@ -321,10 +316,10 @@
             z-index: 0;
         }
         
-        /* En highlight, usamos cover para llenar el cuadro mediano perfectamente */
         .bento-card.highlight .bento-img {
-            object-fit: cover; 
+            object-fit: contain; 
             transform: none;
+            background-color: var(--card-color);
         }
         
         .bento-card:not(.highlight):hover .bento-img { transform: scale(1.05); }
@@ -333,7 +328,7 @@
             position: absolute;
             bottom: 0; left: 0; width: 100%;
             background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-            padding: 30px;
+            padding: 25px;
             z-index: 2;
             color: white;
             display: flex;
@@ -348,43 +343,56 @@
         }
 
         .bento-icon {
-            width: 50px; height: 50px;
+            width: 40px; height: 40px;
             background: rgba(255,255,255,0.2);
             backdrop-filter: blur(5px);
             border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
-            font-size: 20px;
+            font-size: 18px;
             color: white;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             transition: background 0.3s;
         }
+        
+        .bento-card.highlight .bento-icon { width: 60px; height: 60px; font-size: 24px; margin-bottom: 20px; }
         .bento-card:hover .bento-icon { background: var(--card-color); }
 
         .bento-title {
             font-family: var(--font-display);
             font-weight: 800;
-            font-size: 24px;
-            margin-bottom: 8px;
+            font-size: 16px; 
+            margin-bottom: 5px;
             text-shadow: 0 2px 5px rgba(0,0,0,0.5);
             color: white;
+            text-transform: uppercase;
         }
-        .bento-desc { 
-            font-size: 14px; 
-            color: rgba(255,255,255,1); 
-            line-height: 1.4; 
-            max-width: 90%;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+        .bento-card.highlight .bento-title {
+            font-size: 32px; 
+            margin-bottom: 15px;
+            text-transform: none;
         }
 
-        /* --- 6. ADMISIONES (CLEAN) --- */
-        #admisiones { padding: 80px 0; background: white; }
+        .bento-desc { 
+            font-size: 12px; 
+            color: rgba(255,255,255,0.9); 
+            line-height: 1.3; 
+            display: none; 
+        }
+        .bento-card.highlight .bento-desc {
+            display: block; 
+            font-size: 16px;
+            max-width: 80%;
+        }
+
+        /* SECCION ADMISIONES */
+        #admisiones { padding: 60px 0; background: white; }
         
         .process-row {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             position: relative;
-            margin-top: 60px;
+            margin-top: 50px;
         }
         
         .process-line {
@@ -406,7 +414,7 @@
             z-index: 1;
             background: white;
             width: 30%;
-            padding: 30px 20px;
+            padding: 25px 15px;
             border-radius: 12px;
             border: 1px solid #e2e8f0;
             text-align: center;
@@ -422,19 +430,19 @@
             border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
             font-weight: 900;
-            margin: -55px auto 20px auto; 
+            margin: -50px auto 15px auto; 
             border: 5px solid white;
         }
 
-        /* --- 7. COMUNIDAD (SOCIAL FEED) --- */
-        #social-feed { padding: 80px 0; background: var(--color-bg-alt); }
+        /* SECCION COMUNIDAD */
+        #social-feed { padding: 60px 0; background: var(--color-bg-alt); }
 
         .social-container { max-width: 1000px; margin: 0 auto; }
 
         .social-frame {
             border: 3px solid var(--color-brand-light);
             border-radius: 20px;
-            overflow-y: auto; 
+            overflow: hidden; 
             background: white;
             box-shadow: var(--shadow-card);
             height: 500px;
@@ -442,21 +450,28 @@
             position: relative;
         }
         
-        .sk-ww-facebook-page-posts {
-            width: 100%;
-            height: 100%;
-            overflow-y: auto;
-        }
+        .sk-ww-facebook-page-posts { width: 100%; height: 100%; overflow-y: auto; }
         
         .social-frame::-webkit-scrollbar { width: 6px; }
         .social-frame::-webkit-scrollbar-track { background: #f1f1f1; }
         .social-frame::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 
-        /* --- 8. FOOTER --- */
+        .social-btn {
+            width: 35px; height: 35px;
+            background: white;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+        .social-btn:hover { transform: scale(1.1); }
+
+        /* FOOTER */
         footer {
             background: var(--color-brand-dark);
             color: white;
-            padding: 80px 0 30px 0;
+            padding: 60px 0 30px 0;
             position: relative;
         }
         footer::before {
@@ -517,43 +532,55 @@
             margin-top: 4px;
         }
 
-        /* --- RESPONSIVE --- */
+        /* --- RESPONSIVE MEDIA QUERIES --- */
         @media (max-width: 1024px) {
             .hero-layout { grid-template-columns: 1fr; text-align: center; height: auto; padding: 60px 20px; }
             .hero-content { width: 100%; padding: 0; margin-bottom: 40px; }
             .hero-desc { margin: 20px auto; border: none; padding: 0; }
             .hero-visual { justify-content: center; }
             .hero-img-wrapper { max-width: 500px; margin: 0 auto; }
-            .bento-grid { grid-template-columns: 1fr 1fr; }
-            .bento-card.highlight { grid-column: span 2; grid-row: span 1; height: 350px; }
-            .bento-card.wide { grid-column: span 2; }
-            .social-container { flex-direction: column; align-items: center; }
+            
+            /* En tablets y móviles, pasamos a 1 columna */
+            .bento-grid { 
+                grid-template-columns: 1fr; 
+                grid-template-rows: auto; 
+                gap: 20px; 
+            }
+            .bento-card { height: 250px; order: unset; } 
+            
+            /* Reseteamos el comportamiento de highlight para móvil */
+            .bento-card.highlight { grid-column: span 1; grid-row: span 1; height: 350px; }
+            .bento-card:not(.highlight) { grid-column: span 1; }
+            .bento-card.highlight .bento-overlay { padding-top: 20px; }
+            .bento-desc { display: block; } /* Mostrar descripción siempre en móvil */
             
             .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
             .f-col { border-right: none; padding: 0; }
         }
 
         @media (max-width: 768px) {
-            .nav-menu { display: none; }
-            .hero-title { font-size: 2.5rem; }
-            .bento-grid { grid-template-columns: 1fr; }
-            .bento-card.highlight { grid-column: span 1; }
-            .bento-card.wide { grid-column: span 1; height: 350px; }
+            .nav-menu, .btn-primary { display: none; } 
+            .mobile-menu-btn { display: block; } 
             
-            .process-row { flex-direction: column; gap: 40px; }
+            #navbar { padding: 15px 20px; }
+            .hero-title { font-size: 2.5rem; }
+            
+            .process-row { flex-direction: column; gap: 40px; align-items: center; }
             .process-step { width: 100%; }
             .process-line { width: 3px; height: 100%; left: 50%; top: 0; transform: translateX(-50%); }
             .process-line-fill { width: 3px !important; height: 0%; left: 50%; top: 0; transform: translateX(-50%); }
             
             .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 0; }
             .f-col { 
-                padding: 40px 0; 
+                padding: 30px 0; 
                 border-bottom: 1px solid rgba(255,255,255,0.1); 
                 align-items: center;
             }
             .f-col:first-child { padding-top: 0; }
             .f-col:last-child { border-bottom: none; }
             .contact-item { justify-content: center; text-align: center; }
+            
+            .social-frame { height: 400px; }
         }
     </style>
 </head>
@@ -562,16 +589,17 @@
     <!-- NAVBAR -->
     <nav id="navbar">
         <div class="container nav-content">
-            <!-- Logo principal protegido -->
             <a href="https://istg.edu.ec/" class="logo">
                 <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/4d0023a4a1e80af12ac0c1725f64f702cc835788/Recurso%201.svg" 
                      alt="ISTG Logo" 
                      class="protected-img"
-                     style="height: 50px; width: auto;"
+                     style="height: 45px; width: auto;"
                      draggable="false"
                      oncontextmenu="return false;">
             </a>
             
+            <i class="fa-solid fa-bars mobile-menu-btn" onclick="alert('Menú móvil desplegable (Placeholder)')"></i>
+
             <ul class="nav-menu">
                 <li><a href="https://istg.edu.ec/">Inicio</a></li>
                 <li><a href="#carreras">Oferta Académica</a></li>
@@ -589,16 +617,14 @@
     <section class="hero">
         <div class="hero-layout">
             
-            <!-- Left Text -->
             <div class="hero-content reveal-left">
                 <span class="hero-tag"><i class="fa-solid fa-bolt"></i> Tecnología Superior</span>
                 <h1 class="hero-title">
-                    EL FUTURO SE <br>
-                    <span class="text-accent">DISEÑA AQUÍ.</span>
+                    EL FUTURO SE <br><span class="text-accent">DISEÑA AQUÍ.</span>
                 </h1>
                 <p class="hero-desc">
                     Fórmate con excelencia académica en el corazón de Guayaquil. 
-                    Títulos de tercer nivel en 2 años con enfoque práctico y alta empleabilidad.
+                    Títulos de tercer nivel en 2 años con enfoque práctico.
                 </p>
                 <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: flex-start;">
                     <a href="#carreras" class="btn btn-primary">Ver Carreras</a>
@@ -606,34 +632,18 @@
                 </div>
             </div>
 
-            <!-- Right Visual (SLIDESHOW) -->
             <div class="hero-visual reveal-right">
                 <div class="hero-img-wrapper">
-                    <!-- FOTO 1 -->
-                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto1.png" 
-                         class="hero-img active" 
-                         style="object-position: top;"
-                         loading="eager"
-                         alt="Estudiante Destacado">
-
-                    <!-- FOTO 2 -->
-                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto2.png" 
-                         class="hero-img" 
-                         loading="lazy"
-                         alt="Estudiantes ISTG">
-                    
-                    <!-- FOTO 3 -->
-                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto3.png" 
-                         class="hero-img" 
-                         loading="lazy"
-                         alt="Laboratorio ISTG">
+                    <!-- FOTOS CARRUSEL -->
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto1.png" class="hero-img active" style="object-position: top;" loading="eager" alt="Estudiante">
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto2.png" class="hero-img" loading="lazy" alt="Grupo">
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto3.png" class="hero-img" loading="lazy" alt="Lab">
                 </div>
             </div>
-            
         </div>
     </section>
 
-    <!-- CARRERAS (BENTO GRID - INTERACTIVE) -->
+    <!-- CARRERAS (BENTO GRID - FIXED LAYOUT) -->
     <section id="carreras">
         <div class="container">
             <div class="section-header reveal-bottom">
@@ -644,13 +654,9 @@
 
             <div class="bento-grid" id="careerGrid">
                 
-                <!-- 1. DISEÑO GRÁFICO (Highlight) - Naranja -->
+                <!-- 1. DISEÑO GRÁFICO (Highlight Inicial) -->
                 <div class="bento-card highlight reveal-item" onclick="swapCareer(this)" style="--card-color: #f97316; --card-color-glow: rgba(249, 115, 22, 0.4);">
-                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/dise%C3%B1o.jpg?q=80&w=1350&h=1080&auto=format&fit=crop" 
-                         class="bento-img" 
-                         loading="lazy"
-                         alt="Diseño Gráfico" 
-                         onerror="this.src='https://placehold.co/1350x1080/f97316/FFF?text=Diseno'">
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/dise%C3%B1o.jpg" class="bento-img" loading="lazy" alt="Diseño" onerror="this.src='https://placehold.co/800x600/f97316/FFF?text=Diseno'">
                     <div class="bento-overlay">
                         <div class="bento-icon"><i class="fa-solid fa-pen-nib"></i></div>
                         <h3 class="bento-title">Diseño Gráfico</h3>
@@ -658,13 +664,9 @@
                     </div>
                 </div>
 
-                <!-- 2. DESARROLLO DE SOFTWARE - Azul Oscuro -->
+                <!-- 2. SOFTWARE -->
                 <div class="bento-card reveal-item" onclick="swapCareer(this)" style="--card-color: #1e3a8a; --card-color-glow: rgba(30, 58, 138, 0.4);">
-                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/desarrollo.jpg?q=80&w=1350&h=1080&auto=format&fit=crop" 
-                         class="bento-img" 
-                         loading="lazy"
-                         alt="Software" 
-                         onerror="this.src='https://placehold.co/1350x1080/1e3a8a/FFF?text=Software'">
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/desarrollo.jpg" class="bento-img" loading="lazy" alt="Software" onerror="this.src='https://placehold.co/800x600/1e3a8a/FFF?text=Software'">
                     <div class="bento-overlay">
                         <div class="bento-icon"><i class="fa-solid fa-code"></i></div>
                         <h3 class="bento-title">Desarrollo de Software</h3>
@@ -672,31 +674,23 @@
                     </div>
                 </div>
 
-                <!-- 3. MARKETING DIGITAL - Magenta Púrpura -->
+                <!-- 3. MARKETING -->
                 <div class="bento-card reveal-item" onclick="swapCareer(this)" style="--card-color: #d946ef; --card-color-glow: rgba(217, 70, 239, 0.4);">
-                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/marketing.jpg?q=80&w=1350&h=1080&auto=format&fit=crop" 
-                         class="bento-img" 
-                         loading="lazy"
-                         alt="Marketing" 
-                         onerror="this.src='https://placehold.co/1350x1080/d946ef/FFF?text=Marketing'">
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/marketing.jpg" class="bento-img" loading="lazy" alt="Marketing" onerror="this.src='https://placehold.co/800x600/d946ef/FFF?text=Marketing'">
                     <div class="bento-overlay">
                         <div class="bento-icon"><i class="fa-solid fa-bullhorn"></i></div>
                         <h3 class="bento-title">Marketing Digital</h3>
-                        <p class="bento-desc">Estrategias SEO/SEM, gestión de redes y analítica web.</p>
+                        <p class="bento-desc">Estrategias SEO/SEM y gestión de redes.</p>
                     </div>
                 </div>
 
-                <!-- 4. CONTABILIDAD - Cian -->
-                <div class="bento-card wide reveal-item" onclick="swapCareer(this)" style="--card-color: #06b6d4; --card-color-glow: rgba(6, 182, 212, 0.4);">
-                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/contabilidad.jpg?q=80&w=1350&h=1080&auto=format&fit=crop" 
-                         class="bento-img" 
-                         loading="lazy"
-                         alt="Contabilidad" 
-                         onerror="this.src='https://placehold.co/1350x1080/06b6d4/FFF?text=Contabilidad'">
+                <!-- 4. CONTABILIDAD -->
+                <div class="bento-card reveal-item" onclick="swapCareer(this)" style="--card-color: #06b6d4; --card-color-glow: rgba(6, 182, 212, 0.4);">
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/contabilidad.jpg" class="bento-img" loading="lazy" alt="Contabilidad" onerror="this.src='https://placehold.co/800x600/06b6d4/FFF?text=Contabilidad'">
                     <div class="bento-overlay">
                         <div class="bento-icon"><i class="fa-solid fa-calculator"></i></div>
                         <h3 class="bento-title">Contabilidad</h3>
-                        <p class="bento-desc">Gestión financiera, tributación y auditoría empresarial.</p>
+                        <p class="bento-desc">Gestión financiera y tributación empresarial.</p>
                     </div>
                 </div>
 
@@ -711,7 +705,6 @@
                 <span class="section-tag">Proceso de Admisión</span>
                 <h2 class="section-title">Tu futuro comienza <span class="text-accent">Hoy</span></h2>
             </div>
-
             <div class="process-row">
                 <div class="process-line"></div>
                 <div class="process-line-fill" id="process-fill"></div>
@@ -719,50 +712,38 @@
                 <div class="process-step reveal-item">
                     <div class="step-bubble">1</div>
                     <h3 style="color: var(--color-brand-dark); margin-bottom: 10px;">Registro Nacional</h3>
-                    <p style="color: #64748b; font-size: 14px;">Cumple con el registro obligatorio en la plataforma de la SENESCYT.</p>
+                    <p style="color: #64748b; font-size: 14px;">Registro obligatorio en la SENESCYT.</p>
                 </div>
                 <div class="process-step reveal-item" style="transition-delay: 0.2s;">
                     <div class="step-bubble">2</div>
                     <h3 style="color: var(--color-brand-dark); margin-bottom: 10px;">Evaluación</h3>
-                    <p style="color: #64748b; font-size: 14px;">Rinde la evaluación de competencias y capacidades.</p>
+                    <p style="color: #64748b; font-size: 14px;">Prueba de competencias y capacidades.</p>
                 </div>
                 <div class="process-step reveal-item" style="transition-delay: 0.4s;">
                     <div class="step-bubble">3</div>
                     <h3 style="color: var(--color-brand-dark); margin-bottom: 10px;">Postulación</h3>
-                    <p style="color: #64748b; font-size: 14px;">Elige al ISTG como tu primera opción en la plataforma.</p>
+                    <p style="color: #64748b; font-size: 14px;">Elige al ISTG como tu primera opción.</p>
                 </div>
             </div>
-
             <div style="text-align: center; margin-top: 50px;">
                 <a href="https://www.registrounicoedusup.gob.ec/" target="_blank" class="btn btn-primary">Ir al Registro Único</a>
             </div>
         </div>
     </section>
 
-    <!-- SOCIAL FEED SECTION -->
+    <!-- SOCIAL FEED -->
     <section id="social-feed">
         <div class="container">
             <div class="section-header reveal-bottom" style="margin-bottom: 30px;">
                 <span class="section-tag">Comunidad ISTG</span>
                 <h2 class="section-title">Lo que pasa en el <span class="text-accent">Campus</span></h2>
-                <p style="color: #64748b; font-size: 14px; margin-top: 10px;">Entérate de las últimas noticias directamente desde nuestro Facebook.</p>
             </div>
-
             <div class="social-container" style="max-width: 1000px; margin: 0 auto;">
                  <div class="social-frame" style="position: relative;">
-                    <!-- Botones Flotantes -->
                     <div style="position: absolute; top: 15px; right: 15px; z-index: 100; display: flex; gap: 10px;">
-                        <a href="https://www.facebook.com/istg.ec" target="_blank" title="Ver en Facebook" 
-                           style="width: 35px; height: 35px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); color: #1877F2; text-decoration: none; transition: transform 0.2s;">
-                            <i class="fa-brands fa-facebook"></i>
-                        </a>
-                        <a href="https://www.instagram.com/istg.ec" target="_blank" title="Ver en Instagram" 
-                           style="width: 35px; height: 35px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); color: #E1306C; text-decoration: none; transition: transform 0.2s;">
-                            <i class="fa-brands fa-instagram"></i>
-                        </a>
+                        <a href="https://www.facebook.com/istg.ec" target="_blank" title="Facebook" class="social-btn" style="color: #1877F2;"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="https://www.instagram.com/istg.ec" target="_blank" title="Instagram" class="social-btn" style="color: #E1306C;"><i class="fa-brands fa-instagram"></i></a>
                     </div>
-
-                    <!-- SociableKit Widget -->
                     <div class="sk-ww-facebook-page-posts" data-embed-id="25641804"></div>
                     <script src="https://widgets.sociablekit.com/facebook-page-posts/widget.js" defer></script>
                  </div>
@@ -774,163 +755,94 @@
     <footer id="contacto">
         <div class="container">
             <div class="footer-grid">
-                <!-- Col 1 -->
                 <div class="f-col">
-                    <!-- LOGO FOOTER -->
                     <div class="logo" style="margin-bottom: 25px;">
-                        <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/Recurso%204mdpi.svg" 
-                             alt="ISTG Logo Footer" 
-                             class="protected-img"
-                             style="height: 60px; width: auto;" 
-                             draggable="false"
-                             oncontextmenu="return false;">
+                        <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/Recurso%204mdpi.svg" alt="ISTG Footer" class="protected-img" style="height: 60px; width: auto;" draggable="false" oncontextmenu="return false;">
                     </div>
-                    <p style="color: #94a3b8; font-size: 15px; margin-bottom: 25px; line-height: 1.8; max-width: 300px;">
-                        Formamos profesionales de excelencia con visión tecnológica y humana. Líderes en educación superior técnica en el Ecuador.
-                    </p>
+                    <p style="color: #94a3b8; font-size: 14px; margin-bottom: 25px; line-height: 1.6;">Líderes en educación superior técnica en el Ecuador.</p>
                     <div style="display: flex; gap: 20px;">
-                        <a href="https://www.facebook.com/istg.ec" target="_blank" style="color: white; font-size: 22px; transition: color 0.3s;"><i class="fa-brands fa-facebook"></i></a>
-                        <a href="https://www.instagram.com/istg.ec" target="_blank" style="color: white; font-size: 22px; transition: color 0.3s;"><i class="fa-brands fa-instagram"></i></a>
-                        <a href="#" style="color: white; font-size: 22px; transition: color 0.3s;"><i class="fa-brands fa-tiktok"></i></a>
+                        <a href="https://www.facebook.com/istg.ec" target="_blank" style="color: white; font-size: 20px;"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="https://www.instagram.com/istg.ec" target="_blank" style="color: white; font-size: 20px;"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" style="color: white; font-size: 20px;"><i class="fa-brands fa-tiktok"></i></a>
                     </div>
                 </div>
-
-                <!-- Col 2 -->
                 <div class="f-col">
                     <div class="f-title">Academia</div>
                     <a href="#carreras" class="f-link">Oferta Académica</a>
-                    <a href="#admisiones" class="f-link">Proceso de Admisión</a>
+                    <a href="#admisiones" class="f-link">Admisiones</a>
                     <a href="https://academico.istg.edu.ec/" class="f-link">Campus Virtual</a>
-                    <a href="#" class="f-link">Biblioteca Digital</a>
                 </div>
-
-                <!-- Col 3 -->
                 <div class="f-col">
                     <div class="f-title">Institucional</div>
-                    <a href="https://istg.edu.ec/nosotros" class="f-link">Sobre Nosotros</a>
+                    <a href="https://istg.edu.ec/nosotros" class="f-link">Nosotros</a>
                     <a href="https://istg.edu.ec/autoridades" class="f-link">Autoridades</a>
-                    <a href="https://istg.edu.ec/rendicion-cuentas" class="f-link">Rendición de Cuentas</a>
-                    <a href="#" class="f-link">Bolsa de Empleo</a>
                 </div>
-
-                <!-- Col 4 -->
                 <div class="f-col">
                     <div class="f-title">Contacto</div>
-                    <div class="contact-item">
-                        <i class="fa-solid fa-location-dot"></i>
-                        <span>Gómez Rendón, entre Quito y José de Antepara.<br>Guayaquil, Ecuador</span>
-                    </div>
-                    <div class="contact-item">
-                        <i class="fa-solid fa-phone"></i>
-                        <span>+593 96 837 4270</span>
-                    </div>
-                    <div class="contact-item">
-                        <i class="fa-solid fa-envelope"></i>
-                        <span>info@istg.edu.ec</span>
-                    </div>
+                    <div class="contact-item"><i class="fa-solid fa-location-dot"></i> <span>Gómez Rendón, entre Quito y José de Antepara.</span></div>
+                    <div class="contact-item"><i class="fa-solid fa-phone"></i> <span>+593 96 837 4270</span></div>
+                    <div class="contact-item"><i class="fa-solid fa-envelope"></i> <span>info@istg.edu.ec</span></div>
                 </div>
             </div>
-            
-            <div style="text-align: center; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 50px; padding-top: 30px; font-size: 13px; color: #64748b; letter-spacing: 0.5px;">
-                &copy; 2026 Instituto Superior Tecnológico Guayaquil. Creado por Christian Ortiz, de 2DO A, Plantilla e Ilustración.
+            <div style="text-align: center; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 50px; padding-top: 20px; font-size: 12px; color: #64748b;">
+                &copy; 2026 Instituto Superior Tecnológico Guayaquil. <br>Creado por <strong style="color: var(--color-brand-light); font-size: 13px;">Christian Ortiz</strong>, de 2DO A, Plantilla e Ilustración.
             </div>
         </div>
     </footer>
 
     <script>
-        // Scroll Reveal Configuration
-        const sr = ScrollReveal({
-            origin: 'bottom',
-            distance: '30px',
-            duration: 1000,
-            delay: 100,
-            easing: 'cubic-bezier(0.5, 0, 0, 1)'
-        });
-
+        // Scroll Reveal
+        const sr = ScrollReveal({ origin: 'bottom', distance: '30px', duration: 1000, delay: 100, easing: 'cubic-bezier(0.5, 0, 0, 1)' });
         sr.reveal('.reveal-bottom');
         sr.reveal('.reveal-left', { origin: 'left' });
         sr.reveal('.reveal-right', { origin: 'right' });
         sr.reveal('.reveal-item', { interval: 150 });
 
-        // Navbar Scroll Effect
+        // Navbar Scroll
         window.addEventListener('scroll', () => {
             const nav = document.getElementById('navbar');
             if(nav) {
                 if(window.scrollY > 50) {
-                    nav.style.padding = '10px 0';
-                    nav.style.boxShadow = '0 5px 20px rgba(0,0,0,0.1)';
+                    nav.style.padding = '10px 0'; nav.style.boxShadow = '0 5px 20px rgba(0,0,0,0.1)';
                 } else {
-                    nav.style.padding = '15px 0';
-                    nav.style.boxShadow = 'none';
+                    nav.style.padding = '15px 0'; nav.style.boxShadow = 'none';
                 }
             }
-            
-            // Animate Process Line
+            // Admisiones Line
             const processSection = document.getElementById('admisiones');
             const fill = document.getElementById('process-fill');
-            
             if(processSection && fill) {
                 const sectionPos = processSection.getBoundingClientRect().top;
                 const screenPos = window.innerHeight / 1.3;
-                
-                if(sectionPos < screenPos) {
-                    fill.style.width = '100%';
-                }
+                if(sectionPos < screenPos) fill.style.width = '100%';
             }
         });
 
-        // --- CAREER SWAP INTERACTIVITY ---
+        // Career Swap (DOM Order)
         function swapCareer(selectedCard) {
             const grid = document.getElementById('careerGrid');
             if(!grid) return;
-            
             const currentHighlight = grid.querySelector('.highlight');
-            
-            // Si hacemos clic en la misma tarjeta destacada, no hacer nada
             if (selectedCard === currentHighlight) return;
-            
-            // Intercambiar clases
-            if(currentHighlight) {
-                currentHighlight.classList.remove('highlight');
-                // Si la tarjeta anterior era 'wide', se lo quitamos para que vuelva a ser normal
-                currentHighlight.classList.remove('wide');
-            }
-            
+            if(currentHighlight) currentHighlight.classList.remove('highlight');
             selectedCard.classList.add('highlight');
-            selectedCard.classList.remove('wide'); // El highlight ya define el tamaño
-            
-            // Reorganizar tarjetas para llenar huecos
-            // Estrategia: Mover la seleccionada al principio
-            grid.prepend(selectedCard);
-            
-            // Encontrar la última tarjeta (que no sea highlight) y hacerla wide para llenar el hueco final
-            // Esto es un truco visual para mantener la grilla "llena"
+            // Usamos CSS order para mover la tarjeta seleccionada al principio (highlight area)
+            // Reseteamos el orden de todos a 2, y el seleccionado a 1.
             const allCards = Array.from(grid.children);
-            const lastCard = allCards[allCards.length - 1];
-            
-            // Resetear clases wide de todos
-            allCards.forEach(c => c.classList.remove('wide'));
-            
-            // Si la última no es la highlight, la hacemos wide
-            if (!lastCard.classList.contains('highlight')) {
-                lastCard.classList.add('wide');
-            }
+            allCards.forEach(card => card.style.order = '2');
+            selectedCard.style.order = '1';
         }
 
-        // --- SLIDESHOW AUTOMATICO (PORTADA) ---
+        // Hero Slideshow
         const heroImages = document.querySelectorAll('.hero-img');
         if (heroImages.length > 1) {
             let currentHeroIndex = 0;
             setInterval(() => {
-                // Remove active from current
                 heroImages[currentHeroIndex].classList.remove('active');
-                // Calculate next index
                 currentHeroIndex = (currentHeroIndex + 1) % heroImages.length;
-                // Add active to next
                 heroImages[currentHeroIndex].classList.add('active');
-            }, 4000); // 4000ms = 4 segundos
+            }, 4000);
         }
-
     </script>
 </body>
 </html>
