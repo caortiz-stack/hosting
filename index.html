@@ -8,7 +8,7 @@
     <meta name="author" content="Christian Ortiz">
     <title>ISTG | Instituto Superior Tecnológico Guayaquil</title>
     
-    <!-- Icono de Pestaña -->
+    <!-- Favicon -->
     <link rel="icon" href="https://raw.githubusercontent.com/caortiz-stack/hosting/428d37be735801b9daac0104b576765808ffb296/faviconmdpi.svg" type="image/svg+xml">
 
     <!-- Fuentes Tipográficas -->
@@ -16,20 +16,20 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- Librería de Iconos -->
+    <!-- Iconos (FontAwesome) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" defer></script>
 
     <!-- Librería de Animaciones Scroll -->
     <script src="https://unpkg.com/scrollreveal"></script>
 
     <style>
-        /* --- 1. VARIABLES Y REINICIO --- */
+        /* --- 1. VARIABLES GLOBALES Y RESET --- */
         :root {
-            /* Colores de Marca */
+            /* Paleta de Colores Institucional */
             --color-brand-dark: #232453; /* Azul Profundo */
             --color-brand-light: #209bd8; /* Cian/Celeste */
             
-            /* Colores de Tema */
+            /* Tema General */
             --color-bg-body: #ffffff;
             --color-bg-alt: #f8fafc;
             --color-text-main: #232453;
@@ -39,13 +39,23 @@
             --font-display: 'Montserrat', sans-serif;
             --font-body: 'Lato', sans-serif;
             
-            /* Efectos */
+            /* Sombras y Transiciones */
             --shadow-card: 0 10px 30px -5px rgba(35, 36, 83, 0.08);
             --shadow-hover: 0 20px 40px -5px rgba(32, 155, 216, 0.15);
             --ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+
+        /* Ocultar cursor nativo globalmente para usar el personalizado */
+        html, body, a, button, input, textarea, select {
+            cursor: none !important;
+        }
+
         html { scroll-behavior: smooth; }
 
         body {
@@ -61,7 +71,21 @@
         a { text-decoration: none; }
         iframe { border: none; }
 
-        /* --- 2. CLASES DE UTILIDAD --- */
+        /* --- 2. CURSOR PERSONALIZADO --- */
+        #cursor {
+            position: fixed;
+            top: 0; left: 0;
+            width: 20px; height: 20px;
+            border: 2px solid var(--color-brand-light);
+            border-radius: 50%;
+            pointer-events: none; /* Permite clicks a través del elemento */
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s ease-out, background-color 0.2s;
+            z-index: 99999;
+            display: none; /* Se activa vía JS si es desktop */
+        }
+
+        /* --- 3. CLASES DE UTILIDAD --- */
         .container { 
             max-width: 1200px; 
             margin: 0 auto; 
@@ -72,14 +96,14 @@
         .text-accent { color: var(--color-brand-light); }
         .text-dark { color: var(--color-brand-dark); }
         
-        /* Evitar arrastre de imágenes */
+        /* Prevenir arrastre de imágenes */
         .protected-img {
             user-select: none;
             -webkit-user-drag: none;
             pointer-events: auto;
         }
 
-        /* Botones Globales */
+        /* Estilos de Botones */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -93,7 +117,6 @@
             text-decoration: none;
             transition: all 0.3s var(--ease-out);
             font-size: 12px;
-            cursor: pointer;
             border: 2px solid transparent;
         }
 
@@ -119,7 +142,7 @@
             transform: translateY(-2px);
         }
 
-        /* --- 3. BARRA DE NAVEGACIÓN --- */
+        /* --- 4. BARRA DE NAVEGACIÓN --- */
         #navbar {
             position: fixed;
             top: 0; left: 0; width: 100%;
@@ -132,7 +155,6 @@
         }
 
         .nav-content { display: flex; justify-content: space-between; align-items: center; }
-
         .logo img { display: block; height: 50px; width: auto; }
 
         .nav-menu { display: flex; gap: 30px; list-style: none; margin: 0; padding: 0; }
@@ -151,136 +173,10 @@
         }
         .nav-menu a:hover::after { width: 100%; }
 
-        /* Contenedor de Acciones (Notificaciones + Campus) */
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
+        .nav-actions { display: flex; align-items: center; gap: 20px; }
+        .mobile-menu-btn { display: none; font-size: 24px; color: var(--color-brand-dark); }
 
-        /* --- NOTIFICACIONES (DROPDOWN) --- */
-        .notification-wrapper {
-            position: relative;
-        }
-
-        .notify-btn {
-            background: none;
-            border: none;
-            color: var(--color-brand-dark);
-            font-size: 20px;
-            cursor: pointer;
-            position: relative;
-            padding: 5px;
-            transition: color 0.3s;
-        }
-        .notify-btn:hover { color: var(--color-brand-light); }
-
-        .notify-badge {
-            position: absolute;
-            top: 5px; right: 5px;
-            width: 8px; height: 8px;
-            background: #ff4757;
-            border-radius: 50%;
-            border: 2px solid white;
-        }
-
-        /* --- DROPDOWN REDISEÑADO (MODERNO) --- */
-        .notify-dropdown {
-            position: absolute;
-            top: 60px; /* Un poco más separado */
-            right: 0;
-            width: 360px; /* Más ancho para mejor lectura */
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(35, 36, 83, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            opacity: 0; visibility: hidden;
-            transform: translateY(10px) scale(0.98);
-            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-            z-index: 1100;
-            padding: 10px;
-        }
-        .notify-dropdown.active {
-            opacity: 1; visibility: visible;
-            transform: translateY(0) scale(1);
-        }
-        /* Eliminamos la flecha antigua para un look más limpio */
-        .notify-dropdown::before { display: none; }
-
-        .notify-header {
-            padding: 10px 15px;
-            font-family: var(--font-display);
-            font-weight: 800;
-            font-size: 11px;
-            color: #94a3b8; /* Color sutil para la etiqueta */
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-
-        .notify-body { padding: 0; display: flex; flex-direction: column; gap: 8px; }
-
-        .notify-item {
-            display: flex;
-            gap: 15px;
-            align-items: flex-start;
-            padding: 15px;
-            border-radius: 12px;
-            background: white;
-            border: 1px solid #f1f5f9;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            text-decoration: none; /* Por si usamos <a> */
-        }
-        
-        .notify-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(35, 36, 83, 0.08);
-            border-color: rgba(32, 155, 216, 0.3);
-        }
-
-        .notify-icon-box {
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            flex-shrink: 0;
-            font-size: 18px;
-        }
-
-        /* Estilo Alerta (Naranja/Amarillo) */
-        .notify-item.warning .notify-icon-box {
-            background: #fff7ed; 
-            color: #f97316;
-        }
-        
-        /* Estilo Info (Azul Marca) */
-        .notify-item.info .notify-icon-box {
-            background: #f0f9ff; 
-            color: var(--color-brand-light);
-        }
-
-        .notify-content { flex-grow: 1; }
-
-        .notify-content strong {
-            display: block;
-            font-family: var(--font-display);
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--color-brand-dark);
-            margin-bottom: 4px;
-        }
-        .notify-content p {
-            font-size: 12px;
-            color: var(--color-text-body);
-            line-height: 1.4;
-            margin: 0;
-        }
-
-        .mobile-menu-btn { display: none; font-size: 24px; color: var(--color-brand-dark); cursor: pointer; }
-
-        /* --- 4. SECCIÓN HERO (PORTADA) --- */
+        /* --- 5. SECCIÓN HERO (PORTADA) --- */
         .hero {
             position: relative;
             min-height: 100vh;
@@ -377,7 +273,7 @@
 
         .hero-img.active { opacity: 1; z-index: 2; }
 
-        /* --- 5. CARRERAS (BENTO GRID) --- */
+        /* --- 6. SECCIÓN CARRERAS (BENTO GRID) --- */
         #carreras { padding: 60px 0; background: var(--color-bg-alt); }
         
         .section-header { text-align: center; margin-bottom: 40px; }
@@ -405,7 +301,6 @@
 
         .bento-grid {
             display: grid;
-            /* Layout Asimétrico: Izquierda grande, Derecha pila */
             grid-template-columns: 2.5fr 1fr;
             grid-template-rows: repeat(3, 180px);
             gap: 20px;
@@ -413,7 +308,6 @@
             margin: 0 auto;
         }
 
-        /* Animación para cambio de tarjeta */
         @keyframes fadeInGrow {
             from { opacity: 0.8; transform: scale(0.98); }
             to { opacity: 1; transform: scale(1); }
@@ -429,9 +323,8 @@
             display: flex;
             flex-direction: column;
             border: none;
-            cursor: pointer;
             height: 100%;
-            order: 2; /* Orden base */
+            order: 2;
             
             --card-color: var(--color-brand-light); 
             --card-color-glow: rgba(32, 155, 216, 0.2);
@@ -442,7 +335,6 @@
             box-shadow: 0 15px 35px -5px var(--card-color-glow);
         }
 
-        /* HIGHLIGHT: Ocupa espacio principal */
         .bento-card.highlight {
             grid-column: 1;
             grid-row: 1 / span 3;
@@ -451,9 +343,7 @@
             animation: fadeInGrow 0.4s var(--ease-out);
         }
         
-        .bento-card:not(.highlight) {
-            grid-column: 2;
-        }
+        .bento-card:not(.highlight) { grid-column: 2; }
 
         .bento-img {
             width: 100%;
@@ -503,7 +393,6 @@
             margin-bottom: 10px;
             transition: background 0.3s;
         }
-        
         .bento-card.highlight .bento-icon { width: 60px; height: 60px; font-size: 24px; margin-bottom: 20px; }
         .bento-card:hover .bento-icon { background: var(--card-color); }
 
@@ -534,7 +423,7 @@
             max-width: 80%;
         }
 
-        /* --- 6. ADMISIONES --- */
+        /* --- 7. ADMISIONES --- */
         #admisiones { padding: 60px 0; background: white; }
         
         .process-row {
@@ -584,7 +473,7 @@
             border: 5px solid white;
         }
 
-        /* --- 7. COMUNIDAD (FEED) --- */
+        /* --- 8. COMUNIDAD (FEED) --- */
         #social-feed { padding: 60px 0; background: var(--color-bg-alt); }
 
         .social-container { max-width: 1000px; margin: 0 auto; }
@@ -605,7 +494,18 @@
         .social-frame::-webkit-scrollbar-track { background: #f1f1f1; }
         .social-frame::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 
-        /* --- 8. ALERTAS Y MODALES --- */
+        .social-btn {
+            width: 35px; height: 35px;
+            background: white;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+        .social-btn:hover { transform: scale(1.1); }
+
+        /* --- 9. ALERTAS Y MODALES --- */
         .floating-alert {
             position: fixed;
             bottom: 30px; left: 30px;
@@ -615,7 +515,7 @@
             box-shadow: 0 10px 30px rgba(32, 155, 216, 0.4);
             display: flex; align-items: center; gap: 12px;
             z-index: 9990;
-            cursor: pointer;
+            cursor: pointer; /* Cursor personalizado lo gestiona el body, pero dejamos pointer para fallback */
             border: 2px solid var(--color-brand-light);
             animation: bounceIn 1s ease-out;
             transition: transform 0.3s;
@@ -639,7 +539,74 @@
             font-weight: 700; color: var(--color-brand-dark); font-size: 13px; text-transform: uppercase;
         }
 
-        /* Modal */
+        /* Notificaciones (Dropdown) */
+        .notify-btn {
+            background: none; border: none; color: var(--color-brand-dark);
+            font-size: 20px; padding: 5px; position: relative; transition: color 0.3s;
+        }
+        .notify-btn:hover { color: var(--color-brand-light); }
+        
+        .notify-badge {
+            position: absolute; top: 5px; right: 5px;
+            width: 8px; height: 8px; background: #ff4757;
+            border-radius: 50%; border: 2px solid white;
+        }
+
+        .notify-dropdown {
+            position: absolute; top: 60px; right: 0; width: 360px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(35, 36, 83, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            opacity: 0; visibility: hidden;
+            transform: translateY(10px) scale(0.98);
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            z-index: 1100;
+            padding: 10px;
+        }
+        .notify-dropdown.active {
+            opacity: 1; visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .notify-header {
+            padding: 10px 15px; font-family: var(--font-display);
+            font-weight: 800; font-size: 11px; color: #94a3b8;
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;
+        }
+        .notify-body { padding: 0; display: flex; flex-direction: column; gap: 8px; }
+
+        .notify-item {
+            display: flex; gap: 15px; align-items: flex-start;
+            padding: 15px; border-radius: 12px; background: white;
+            border: 1px solid #f1f5f9; transition: all 0.2s ease;
+        }
+        .notify-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(35, 36, 83, 0.08);
+            border-color: rgba(32, 155, 216, 0.3);
+        }
+
+        .notify-icon-box {
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            flex-shrink: 0; font-size: 18px;
+        }
+        .notify-item.warning .notify-icon-box { background: #fff7ed; color: #f97316; }
+        .notify-item.info .notify-icon-box { background: #f0f9ff; color: var(--color-brand-light); }
+
+        .notify-content strong {
+            display: block; font-family: var(--font-display);
+            font-size: 14px; font-weight: 700; color: var(--color-brand-dark);
+            margin-bottom: 4px;
+        }
+        .notify-content p {
+            font-size: 12px; color: var(--color-text-body); line-height: 1.4; margin: 0;
+        }
+
+        /* Modal Styles */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(10, 11, 30, 0.85); backdrop-filter: blur(10px);
@@ -657,7 +624,7 @@
             transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
             display: flex; flex-direction: row; 
-            overflow: hidden; /* Ocultar scroll general */
+            overflow: hidden; 
         }
         .modal-overlay.active .modal-content { transform: scale(1); }
 
@@ -671,35 +638,22 @@
         }
         .modal-close:hover { background: rgba(0,0,0,0.2); transform: rotate(90deg); }
 
-        /* Contenido Interno Modal */
         #initial-view { display: flex; width: 100%; height: 100%; }
-        
         .modal-image-col { width: 45%; position: relative; background: #f0f0f0; min-height: 300px; }
         .modal-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        
-        .modal-text-col { 
-            width: 55%; padding: 40px; 
-            display: flex; flex-direction: column; justify-content: center; text-align: left; 
-        }
+        .modal-text-col { width: 55%; padding: 40px; display: flex; flex-direction: column; justify-content: center; text-align: left; }
 
         .modal-title { 
             font-family: var(--font-display); font-weight: 900; color: var(--color-brand-dark); 
             font-size: 26px; margin-bottom: 15px; line-height: 1.1; text-transform: uppercase;
         }
         .modal-text { color: #64748b; font-size: 15px; margin-bottom: 30px; line-height: 1.6; }
+        .modal-btn { width: auto; align-self: flex-start; padding: 12px 30px; border: none; }
 
-        /* Contenedor Iframe */
-        #iframe-container {
-            width: 100%; height: 100%;
-            display: flex; flex-direction: column;
-            background: #fff;
-        }
-        #schedule-iframe {
-            flex-grow: 1; width: 100%; border: none;
-            height: 400px;
-        }
+        #iframe-container { width: 100%; height: 100%; display: flex; flex-direction: column; background: #fff; }
+        #schedule-iframe { flex-grow: 1; width: 100%; border: none; height: 400px; }
 
-        /* --- 9. FOOTER --- */
+        /* --- 10. FOOTER --- */
         footer {
             background: var(--color-brand-dark);
             color: white;
@@ -740,10 +694,14 @@
             .hero-desc { margin: 20px auto; border: none; padding: 0; }
             .hero-visual { justify-content: center; }
             .hero-img-wrapper { max-width: 500px; margin: 0 auto; }
-            .bento-grid { grid-template-columns: 1fr 1fr; }
-            .bento-card.highlight { grid-column: span 2; grid-row: span 1; height: 350px; }
-            .bento-card.wide { grid-column: span 2; }
-            .social-container { flex-direction: column; align-items: center; }
+            /* Mobile Grid */
+            .bento-grid { grid-template-columns: 1fr; grid-template-rows: auto; gap: 20px; }
+            .bento-card { height: 280px; order: unset !important; } 
+            .bento-card.highlight { grid-column: span 1; grid-row: span 1; height: 350px; }
+            .bento-card:not(.highlight) { grid-column: span 1; }
+            .bento-card.highlight .bento-overlay { padding-top: 20px; }
+            .bento-desc { display: block; } 
+            
             .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
             .f-col { border-right: none; padding: 0; }
         }
@@ -755,13 +713,6 @@
             
             #navbar { padding: 15px 20px; }
             .hero-title { font-size: 2.5rem; }
-            
-            /* Grid Móvil */
-            .bento-grid { grid-template-columns: 1fr; grid-template-rows: auto; gap: 20px; }
-            .bento-card { height: 280px; order: unset !important; } 
-            .bento-card.highlight { grid-column: span 1; grid-row: span 1; height: 350px; }
-            .bento-card:not(.highlight) { grid-column: span 1; }
-            .bento-desc { display: block; } 
             
             .process-row { flex-direction: column; gap: 40px; }
             .process-step { width: 100%; }
@@ -783,6 +734,8 @@
             .modal-text-col { width: 100%; padding: 30px; }
             .modal-btn { width: 100%; text-align: center; }
             #schedule-iframe { height: 500px; }
+
+            .notify-dropdown { position: fixed; top: 70px; right: 20px; left: 20px; width: auto; }
         }
     </style>
 </head>
@@ -819,23 +772,21 @@
                         <i class="fa-solid fa-bell"></i>
                         <span class="notify-badge"></span>
                     </button>
-                    <!-- Dropdown Nuevo Diseño -->
+                    <!-- Dropdown -->
                     <div class="notify-dropdown" id="notify-dropdown">
-                        <div class="notify-header">Actualizaciones</div>
+                        <div class="notify-header">Avisos Recientes</div>
                         <div class="notify-body">
-                            
-                            <!-- Aviso Docente (Diseño Tarjeta) -->
+                            <!-- Aviso Docente -->
                             <div class="notify-item warning">
                                 <div class="notify-icon-box">
-                                    <i class="fa-solid fa-bullhorn"></i>
+                                    <i class="fa-solid fa-circle-exclamation"></i>
                                 </div>
                                 <div class="notify-content">
                                     <strong>Evaluación Docente</strong>
-                                    <p>Recuerda realizar la evaluación en la plataforma SIGA para rendir tu examen.</p>
+                                    <p>Recuerda haber realizado la evaluación docente en la plataforma SIGA para rendir el examen del actual periodo.</p>
                                 </div>
                             </div>
-
-                            <!-- Aviso Cronograma (Diseño Tarjeta) -->
+                            <!-- Aviso Cronograma -->
                             <div class="notify-item info" id="trigger-modal-notify">
                                 <div class="notify-icon-box">
                                     <i class="fa-solid fa-calendar-days"></i>
@@ -845,7 +796,6 @@
                                     <p>Cronograma del 2do Parcial disponible. Haz clic para ver.</p>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -867,7 +817,10 @@
         <span class="alert-text">Horarios Disponibles</span>
     </div>
 
-    <!-- MODAL OVERLAY (REDISEÑADO) -->
+    <!-- CURSOR PERSONALIZADO -->
+    <div id="cursor" style="position: fixed; top: 0; left: 0; width: 20px; height: 20px; border: 2px solid var(--color-brand-light); border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); transition: transform 0.1s ease-out; z-index: 99999; display: none;"></div>
+
+    <!-- MODAL OVERLAY -->
     <div class="modal-overlay" id="news-modal">
         <div class="modal-content">
             <button class="modal-close" id="modal-close"><i class="fa-solid fa-xmark"></i></button>
@@ -906,6 +859,8 @@
     <!-- HERO SECTION -->
     <section class="hero">
         <div class="hero-layout">
+            
+            <!-- Left Text -->
             <div class="hero-content reveal-left">
                 <span class="hero-tag"><i class="fa-solid fa-bolt"></i> Tecnología Superior</span>
                 <h1 class="hero-title">
@@ -920,6 +875,8 @@
                     <a href="#admisiones" class="btn btn-outline">Proceso de Admisión</a>
                 </div>
             </div>
+
+            <!-- Right Visual -->
             <div class="hero-visual reveal-right">
                 <div class="hero-img-wrapper">
                     <!-- FOTOS CARRUSEL -->
@@ -931,7 +888,7 @@
         </div>
     </section>
 
-    <!-- CARRERAS -->
+    <!-- CARRERAS (BENTO GRID) -->
     <section id="carreras">
         <div class="container">
             <div class="section-header reveal-bottom">
@@ -991,6 +948,7 @@
             <div class="process-row">
                 <div class="process-line"></div>
                 <div class="process-line-fill" id="process-fill"></div>
+
                 <div class="process-step reveal-item">
                     <div class="step-bubble">1</div>
                     <h3 style="color: var(--color-brand-dark); margin-bottom: 10px;">Registro Nacional</h3>
@@ -1041,7 +999,7 @@
                     <div class="logo" style="margin-bottom: 25px;">
                         <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/Recurso%204mdpi.svg" alt="ISTG Footer" class="protected-img" style="height: 60px; width: auto;" draggable="false" oncontextmenu="return false;">
                     </div>
-                    <p style="color: #94a3b8; font-size: 14px; margin-bottom: 25px; line-height: 1.6;">Líderes en educación superior técnica en el Ecuador.</p>
+                    <p style="color: #94a3b8; font-size: 15px; margin-bottom: 25px; line-height: 1.8; max-width: 300px;">Líderes en educación superior técnica en el Ecuador.</p>
                     <div style="display: flex; gap: 20px;">
                         <a href="https://www.facebook.com/istg.ec" target="_blank" style="color: white; font-size: 20px;"><i class="fa-brands fa-facebook"></i></a>
                         <a href="https://www.instagram.com/istg.ec" target="_blank" style="color: white; font-size: 20px;"><i class="fa-brands fa-instagram"></i></a>
@@ -1090,6 +1048,7 @@
                     nav.style.padding = '15px 0'; nav.style.boxShadow = 'none';
                 }
             }
+            // Admisiones Line
             const processSection = document.getElementById('admisiones');
             const fill = document.getElementById('process-fill');
             if(processSection && fill) {
@@ -1107,9 +1066,6 @@
             if (selectedCard === currentHighlight) return;
             if(currentHighlight) currentHighlight.classList.remove('highlight');
             selectedCard.classList.add('highlight');
-            const allCards = Array.from(grid.children);
-            allCards.forEach(card => card.style.order = '2');
-            selectedCard.style.order = '1';
         }
 
         // Hero Slideshow
@@ -1123,7 +1079,7 @@
             }, 4000);
         }
 
-        // --- GESTIÓN DE NOTIFICACIONES Y MODAL ---
+        // Modal Logic
         const alertBtn = document.getElementById('floating-alert');
         const modal = document.getElementById('news-modal');
         const closeBtn = document.getElementById('modal-close');
@@ -1136,28 +1092,22 @@
         const scheduleIframe = document.getElementById('schedule-iframe');
         const scheduleUrl = "https://f.mtr.cool/ryktmtwllh";
 
-        // Función para abrir modal
+        // Función abrir
         function openModal() {
             modal.classList.add('active');
         }
 
-        // Listeners del botón flotante
-        if(alertBtn) alertBtn.addEventListener('click', openModal);
-
-        // Listeners del botón cerrar
-        if(closeBtn) {
+        if(alertBtn && modal && closeBtn) {
+            alertBtn.addEventListener('click', openModal);
+            
             closeBtn.addEventListener('click', () => {
                 modal.classList.remove('active');
-                setTimeout(() => { // Resetear al cerrar
+                setTimeout(() => {
                     initialView.style.display = 'flex';
                     iframeView.style.display = 'none';
                     scheduleIframe.src = "";
                 }, 300);
             });
-        }
-        
-        // Cerrar al hacer clic fuera
-        if(modal) {
             modal.addEventListener('click', (e) => {
                 if(e.target === modal) {
                     modal.classList.remove('active');
@@ -1168,26 +1118,24 @@
                     }, 300);
                 }
             });
+
+            if(showIframeBtn) {
+                showIframeBtn.addEventListener('click', () => {
+                    initialView.style.display = 'none';
+                    iframeView.style.display = 'flex';
+                    scheduleIframe.src = scheduleUrl;
+                });
+            }
+
+            if(backModalBtn) {
+                backModalBtn.addEventListener('click', () => {
+                    iframeView.style.display = 'none';
+                    initialView.style.display = 'flex';
+                });
+            }
         }
 
-        // Cambio a Iframe
-        if(showIframeBtn) {
-            showIframeBtn.addEventListener('click', () => {
-                initialView.style.display = 'none';
-                iframeView.style.display = 'flex';
-                scheduleIframe.src = scheduleUrl;
-            });
-        }
-
-        // Volver a vista inicial del modal
-        if(backModalBtn) {
-            backModalBtn.addEventListener('click', () => {
-                iframeView.style.display = 'none';
-                initialView.style.display = 'flex';
-            });
-        }
-
-        // --- DROPDOWN NOTIFICACIONES (NAVBAR) ---
+        // Dropdown Notificaciones
         const notifyBtn = document.getElementById('notify-btn');
         const notifyDropdown = document.getElementById('notify-dropdown');
         const triggerModalNotify = document.getElementById('trigger-modal-notify');
@@ -1197,7 +1145,6 @@
                 e.stopPropagation();
                 notifyDropdown.classList.toggle('active');
             });
-            
             document.addEventListener('click', (e) => {
                 if (!notifyBtn.contains(e.target) && !notifyDropdown.contains(e.target)) {
                     notifyDropdown.classList.remove('active');
@@ -1205,11 +1152,31 @@
             });
         }
 
-        // Abrir modal desde la notificación del dropdown
         if(triggerModalNotify) {
             triggerModalNotify.addEventListener('click', () => {
                 openModal();
-                notifyDropdown.classList.remove('active'); // Cerrar dropdown al abrir modal
+                notifyDropdown.classList.remove('active');
+            });
+        }
+        
+        // Cursor
+        const cursor = document.getElementById('cursor');
+        if(cursor && window.matchMedia("(hover: hover)").matches) {
+            cursor.style.display = 'block';
+            document.addEventListener('mousemove', (e) => {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+            });
+            const clickables = document.querySelectorAll('a, button, .bento-card, .process-step, .social-btn, .notify-item');
+            clickables.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursor.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                    cursor.style.backgroundColor = 'rgba(32, 155, 216, 0.1)';
+                });
+                el.addEventListener('mouseleave', () => {
+                    cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+                    cursor.style.backgroundColor = 'transparent';
+                });
             });
         }
     </script>
