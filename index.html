@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISTG | Innovación y Tecnología</title>
+    <title>ISTG | Instituto Superior Tecnológico Guayaquil</title>
     
+    <!-- FAVICON -->
+    <link rel="icon" href="https://raw.githubusercontent.com/caortiz-stack/hosting/4d0023a4a1e80af12ac0c1725f64f702cc835788/Recurso%201.svg" type="image/svg+xml">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,9 +26,9 @@
             --color-brand-dark: #232453; /* Azul Profundo */
             --color-brand-light: #209bd8; /* Cian/Celeste */
             
-            /* Theme Colors (Light Mode) */
+            /* Theme Colors */
             --color-bg-body: #ffffff;
-            --color-bg-alt: #f8fafc; /* Very light gray for sections */
+            --color-bg-alt: #f8fafc;
             --color-text-main: #232453;
             --color-text-body: #475569;
             
@@ -48,11 +51,11 @@
             font-family: var(--font-body);
             overflow-x: hidden;
             line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
         }
 
         img { max-width: 100%; display: block; }
         a { text-decoration: none; }
+        iframe { border: none; }
 
         /* --- 2. UTILITY CLASSES --- */
         .container { 
@@ -65,15 +68,13 @@
         .text-accent { color: var(--color-brand-light); }
         .text-dark { color: var(--color-brand-dark); }
         
-        /* Protected Logo Style */
-        .protected-logo {
+        /* Protected Image Style */
+        .protected-img {
             user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
             -webkit-user-drag: none;
-            pointer-events: auto; /* Allows clicking the link but not interaction with the img itself usually */
+            pointer-events: auto;
         }
-        
+
         /* Buttons */
         .btn {
             display: inline-flex;
@@ -128,15 +129,7 @@
 
         .nav-content { display: flex; justify-content: space-between; align-items: center; }
 
-        .logo {
-            display: block; 
-            text-decoration: none;
-        }
-        .logo img {
-            display: block;
-            height: 50px; 
-            width: auto;
-        }
+        .logo img { display: block; height: 50px; width: auto; }
 
         .nav-menu { display: flex; gap: 30px; list-style: none; }
         .nav-menu a {
@@ -154,7 +147,7 @@
         }
         .nav-menu a:hover::after { width: 100%; }
 
-        /* --- 4. HERO SECTION (FIXED & STABLE) --- */
+        /* --- 4. HERO SECTION --- */
         .hero {
             position: relative;
             min-height: 100vh;
@@ -185,11 +178,7 @@
             height: 100%;
         }
 
-        .hero-content {
-            position: relative;
-            z-index: 2;
-            padding-right: 20px;
-        }
+        .hero-content { position: relative; z-index: 2; padding-right: 20px; }
 
         .hero-tag {
             display: inline-block;
@@ -222,7 +211,6 @@
             padding-left: 20px;
         }
 
-        /* Hero Image */
         .hero-visual {
             position: relative;
             height: 100%;
@@ -249,9 +237,9 @@
         }
 
         /* --- 5. CARRERAS (BENTO GRID) --- */
-        #carreras { padding: 100px 0; background: var(--color-bg-alt); }
+        #carreras { padding: 60px 0; background: var(--color-bg-alt); }
         
-        .section-header { text-align: center; margin-bottom: 60px; }
+        .section-header { text-align: center; margin-bottom: 40px; }
         .section-tag {
             color: var(--color-brand-light);
             font-weight: 700;
@@ -301,6 +289,11 @@
             grid-row: span 2;
             height: 725px;
         }
+        
+        .bento-card.wide {
+            grid-column: span 3;
+            height: 250px;
+        }
 
         .bento-img {
             width: 100%;
@@ -310,6 +303,7 @@
             position: absolute;
             top: 0; left: 0;
             filter: brightness(0.9);
+            z-index: 0;
         }
         .bento-card:hover .bento-img { transform: scale(1.05); filter: brightness(1); }
 
@@ -358,8 +352,8 @@
             max-width: 90%;
         }
 
-        /* --- 6. ADMISIONES --- */
-        #admisiones { padding: 100px 0; background: white; }
+        /* --- 6. ADMISIONES (CLEAN) --- */
+        #admisiones { padding: 60px 0; background: white; }
         
         .process-row {
             display: flex;
@@ -408,11 +402,41 @@
             border: 5px solid white;
         }
 
-        /* --- 7. FOOTER --- */
+        /* --- 7. COMUNIDAD (SOCIAL FEED) --- */
+        #social-feed { padding: 60px 0; background: var(--color-bg-alt); }
+
+        .social-frame {
+            border: 3px solid var(--color-brand-light);
+            border-radius: 20px;
+            overflow-y: auto; /* Permite scroll interno */
+            background: white;
+            box-shadow: var(--shadow-card);
+            height: 500px;
+            width: 100%;
+        }
+
+        .social-frame::-webkit-scrollbar { width: 8px; }
+        .social-frame::-webkit-scrollbar-track { background: #f1f1f1; }
+        .social-frame::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+        .wac-header {
+            background: var(--color-brand-dark);
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .wac-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .wac-dot.red { background: #ff5f56; }
+        .wac-dot.yellow { background: #ffbd2e; }
+        .wac-dot.green { background: #27c93f; }
+
+        /* --- 8. FOOTER --- */
         footer {
             background: var(--color-brand-dark);
             color: white;
-            padding: 80px 0 30px 0;
+            padding: 60px 0 30px 0;
             position: relative;
         }
         footer::before {
@@ -449,6 +473,8 @@
             .hero-img-wrapper { max-width: 500px; margin: 0 auto; }
             .bento-grid { grid-template-columns: 1fr 1fr; }
             .bento-card.highlight { grid-column: span 2; grid-row: span 1; height: 350px; }
+            .bento-card.wide { grid-column: span 2; }
+            .social-container { flex-direction: column; align-items: center; }
         }
 
         @media (max-width: 768px) {
@@ -456,6 +482,7 @@
             .hero-title { font-size: 2.5rem; }
             .bento-grid { grid-template-columns: 1fr; }
             .bento-card.highlight { grid-column: span 1; }
+            .bento-card.wide { grid-column: span 1; height: 350px; }
             .process-row { flex-direction: column; gap: 40px; }
             .process-step { width: 100%; }
             .process-line { width: 3px; height: 100%; left: 50%; top: 0; transform: translateX(-50%); }
@@ -469,20 +496,21 @@
     <!-- NAVBAR -->
     <nav id="navbar">
         <div class="container nav-content">
-            <!-- LOGO: Reemplazado con imagen y protegido -->
-            <a href="#" class="logo">
+            <!-- Logo principal protegido -->
+            <a href="https://istg.edu.ec/" class="logo">
                 <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/4d0023a4a1e80af12ac0c1725f64f702cc835788/Recurso%201.svg" 
                      alt="ISTG Logo" 
-                     class="protected-logo"
+                     class="protected-img"
                      style="height: 50px; width: auto;"
                      draggable="false"
                      oncontextmenu="return false;">
             </a>
             
             <ul class="nav-menu">
-                <li><a href="#">Inicio</a></li>
+                <li><a href="https://istg.edu.ec/">Inicio</a></li>
                 <li><a href="#carreras">Oferta Académica</a></li>
                 <li><a href="#admisiones">Admisión</a></li>
+                <li><a href="#social-feed">Comunidad</a></li>
                 <li><a href="#contacto">Contacto</a></li>
             </ul>
             <a href="https://academico.istg.edu.ec/" target="_blank" class="btn btn-primary" style="padding: 10px 25px;">
@@ -515,7 +543,6 @@
             <!-- Right Visual -->
             <div class="hero-visual reveal-right">
                 <div class="hero-img-wrapper">
-                    <!-- High quality image of students -->
                     <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop" 
                          class="hero-img" 
                          alt="Estudiantes ISTG"
@@ -526,7 +553,7 @@
         </div>
     </section>
 
-    <!-- CARRERAS (BENTO GRID - INTERACTIVE) -->
+    <!-- CARRERAS (BENTO GRID) -->
     <section id="carreras">
         <div class="container">
             <div class="section-header reveal-bottom">
@@ -576,8 +603,8 @@
                     </div>
                 </div>
 
-                <!-- 4. CONTABILIDAD - Cian/Celeste -->
-                <div class="bento-card reveal-item" onclick="swapCareer(this)" style="--card-color: #06b6d4; --card-color-glow: rgba(6, 182, 212, 0.4);">
+                <!-- 4. CONTABILIDAD - Cian -->
+                <div class="bento-card wide reveal-item" onclick="swapCareer(this)" style="--card-color: #06b6d4; --card-color-glow: rgba(6, 182, 212, 0.4);">
                     <img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=2070&auto=format&fit=crop" 
                          class="bento-img" 
                          alt="Contabilidad" 
@@ -593,7 +620,7 @@
         </div>
     </section>
 
-    <!-- ADMISIONES (CLEAN PROCESS) -->
+    <!-- ADMISIONES -->
     <section id="admisiones">
         <div class="container">
             <div class="section-header reveal-bottom">
@@ -628,17 +655,46 @@
         </div>
     </section>
 
+    <!-- SOCIAL FEED SECTION -->
+    <section id="social-feed">
+        <div class="container">
+            <div class="section-header reveal-bottom" style="margin-bottom: 30px;">
+                <span class="section-tag">Comunidad ISTG</span>
+                <h2 class="section-title">Lo que pasa en el <span class="text-accent">Campus</span></h2>
+            </div>
+
+            <div class="social-container" style="max-width: 1000px; margin: 0 auto;">
+                 <div class="social-frame" style="position: relative;">
+                    <!-- Botones Flotantes -->
+                    <div style="position: absolute; top: 15px; right: 15px; z-index: 100; display: flex; gap: 10px;">
+                        <a href="https://www.facebook.com/istg.ec" target="_blank" title="Ver en Facebook" 
+                           style="width: 35px; height: 35px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); color: #1877F2; text-decoration: none; transition: transform 0.2s;">
+                            <i class="fa-brands fa-facebook"></i>
+                        </a>
+                        <a href="https://www.instagram.com/istg.ec" target="_blank" title="Ver en Instagram" 
+                           style="width: 35px; height: 35px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); color: #E1306C; text-decoration: none; transition: transform 0.2s;">
+                            <i class="fa-brands fa-instagram"></i>
+                        </a>
+                    </div>
+
+                    <!-- SociableKit Widget -->
+                    <div class="sk-ww-facebook-page-posts" data-embed-id="25641804"></div>
+                    <script src="https://widgets.sociablekit.com/facebook-page-posts/widget.js" defer></script>
+                 </div>
+            </div>
+        </div>
+    </section>
+
     <!-- FOOTER -->
     <footer id="contacto">
         <div class="container">
             <div class="footer-grid">
                 <!-- Col 1 -->
                 <div class="f-col">
-                    <!-- LOGO FOOTER -->
                     <div class="logo" style="margin-bottom: 20px;">
                         <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/Recurso%204mdpi.svg" 
                              alt="ISTG Logo Footer" 
-                             class="protected-logo"
+                             class="protected-img"
                              style="height: 50px; width: auto;"
                              draggable="false"
                              oncontextmenu="return false;">
@@ -647,8 +703,8 @@
                         Formamos profesionales de excelencia con visión tecnológica y humana. Líderes en educación superior técnica.
                     </p>
                     <div style="display: flex; gap: 15px;">
-                        <a href="#" style="color: white; font-size: 18px;"><i class="fa-brands fa-facebook"></i></a>
-                        <a href="#" style="color: white; font-size: 18px;"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="https://www.facebook.com/istg.ec" target="_blank" style="color: white; font-size: 18px;"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="https://www.instagram.com/istg.ec" target="_blank" style="color: white; font-size: 18px;"><i class="fa-brands fa-instagram"></i></a>
                         <a href="#" style="color: white; font-size: 18px;"><i class="fa-brands fa-tiktok"></i></a>
                     </div>
                 </div>
@@ -665,10 +721,9 @@
                 <!-- Col 3 -->
                 <div class="f-col">
                     <div class="f-title">Institucional</div>
-                    <a href="#" class="f-link">Nosotros</a>
-                    <a href="#" class="f-link">Autoridades</a>
-                    <a href="#" class="f-link">Rendición de Cuentas</a>
-                    <a href="#" class="f-link">Bolsa de Empleo</a>
+                    <a href="https://istg.edu.ec/nosotros" class="f-link">Nosotros</a>
+                    <a href="https://istg.edu.ec/autoridades" class="f-link">Autoridades</a>
+                    <a href="https://istg.edu.ec/rendicion-cuentas" class="f-link">Rendición de Cuentas</a>
                 </div>
 
                 <!-- Col 4 -->
@@ -687,7 +742,7 @@
             </div>
             
             <div style="text-align: center; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 50px; padding-top: 20px; font-size: 12px; color: #64748b;">
-                &copy; 2026 Instituto Superior Tecnológico Guayaquil. Todos los derechos reservados.
+                &copy; 2026 Instituto Superior Tecnológico Guayaquil. Creado por Christian Ortiz, de 2DO A, Plantilla e Ilustración.
             </div>
         </div>
     </footer>
@@ -741,17 +796,27 @@
             
             const currentHighlight = grid.querySelector('.highlight');
             
-            // Si hacemos clic en la misma tarjeta destacada, no hacer nada
             if (selectedCard === currentHighlight) return;
             
-            // Intercambiar clases
-            if(currentHighlight) currentHighlight.classList.remove('highlight');
-            selectedCard.classList.add('highlight');
+            if(currentHighlight) {
+                currentHighlight.classList.remove('highlight');
+                currentHighlight.classList.remove('wide');
+            }
             
-            // Mover la tarjeta seleccionada al inicio para que ocupe el espacio grande
+            selectedCard.classList.add('highlight');
+            selectedCard.classList.remove('wide');
+            
             grid.prepend(selectedCard);
+            
+            const allCards = Array.from(grid.children);
+            const lastCard = allCards[allCards.length - 1];
+            
+            allCards.forEach(c => c.classList.remove('wide'));
+            
+            if (!lastCard.classList.contains('highlight')) {
+                lastCard.classList.add('wide');
+            }
         }
     </script>
 </body>
 </html>
-
