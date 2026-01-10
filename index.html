@@ -8,28 +8,28 @@
     <meta name="author" content="Christian Ortiz">
     <title>ISTG | Instituto Superior Tecnológico Guayaquil</title>
     
-    <!-- FAVICON -->
-    <link rel="icon" href="https://raw.githubusercontent.com/caortiz-stack/hosting/4814da37fd318eac2ab7bebbb88a3e4011496e75/faviconmdpi.svg" type="image/svg+xml">
+    <!-- Icono de Pestaña -->
+    <link rel="icon" href="https://raw.githubusercontent.com/caortiz-stack/hosting/428d37be735801b9daac0104b576765808ffb296/faviconmdpi.svg" type="image/svg+xml">
 
-    <!-- Fuentes -->
+    <!-- Fuentes Tipográficas -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- Iconos (Carga diferida) -->
+    <!-- Librería de Iconos -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" defer></script>
 
-    <!-- Librería de Animaciones -->
+    <!-- Librería de Animaciones Scroll -->
     <script src="https://unpkg.com/scrollreveal"></script>
 
     <style>
         /* --- 1. VARIABLES Y REINICIO --- */
         :root {
-            /* Identidad Corporativa */
+            /* Colores de Marca */
             --color-brand-dark: #232453; /* Azul Profundo */
             --color-brand-light: #209bd8; /* Cian/Celeste */
             
-            /* Tema Claro */
+            /* Colores de Tema */
             --color-bg-body: #ffffff;
             --color-bg-alt: #f8fafc;
             --color-text-main: #232453;
@@ -39,7 +39,7 @@
             --font-display: 'Montserrat', sans-serif;
             --font-body: 'Lato', sans-serif;
             
-            /* Efectos Visuales */
+            /* Efectos */
             --shadow-card: 0 10px 30px -5px rgba(35, 36, 83, 0.08);
             --shadow-hover: 0 20px 40px -5px rgba(32, 155, 216, 0.15);
             --ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
@@ -72,13 +72,14 @@
         .text-accent { color: var(--color-brand-light); }
         .text-dark { color: var(--color-brand-dark); }
         
+        /* Evitar arrastre de imágenes */
         .protected-img {
             user-select: none;
             -webkit-user-drag: none;
             pointer-events: auto;
         }
 
-        /* Botones Estándar */
+        /* Botones Globales */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -131,9 +132,10 @@
         }
 
         .nav-content { display: flex; justify-content: space-between; align-items: center; }
+
         .logo img { display: block; height: 50px; width: auto; }
 
-        .nav-menu { display: flex; gap: 30px; list-style: none; }
+        .nav-menu { display: flex; gap: 30px; list-style: none; margin: 0; padding: 0; }
         .nav-menu a {
             color: var(--color-text-main);
             font-weight: 600;
@@ -148,6 +150,133 @@
             transition: width 0.3s;
         }
         .nav-menu a:hover::after { width: 100%; }
+
+        /* Contenedor de Acciones (Notificaciones + Campus) */
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* --- NOTIFICACIONES (DROPDOWN) --- */
+        .notification-wrapper {
+            position: relative;
+        }
+
+        .notify-btn {
+            background: none;
+            border: none;
+            color: var(--color-brand-dark);
+            font-size: 20px;
+            cursor: pointer;
+            position: relative;
+            padding: 5px;
+            transition: color 0.3s;
+        }
+        .notify-btn:hover { color: var(--color-brand-light); }
+
+        .notify-badge {
+            position: absolute;
+            top: 5px; right: 5px;
+            width: 8px; height: 8px;
+            background: #ff4757;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        /* --- DROPDOWN REDISEÑADO (MODERNO) --- */
+        .notify-dropdown {
+            position: absolute;
+            top: 60px; /* Un poco más separado */
+            right: 0;
+            width: 360px; /* Más ancho para mejor lectura */
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(35, 36, 83, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            opacity: 0; visibility: hidden;
+            transform: translateY(10px) scale(0.98);
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            z-index: 1100;
+            padding: 10px;
+        }
+        .notify-dropdown.active {
+            opacity: 1; visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+        /* Eliminamos la flecha antigua para un look más limpio */
+        .notify-dropdown::before { display: none; }
+
+        .notify-header {
+            padding: 10px 15px;
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 11px;
+            color: #94a3b8; /* Color sutil para la etiqueta */
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .notify-body { padding: 0; display: flex; flex-direction: column; gap: 8px; }
+
+        .notify-item {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            padding: 15px;
+            border-radius: 12px;
+            background: white;
+            border: 1px solid #f1f5f9;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            text-decoration: none; /* Por si usamos <a> */
+        }
+        
+        .notify-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(35, 36, 83, 0.08);
+            border-color: rgba(32, 155, 216, 0.3);
+        }
+
+        .notify-icon-box {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            flex-shrink: 0;
+            font-size: 18px;
+        }
+
+        /* Estilo Alerta (Naranja/Amarillo) */
+        .notify-item.warning .notify-icon-box {
+            background: #fff7ed; 
+            color: #f97316;
+        }
+        
+        /* Estilo Info (Azul Marca) */
+        .notify-item.info .notify-icon-box {
+            background: #f0f9ff; 
+            color: var(--color-brand-light);
+        }
+
+        .notify-content { flex-grow: 1; }
+
+        .notify-content strong {
+            display: block;
+            font-family: var(--font-display);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--color-brand-dark);
+            margin-bottom: 4px;
+        }
+        .notify-content p {
+            font-size: 12px;
+            color: var(--color-text-body);
+            line-height: 1.4;
+            margin: 0;
+        }
 
         .mobile-menu-btn { display: none; font-size: 24px; color: var(--color-brand-dark); cursor: pointer; }
 
@@ -248,7 +377,7 @@
 
         .hero-img.active { opacity: 1; z-index: 2; }
 
-        /* --- 5. SECCIÓN CARRERAS --- */
+        /* --- 5. CARRERAS (BENTO GRID) --- */
         #carreras { padding: 60px 0; background: var(--color-bg-alt); }
         
         .section-header { text-align: center; margin-bottom: 40px; }
@@ -276,6 +405,7 @@
 
         .bento-grid {
             display: grid;
+            /* Layout Asimétrico: Izquierda grande, Derecha pila */
             grid-template-columns: 2.5fr 1fr;
             grid-template-rows: repeat(3, 180px);
             gap: 20px;
@@ -301,7 +431,7 @@
             border: none;
             cursor: pointer;
             height: 100%;
-            order: 2;
+            order: 2; /* Orden base */
             
             --card-color: var(--color-brand-light); 
             --card-color-glow: rgba(32, 155, 216, 0.2);
@@ -312,11 +442,12 @@
             box-shadow: 0 15px 35px -5px var(--card-color-glow);
         }
 
+        /* HIGHLIGHT: Ocupa espacio principal */
         .bento-card.highlight {
             grid-column: 1;
             grid-row: 1 / span 3;
             background: var(--card-color);
-            order: 1;
+            order: 1; 
             animation: fadeInGrow 0.4s var(--ease-out);
         }
         
@@ -403,7 +534,7 @@
             max-width: 80%;
         }
 
-        /* --- 6. SECCIÓN ADMISIONES --- */
+        /* --- 6. ADMISIONES --- */
         #admisiones { padding: 60px 0; background: white; }
         
         .process-row {
@@ -453,7 +584,7 @@
             border: 5px solid white;
         }
 
-        /* --- 7. SECCIÓN COMUNIDAD (FEED) --- */
+        /* --- 7. COMUNIDAD (FEED) --- */
         #social-feed { padding: 60px 0; background: var(--color-bg-alt); }
 
         .social-container { max-width: 1000px; margin: 0 auto; }
@@ -470,23 +601,11 @@
         }
         
         .sk-ww-facebook-page-posts { width: 100%; height: 100%; overflow-y: auto; }
-        
         .social-frame::-webkit-scrollbar { width: 6px; }
         .social-frame::-webkit-scrollbar-track { background: #f1f1f1; }
         .social-frame::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 
-        .social-btn {
-            width: 35px; height: 35px;
-            background: white;
-            border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            text-decoration: none;
-            transition: transform 0.2s;
-        }
-        .social-btn:hover { transform: scale(1.1); }
-
-        /* --- ALERTAS Y MODALES --- */
+        /* --- 8. ALERTAS Y MODALES --- */
         .floating-alert {
             position: fixed;
             bottom: 30px; left: 30px;
@@ -520,7 +639,7 @@
             font-weight: 700; color: var(--color-brand-dark); font-size: 13px; text-transform: uppercase;
         }
 
-        /* Modal Styles Actualizados */
+        /* Modal */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(10, 11, 30, 0.85); backdrop-filter: blur(10px);
@@ -533,20 +652,13 @@
         .modal-overlay.active { opacity: 1; visibility: visible; }
         
         .modal-content {
-            background: white; 
-            width: 100%; 
-            max-width: 800px;
-            max-height: 90vh; /* Límite de altura */
-            border-radius: 20px; 
-            position: relative;
-            transform: scale(0.9); 
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: white; width: 100%; max-width: 800px;
+            max-height: 90vh; border-radius: 20px; position: relative;
+            transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: row; 
+            display: flex; flex-direction: row; 
             overflow: hidden; /* Ocultar scroll general */
         }
-        
         .modal-overlay.active .modal-content { transform: scale(1); }
 
         .modal-close {
@@ -559,39 +671,35 @@
         }
         .modal-close:hover { background: rgba(0,0,0,0.2); transform: rotate(90deg); }
 
-        /* Contenedor Iframe */
-        #iframe-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            background: #fff;
-        }
+        /* Contenido Interno Modal */
+        #initial-view { display: flex; width: 100%; height: 100%; }
         
-        #schedule-iframe {
-            flex-grow: 1;
-            width: 100%;
-            border: none;
-            height: 400px; /* Altura base para el iframe */
-        }
-
-        /* Vista Inicial del Modal (Imagen + Texto) */
-        #initial-view {
-            display: flex; width: 100%; height: 100%;
-        }
-
         .modal-image-col { width: 45%; position: relative; background: #f0f0f0; min-height: 300px; }
         .modal-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .modal-text-col { width: 55%; padding: 40px; display: flex; flex-direction: column; justify-content: center; text-align: left; }
+        
+        .modal-text-col { 
+            width: 55%; padding: 40px; 
+            display: flex; flex-direction: column; justify-content: center; text-align: left; 
+        }
 
         .modal-title { 
             font-family: var(--font-display); font-weight: 900; color: var(--color-brand-dark); 
             font-size: 26px; margin-bottom: 15px; line-height: 1.1; text-transform: uppercase;
         }
         .modal-text { color: #64748b; font-size: 15px; margin-bottom: 30px; line-height: 1.6; }
-        .modal-btn { width: auto; align-self: flex-start; padding: 12px 30px; border: none; }
 
-        /* --- 8. FOOTER --- */
+        /* Contenedor Iframe */
+        #iframe-container {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            background: #fff;
+        }
+        #schedule-iframe {
+            flex-grow: 1; width: 100%; border: none;
+            height: 400px;
+        }
+
+        /* --- 9. FOOTER --- */
         footer {
             background: var(--color-brand-dark);
             color: white;
@@ -599,82 +707,43 @@
             position: relative;
         }
         footer::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 5px;
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
             background: var(--color-brand-light);
         }
-
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 0;
-        }
-
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 0; }
         .f-col {
-            padding: 0 40px; 
-            border-right: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            flex-direction: column;
+            padding: 0 40px; border-right: 1px solid rgba(255,255,255,0.1);
+            display: flex; flex-direction: column;
         }
         .f-col:first-child { padding-left: 0; }
         .f-col:last-child { padding-right: 0; border-right: none; }
-        
         .f-title { 
-            font-family: var(--font-display); 
-            font-weight: 700; 
-            margin-bottom: 20px; 
-            color: white; 
-            font-size: 16px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-family: var(--font-display); font-weight: 700; margin-bottom: 20px; 
+            color: white; font-size: 16px; text-transform: uppercase; letter-spacing: 1px;
         }
-        
         .f-link {
-            display: block;
-            color: #cbd5e1;
-            text-decoration: none;
-            margin-bottom: 10px;
-            font-size: 14px;
-            transition: all 0.2s;
+            display: block; color: #cbd5e1; text-decoration: none; margin-bottom: 10px;
+            font-size: 14px; transition: all 0.2s;
         }
-        .f-link:hover { 
-            color: var(--color-brand-light); 
-            transform: translateX(5px);
-        }
+        .f-link:hover { color: var(--color-brand-light); transform: translateX(5px); }
+        .contact-item { display: flex; gap: 15px; margin-bottom: 15px; font-size: 14px; color: #cbd5e1; }
+        .contact-item i { color: var(--color-brand-light); font-size: 16px; margin-top: 4px; }
 
-        .contact-item {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            color: #cbd5e1;
-        }
-        .contact-item i {
-            color: var(--color-brand-light);
-            font-size: 16px;
-            margin-top: 4px;
-        }
-
-        /* ANIMACIONES KEYFRAMES */
+        /* ANIMACIONES */
         @keyframes bounceIn { 0% { transform: scale(0); } 60% { transform: scale(1.1); } 100% { transform: scale(1); } }
         @keyframes pulseRing { 0% { transform: scale(0.9); opacity: 0.7; } 100% { transform: scale(1.3); opacity: 0; } }
 
-        /* --- RESPONSIVE MEDIA QUERIES --- */
+        /* --- RESPONSIVE --- */
         @media (max-width: 1024px) {
             .hero-layout { grid-template-columns: 1fr; text-align: center; height: auto; padding: 60px 20px; }
             .hero-content { width: 100%; padding: 0; margin-bottom: 40px; }
             .hero-desc { margin: 20px auto; border: none; padding: 0; }
             .hero-visual { justify-content: center; }
             .hero-img-wrapper { max-width: 500px; margin: 0 auto; }
-            /* Mobile Grid */
-            .bento-grid { grid-template-columns: 1fr; grid-template-rows: auto; gap: 20px; }
-            .bento-card { height: 280px; order: unset !important; } 
-            .bento-card.highlight { grid-column: span 1; grid-row: span 1; height: 350px; }
-            .bento-card:not(.highlight) { grid-column: span 1; }
-            .bento-card.highlight .bento-overlay { padding-top: 20px; }
-            .bento-desc { display: block; } 
-            
+            .bento-grid { grid-template-columns: 1fr 1fr; }
+            .bento-card.highlight { grid-column: span 2; grid-row: span 1; height: 350px; }
+            .bento-card.wide { grid-column: span 2; }
+            .social-container { flex-direction: column; align-items: center; }
             .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
             .f-col { border-right: none; padding: 0; }
         }
@@ -682,9 +751,17 @@
         @media (max-width: 768px) {
             .nav-menu, .btn-primary { display: none; } 
             .mobile-menu-btn { display: block; } 
+            .nav-actions { display: none; } /* Ocultar botones desktop en móvil */
             
             #navbar { padding: 15px 20px; }
             .hero-title { font-size: 2.5rem; }
+            
+            /* Grid Móvil */
+            .bento-grid { grid-template-columns: 1fr; grid-template-rows: auto; gap: 20px; }
+            .bento-card { height: 280px; order: unset !important; } 
+            .bento-card.highlight { grid-column: span 1; grid-row: span 1; height: 350px; }
+            .bento-card:not(.highlight) { grid-column: span 1; }
+            .bento-desc { display: block; } 
             
             .process-row { flex-direction: column; gap: 40px; }
             .process-step { width: 100%; }
@@ -693,16 +770,14 @@
             
             .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 0; }
             .f-col { 
-                padding: 40px 0; 
-                border-bottom: 1px solid rgba(255,255,255,0.1); 
-                align-items: center;
+                padding: 40px 0; border-bottom: 1px solid rgba(255,255,255,0.1); align-items: center;
             }
             .f-col:first-child { padding-top: 0; }
             .f-col:last-child { border-bottom: none; }
             .contact-item { justify-content: center; text-align: center; }
 
             /* Modal Responsive */
-            .modal-content { flex-direction: column; height: auto; }
+            .modal-content { flex-direction: column; max-height: 80vh; overflow-y: auto; }
             #initial-view { flex-direction: column; }
             .modal-image-col { width: 100%; height: 200px; }
             .modal-text-col { width: 100%; padding: 30px; }
@@ -735,9 +810,50 @@
                 <li><a href="#social-feed">Comunidad</a></li>
                 <li><a href="#contacto">Contacto</a></li>
             </ul>
-            <a href="https://academico.istg.edu.ec/" target="_blank" class="btn btn-primary" style="padding: 10px 25px;">
-                Campus Virtual <i class="fa-solid fa-arrow-up-right-from-square" style="margin-left: 8px;"></i>
-            </a>
+
+            <!-- Acciones Derecha (Campana + Botón) -->
+            <div class="nav-actions" style="display: flex; align-items: center; gap: 20px;">
+                <!-- Notificaciones -->
+                <div class="notification-wrapper">
+                    <button id="notify-btn" class="notify-btn" title="Avisos Importantes">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="notify-badge"></span>
+                    </button>
+                    <!-- Dropdown Nuevo Diseño -->
+                    <div class="notify-dropdown" id="notify-dropdown">
+                        <div class="notify-header">Actualizaciones</div>
+                        <div class="notify-body">
+                            
+                            <!-- Aviso Docente (Diseño Tarjeta) -->
+                            <div class="notify-item warning">
+                                <div class="notify-icon-box">
+                                    <i class="fa-solid fa-bullhorn"></i>
+                                </div>
+                                <div class="notify-content">
+                                    <strong>Evaluación Docente</strong>
+                                    <p>Recuerda realizar la evaluación en la plataforma SIGA para rendir tu examen.</p>
+                                </div>
+                            </div>
+
+                            <!-- Aviso Cronograma (Diseño Tarjeta) -->
+                            <div class="notify-item info" id="trigger-modal-notify">
+                                <div class="notify-icon-box">
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                </div>
+                                <div class="notify-content">
+                                    <strong>Horario de Exámenes</strong>
+                                    <p>Cronograma del 2do Parcial disponible. Haz clic para ver.</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <a href="https://academico.istg.edu.ec/" target="_blank" class="btn btn-primary" style="padding: 10px 25px;">
+                    Campus Virtual <i class="fa-solid fa-arrow-up-right-from-square" style="margin-left: 8px;"></i>
+                </a>
+            </div>
         </div>
     </nav>
 
@@ -751,7 +867,7 @@
         <span class="alert-text">Horarios Disponibles</span>
     </div>
 
-    <!-- MODAL OVERLAY (INTERACTIVO) -->
+    <!-- MODAL OVERLAY (REDISEÑADO) -->
     <div class="modal-overlay" id="news-modal">
         <div class="modal-content">
             <button class="modal-close" id="modal-close"><i class="fa-solid fa-xmark"></i></button>
@@ -765,21 +881,21 @@
                 </div>
                 <div class="modal-text-col">
                     <h3 class="modal-title">¡Atención Estudiantes!</h3>
-                    <p class="modal-text">Ya se encuentra disponible el cronograma de exámenes para el presente periodo.</p>
+                    <p class="modal-text">Ya se encuentra disponible el cronograma de exámenes del <strong>2do Parcial</strong>.</p>
                     <button id="btn-show-iframe" class="btn btn-primary modal-btn">
                         <i class="fa-solid fa-calendar-days" style="margin-right: 8px;"></i> Ver Horario de Exámenes
                     </button>
                 </div>
             </div>
 
-            <!-- VISTA 2: Iframe con Horario -->
+            <!-- VISTA 2: Iframe -->
             <div id="iframe-container" style="display: none;">
                 <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between;">
                     <button id="btn-back-modal" class="btn btn-outline" style="padding: 8px 15px; font-size: 12px; border: 1px solid #ccc; color: #666;">
                         <i class="fa-solid fa-arrow-left"></i> Volver
                     </button>
                     <span style="font-weight: 700; color: var(--color-brand-dark); font-size: 14px;">VISOR DE HORARIOS</span>
-                    <div style="width: 60px;"></div> <!-- Espaciador -->
+                    <div style="width: 60px;"></div>
                 </div>
                 <iframe id="schedule-iframe" src="" allowfullscreen></iframe>
             </div>
@@ -815,7 +931,7 @@
         </div>
     </section>
 
-    <!-- CARRERAS (BENTO GRID) -->
+    <!-- CARRERAS -->
     <section id="carreras">
         <div class="container">
             <div class="section-header reveal-bottom">
@@ -825,7 +941,7 @@
             </div>
 
             <div class="bento-grid" id="careerGrid">
-                <!-- 1. DISEÑO (Master) -->
+                <!-- DISEÑO -->
                 <div class="bento-card highlight reveal-item" onclick="swapCareer(this)" style="--card-color: #f97316; --card-color-glow: rgba(249, 115, 22, 0.4);">
                     <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/dise%C3%B1o.jpg?q=80&w=1350&h=1080&auto=format&fit=crop" class="bento-img" loading="lazy" alt="Diseño" onerror="this.src='https://placehold.co/1350x1080/f97316/FFF?text=Diseno'">
                     <div class="bento-overlay">
@@ -834,7 +950,7 @@
                         <p class="bento-desc">Crea identidades visuales impactantes. Domina Adobe Suite, Branding, UI/UX y Animación.</p>
                     </div>
                 </div>
-                <!-- 2. SOFTWARE -->
+                <!-- SOFTWARE -->
                 <div class="bento-card reveal-item" onclick="swapCareer(this)" style="--card-color: #1e3a8a; --card-color-glow: rgba(30, 58, 138, 0.4);">
                     <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/desarrollo.jpg?q=80&w=1350&h=1080&auto=format&fit=crop" class="bento-img" loading="lazy" alt="Software" onerror="this.src='https://placehold.co/1350x1080/1e3a8a/FFF?text=Software'">
                     <div class="bento-overlay">
@@ -843,7 +959,7 @@
                         <p class="bento-desc">Programación Full Stack, Bases de Datos y Apps Móviles.</p>
                     </div>
                 </div>
-                <!-- 3. MARKETING -->
+                <!-- MARKETING -->
                 <div class="bento-card reveal-item" onclick="swapCareer(this)" style="--card-color: #d946ef; --card-color-glow: rgba(217, 70, 239, 0.4);">
                     <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/marketing.jpg?q=80&w=1350&h=1080&auto=format&fit=crop" class="bento-img" loading="lazy" alt="Marketing" onerror="this.src='https://placehold.co/1350x1080/d946ef/FFF?text=Marketing'">
                     <div class="bento-overlay">
@@ -852,7 +968,7 @@
                         <p class="bento-desc">Estrategias SEO/SEM, gestión de redes y analítica web.</p>
                     </div>
                 </div>
-                <!-- 4. CONTABILIDAD -->
+                <!-- CONTABILIDAD -->
                 <div class="bento-card reveal-item" onclick="swapCareer(this)" style="--card-color: #06b6d4; --card-color-glow: rgba(6, 182, 212, 0.4);">
                     <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/contabilidad.jpg?q=80&w=1350&h=1080&auto=format&fit=crop" class="bento-img" loading="lazy" alt="Contabilidad" onerror="this.src='https://placehold.co/1350x1080/06b6d4/FFF?text=Contabilidad'">
                     <div class="bento-overlay">
@@ -974,7 +1090,6 @@
                     nav.style.padding = '15px 0'; nav.style.boxShadow = 'none';
                 }
             }
-            // Admisiones Line
             const processSection = document.getElementById('admisiones');
             const fill = document.getElementById('process-fill');
             if(processSection && fill) {
@@ -992,7 +1107,6 @@
             if (selectedCard === currentHighlight) return;
             if(currentHighlight) currentHighlight.classList.remove('highlight');
             selectedCard.classList.add('highlight');
-            
             const allCards = Array.from(grid.children);
             allCards.forEach(card => card.style.order = '2');
             selectedCard.style.order = '1';
@@ -1009,12 +1123,12 @@
             }, 4000);
         }
 
-        // Modal Logic Completo
+        // --- GESTIÓN DE NOTIFICACIONES Y MODAL ---
         const alertBtn = document.getElementById('floating-alert');
         const modal = document.getElementById('news-modal');
         const closeBtn = document.getElementById('modal-close');
         
-        // Elementos internos del modal para el cambio de vista
+        // Elementos internos del modal
         const initialView = document.getElementById('initial-view');
         const iframeView = document.getElementById('iframe-container');
         const showIframeBtn = document.getElementById('btn-show-iframe');
@@ -1022,22 +1136,28 @@
         const scheduleIframe = document.getElementById('schedule-iframe');
         const scheduleUrl = "https://f.mtr.cool/ryktmtwllh";
 
-        if(alertBtn && modal && closeBtn) {
-            // Abrir modal
-            alertBtn.addEventListener('click', () => {
-                modal.classList.add('active');
-            });
-            // Cerrar modal
+        // Función para abrir modal
+        function openModal() {
+            modal.classList.add('active');
+        }
+
+        // Listeners del botón flotante
+        if(alertBtn) alertBtn.addEventListener('click', openModal);
+
+        // Listeners del botón cerrar
+        if(closeBtn) {
             closeBtn.addEventListener('click', () => {
                 modal.classList.remove('active');
-                // Resetear vista al cerrar
-                setTimeout(() => {
+                setTimeout(() => { // Resetear al cerrar
                     initialView.style.display = 'flex';
                     iframeView.style.display = 'none';
-                    scheduleIframe.src = ""; // Limpiar src para ahorrar memoria
+                    scheduleIframe.src = "";
                 }, 300);
             });
-            // Cerrar al hacer clic fuera
+        }
+        
+        // Cerrar al hacer clic fuera
+        if(modal) {
             modal.addEventListener('click', (e) => {
                 if(e.target === modal) {
                     modal.classList.remove('active');
@@ -1048,24 +1168,49 @@
                     }, 300);
                 }
             });
+        }
 
-            // Lógica de cambio a Iframe
-            if(showIframeBtn && iframeView && initialView) {
-                showIframeBtn.addEventListener('click', () => {
-                    initialView.style.display = 'none';
-                    iframeView.style.display = 'flex';
-                    // Cargar iframe solo al solicitarlo
-                    scheduleIframe.src = scheduleUrl;
-                });
-            }
+        // Cambio a Iframe
+        if(showIframeBtn) {
+            showIframeBtn.addEventListener('click', () => {
+                initialView.style.display = 'none';
+                iframeView.style.display = 'flex';
+                scheduleIframe.src = scheduleUrl;
+            });
+        }
 
-            // Botón Volver dentro del modal
-            if(backModalBtn) {
-                backModalBtn.addEventListener('click', () => {
-                    iframeView.style.display = 'none';
-                    initialView.style.display = 'flex';
-                });
-            }
+        // Volver a vista inicial del modal
+        if(backModalBtn) {
+            backModalBtn.addEventListener('click', () => {
+                iframeView.style.display = 'none';
+                initialView.style.display = 'flex';
+            });
+        }
+
+        // --- DROPDOWN NOTIFICACIONES (NAVBAR) ---
+        const notifyBtn = document.getElementById('notify-btn');
+        const notifyDropdown = document.getElementById('notify-dropdown');
+        const triggerModalNotify = document.getElementById('trigger-modal-notify');
+
+        if(notifyBtn && notifyDropdown) {
+            notifyBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                notifyDropdown.classList.toggle('active');
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!notifyBtn.contains(e.target) && !notifyDropdown.contains(e.target)) {
+                    notifyDropdown.classList.remove('active');
+                }
+            });
+        }
+
+        // Abrir modal desde la notificación del dropdown
+        if(triggerModalNotify) {
+            triggerModalNotify.addEventListener('click', () => {
+                openModal();
+                notifyDropdown.classList.remove('active'); // Cerrar dropdown al abrir modal
+            });
         }
     </script>
 </body>
