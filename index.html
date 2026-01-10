@@ -135,6 +135,127 @@
         }
         .nav-menu a:hover::after { width: 100%; }
 
+        /* Estilos Nuevos para Notificaciones en Navbar */
+        .nav-extras {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification-wrapper {
+            position: relative;
+        }
+
+        .notification-btn {
+            position: relative;
+            font-size: 20px;
+            color: var(--color-brand-dark);
+            cursor: pointer;
+            transition: color 0.3s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+        }
+        .notification-btn:hover {
+            background-color: rgba(32, 155, 216, 0.1);
+            color: var(--color-brand-light);
+        }
+
+        .notify-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 10px;
+            height: 10px;
+            background-color: #ff5f56;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(255, 95, 86, 0.5);
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: 50px;
+            right: -10px;
+            width: 320px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(35, 36, 83, 0.15);
+            border: 1px solid #f1f5f9;
+            padding: 15px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            z-index: 1100;
+        }
+        .notification-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        /* Flechita del dropdown */
+        .notification-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: 22px;
+            width: 12px;
+            height: 12px;
+            background: white;
+            transform: rotate(45deg);
+            border-top: 1px solid #f1f5f9;
+            border-left: 1px solid #f1f5f9;
+        }
+
+        .notify-header {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 13px;
+            color: var(--color-brand-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .notify-item {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 12px;
+            border-radius: 8px;
+            background: #fffbeb; /* Fondo amarillento suave para alertas */
+            border: 1px solid #fef3c7;
+            transition: background 0.2s;
+        }
+        .notify-item:hover {
+            background: #fff7ed;
+        }
+
+        .notify-icon {
+            color: #d97706; /* Amber color */
+            font-size: 18px;
+            margin-top: 2px;
+        }
+
+        .notify-text strong {
+            display: block;
+            font-size: 13px;
+            color: #92400e;
+            margin-bottom: 4px;
+        }
+        .notify-text p {
+            font-size: 12px;
+            color: #78350f;
+            line-height: 1.4;
+            margin: 0;
+        }
+
         .mobile-menu-btn { display: none; font-size: 24px; color: var(--color-brand-dark); cursor: pointer; }
 
         /* SECCION HERO */
@@ -442,7 +563,7 @@
         .social-frame {
             border: 3px solid var(--color-brand-light);
             border-radius: 20px;
-            overflow: hidden; 
+            overflow-y: auto; 
             background: white;
             box-shadow: var(--shadow-card);
             height: 500px;
@@ -466,6 +587,99 @@
             transition: transform 0.2s;
         }
         .social-btn:hover { transform: scale(1.1); }
+
+        /* ALERTAS Y MODALES */
+        .floating-alert {
+            position: fixed;
+            bottom: 30px; left: 30px;
+            background: white;
+            border-radius: 50px;
+            padding: 10px 20px;
+            box-shadow: 0 10px 30px rgba(32, 155, 216, 0.4);
+            display: flex; align-items: center; gap: 12px;
+            z-index: 9990;
+            cursor: pointer;
+            border: 2px solid var(--color-brand-light);
+            animation: bounceIn 1s ease-out;
+            transition: transform 0.3s;
+        }
+        .floating-alert:hover { transform: translateY(-5px); }
+
+        .alert-pulse {
+            position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
+            border-radius: 50px; border: 2px solid var(--color-brand-light);
+            opacity: 0; animation: pulseRing 2s infinite;
+        }
+        .alert-icon { 
+            position: relative; color: var(--color-brand-dark); font-size: 20px; 
+            width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; background: #f0f9ff; border-radius: 50%;
+        }
+        .notification-badge {
+            position: absolute; top: -2px; right: -2px; width: 10px; height: 10px;
+            background: #ff5f56; border-radius: 50%; border: 2px solid white;
+        }
+        .alert-text {
+            font-weight: 700; color: var(--color-brand-dark); font-size: 13px; text-transform: uppercase;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 11, 30, 0.85); backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden;
+            transition: all 0.3s ease;
+            padding: 20px; /* Margen de seguridad para pantallas pequeñas */
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        
+        .modal-content {
+            background: white; 
+            width: 100%; 
+            max-width: 500px; /* Ancho máximo ideal */
+            max-height: 90vh; /* Altura máxima del 90% de la pantalla */
+            overflow-y: auto; /* Scroll interno si el contenido es muy alto */
+            border-radius: 20px; 
+            position: relative;
+            transform: scale(0.9); 
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); /* Sombra profunda para destacar */
+        }
+        
+        /* Personalización del scroll del modal */
+        .modal-content::-webkit-scrollbar { width: 6px; }
+        .modal-content::-webkit-scrollbar-track { background: #f1f1f1; }
+        .modal-content::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+        .modal-overlay.active .modal-content { transform: scale(1); }
+
+        .modal-close {
+            position: absolute; top: 15px; right: 15px;
+            width: 35px; height: 35px; background: rgba(255,255,255,0.9);
+            border-radius: 50%; border: none; cursor: pointer;
+            font-size: 18px; color: var(--color-brand-dark);
+            z-index: 10; transition: transform 0.2s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .modal-close:hover { transform: rotate(90deg) scale(1.1); background: white; }
+
+        .modal-img { 
+            width: 100%; 
+            height: auto; 
+            display: block; 
+            object-fit: cover; /* Asegura que la imagen se adapte bien */
+        }
+        
+        .modal-body { padding: 30px; text-align: center; }
+        .modal-title { 
+            font-family: var(--font-display); font-weight: 800; color: var(--color-brand-dark); 
+            font-size: 22px; margin-bottom: 10px; line-height: 1.2;
+        }
+        .modal-text { color: #64748b; font-size: 15px; margin-bottom: 25px; line-height: 1.6; }
+        .modal-btn { width: 100%; }
+
 
         /* FOOTER */
         footer {
@@ -532,6 +746,10 @@
             margin-top: 4px;
         }
 
+        /* ANIMACIONES KEYFRAMES */
+        @keyframes bounceIn { 0% { transform: scale(0); } 60% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes pulseRing { 0% { transform: scale(0.9); opacity: 0.7; } 100% { transform: scale(1.3); opacity: 0; } }
+
         /* --- RESPONSIVE MEDIA QUERIES --- */
         @media (max-width: 1024px) {
             .hero-layout { grid-template-columns: 1fr; text-align: center; height: auto; padding: 60px 20px; }
@@ -539,20 +757,10 @@
             .hero-desc { margin: 20px auto; border: none; padding: 0; }
             .hero-visual { justify-content: center; }
             .hero-img-wrapper { max-width: 500px; margin: 0 auto; }
-            
-            /* En tablets y móviles, pasamos a 1 columna */
-            .bento-grid { 
-                grid-template-columns: 1fr; 
-                grid-template-rows: auto; 
-                gap: 20px; 
-            }
-            .bento-card { height: 250px; order: unset; } 
-            
-            /* Reseteamos el comportamiento de highlight para móvil */
-            .bento-card.highlight { grid-column: span 1; grid-row: span 1; height: 350px; }
-            .bento-card:not(.highlight) { grid-column: span 1; }
-            .bento-card.highlight .bento-overlay { padding-top: 20px; }
-            .bento-desc { display: block; } /* Mostrar descripción siempre en móvil */
+            .bento-grid { grid-template-columns: 1fr 1fr; }
+            .bento-card.highlight { grid-column: span 2; grid-row: span 1; height: 350px; }
+            .bento-card.wide { grid-column: span 2; }
+            .social-container { flex-direction: column; align-items: center; }
             
             .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
             .f-col { border-right: none; padding: 0; }
@@ -565,22 +773,29 @@
             #navbar { padding: 15px 20px; }
             .hero-title { font-size: 2.5rem; }
             
-            .process-row { flex-direction: column; gap: 40px; align-items: center; }
+            .process-row { flex-direction: column; gap: 40px; }
             .process-step { width: 100%; }
             .process-line { width: 3px; height: 100%; left: 50%; top: 0; transform: translateX(-50%); }
             .process-line-fill { width: 3px !important; height: 0%; left: 50%; top: 0; transform: translateX(-50%); }
             
             .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 0; }
             .f-col { 
-                padding: 30px 0; 
+                padding: 40px 0; 
                 border-bottom: 1px solid rgba(255,255,255,0.1); 
                 align-items: center;
             }
             .f-col:first-child { padding-top: 0; }
             .f-col:last-child { border-bottom: none; }
             .contact-item { justify-content: center; text-align: center; }
-            
-            .social-frame { height: 400px; }
+
+            /* Notificaciones Móvil */
+            .notification-dropdown {
+                position: fixed;
+                top: 70px;
+                right: 20px;
+                left: 20px;
+                width: auto;
+            }
         }
     </style>
 </head>
@@ -589,11 +804,12 @@
     <!-- NAVBAR -->
     <nav id="navbar">
         <div class="container nav-content">
+            <!-- Logo principal protegido -->
             <a href="https://istg.edu.ec/" class="logo">
                 <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/4d0023a4a1e80af12ac0c1725f64f702cc835788/Recurso%201.svg" 
                      alt="ISTG Logo" 
                      class="protected-img"
-                     style="height: 45px; width: auto;"
+                     style="height: 50px; width: auto;"
                      draggable="false"
                      oncontextmenu="return false;">
             </a>
@@ -607,16 +823,72 @@
                 <li><a href="#social-feed">Comunidad</a></li>
                 <li><a href="#contacto">Contacto</a></li>
             </ul>
-            <a href="https://academico.istg.edu.ec/" target="_blank" class="btn btn-primary" style="padding: 10px 25px;">
-                Campus Virtual <i class="fa-solid fa-arrow-up-right-from-square" style="margin-left: 8px;"></i>
-            </a>
+            
+            <!-- Grupo de Acciones Derecha -->
+            <div class="nav-extras">
+                
+                <!-- Notificaciones Bell -->
+                <div class="notification-wrapper">
+                    <div class="notification-btn" id="notify-btn" title="Avisos Importantes">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="notify-badge"></span>
+                    </div>
+                    <!-- Dropdown -->
+                    <div class="notification-dropdown" id="notify-dropdown">
+                        <div class="notify-header">Avisos Importantes</div>
+                        
+                        <!-- Item Notificación -->
+                        <div class="notify-item">
+                            <i class="fa-solid fa-circle-exclamation notify-icon"></i>
+                            <div class="notify-text">
+                                <strong>Evaluación Docente</strong>
+                                <p>Recuerda haber realizado la evaluación docente en la plataforma SIGA para rendir el examen del actual periodo.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="https://academico.istg.edu.ec/" target="_blank" class="btn btn-primary" style="padding: 10px 25px;">
+                    Campus Virtual <i class="fa-solid fa-arrow-up-right-from-square" style="margin-left: 8px;"></i>
+                </a>
+            </div>
         </div>
     </nav>
+
+    <!-- FLOATING ALERT BUTTON -->
+    <div class="floating-alert" id="floating-alert">
+        <div class="alert-pulse"></div>
+        <div class="alert-icon">
+            <i class="fa-solid fa-bell"></i>
+            <span class="notification-badge"></span>
+        </div>
+        <span class="alert-text">Horarios Disponibles</span>
+    </div>
+
+    <!-- MODAL OVERLAY -->
+    <div class="modal-overlay" id="news-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-body" style="padding: 0;">
+                <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/popup.jpeg" 
+                     alt="Comunicado Importante" 
+                     class="modal-img">
+                <div style="padding: 30px;">
+                    <h3 class="modal-title">¡Atención Estudiantes!</h3>
+                    <p class="modal-text">Ya se encuentra disponible el cronograma de exámenes para el presente periodo.</p>
+                    <a href="https://f.mtr.cool/ryktmtwllh" target="_blank" class="btn btn-primary modal-btn">
+                        <i class="fa-solid fa-calendar-days" style="margin-right: 8px;"></i> Ver Horario de Exámenes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- HERO SECTION -->
     <section class="hero">
         <div class="hero-layout">
             
+            <!-- Left Text -->
             <div class="hero-content reveal-left">
                 <span class="hero-tag"><i class="fa-solid fa-bolt"></i> Tecnología Superior</span>
                 <h1 class="hero-title">
@@ -632,6 +904,7 @@
                 </div>
             </div>
 
+            <!-- Right Visual (SLIDESHOW) -->
             <div class="hero-visual reveal-right">
                 <div class="hero-img-wrapper">
                     <!-- FOTOS CARRUSEL -->
@@ -680,7 +953,7 @@
                     <div class="bento-overlay">
                         <div class="bento-icon"><i class="fa-solid fa-bullhorn"></i></div>
                         <h3 class="bento-title">Marketing Digital</h3>
-                        <p class="bento-desc">Estrategias SEO/SEM y gestión de redes.</p>
+                        <p class="bento-desc">Estrategias SEO/SEM, gestión de redes y analítica web.</p>
                     </div>
                 </div>
 
@@ -690,7 +963,7 @@
                     <div class="bento-overlay">
                         <div class="bento-icon"><i class="fa-solid fa-calculator"></i></div>
                         <h3 class="bento-title">Contabilidad</h3>
-                        <p class="bento-desc">Gestión financiera y tributación empresarial.</p>
+                        <p class="bento-desc">Gestión financiera, tributación y auditoría empresarial.</p>
                     </div>
                 </div>
 
@@ -838,10 +1111,46 @@
         if (heroImages.length > 1) {
             let currentHeroIndex = 0;
             setInterval(() => {
+                // Remove active from current
                 heroImages[currentHeroIndex].classList.remove('active');
+                // Calculate next index
                 currentHeroIndex = (currentHeroIndex + 1) % heroImages.length;
+                // Add active to next
                 heroImages[currentHeroIndex].classList.add('active');
             }, 4000);
+        }
+
+        // Modal Logic
+        const alertBtn = document.getElementById('floating-alert');
+        const modal = document.getElementById('news-modal');
+        const closeBtn = document.getElementById('modal-close');
+
+        if(alertBtn && modal && closeBtn) {
+            alertBtn.addEventListener('click', () => {
+                modal.classList.add('active');
+            });
+            closeBtn.addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+            modal.addEventListener('click', (e) => {
+                if(e.target === modal) modal.classList.remove('active');
+            });
+        }
+
+        // Dropdown Notification Logic
+        const notifyBtn = document.getElementById('notify-btn');
+        const notifyDropdown = document.getElementById('notify-dropdown');
+        if (notifyBtn && notifyDropdown) {
+            notifyBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                notifyDropdown.classList.toggle('active');
+            });
+            // Close when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!notifyBtn.contains(e.target) && !notifyDropdown.contains(e.target)) {
+                    notifyDropdown.classList.remove('active');
+                }
+            });
         }
     </script>
 </body>
