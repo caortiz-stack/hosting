@@ -8,25 +8,38 @@
     <meta name="author" content="Christian Ortiz">
     <title>ISTG | Instituto Superior Tecnológico Guayaquil</title>
     
+    <!-- FAVICON -->
     <link rel="icon" href="https://raw.githubusercontent.com/caortiz-stack/hosting/4d0023a4a1e80af12ac0c1725f64f702cc835788/Recurso%201.svg" type="image/svg+xml">
 
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
     
+    <!-- Icons (FontAwesome) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" defer></script>
+
+    <!-- Scroll Reveal Library -->
     <script src="https://unpkg.com/scrollreveal"></script>
 
     <style>
+        /* --- 1. VARIABLES & RESET --- */
         :root {
-            --color-brand-dark: #232453;
-            --color-brand-light: #209bd8;
+            /* Colores Corporativos */
+            --color-brand-dark: #232453; /* Azul Profundo */
+            --color-brand-light: #209bd8; /* Cian/Celeste */
+            
+            /* Colores de Tema */
             --color-bg-body: #ffffff;
             --color-bg-alt: #f8fafc;
             --color-text-main: #232453;
             --color-text-body: #475569;
+            
+            /* Tipografía */
             --font-display: 'Montserrat', sans-serif;
             --font-body: 'Lato', sans-serif;
+            
+            /* Efectos */
             --shadow-card: 0 10px 30px -5px rgba(35, 36, 83, 0.08);
             --shadow-hover: 0 20px 40px -5px rgba(32, 155, 216, 0.15);
             --ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
@@ -48,6 +61,7 @@
         a { text-decoration: none; }
         iframe { border: none; }
 
+        /* --- 2. CLASES DE UTILIDAD --- */
         .container { 
             max-width: 1200px; 
             margin: 0 auto; 
@@ -58,17 +72,19 @@
         .text-accent { color: var(--color-brand-light); }
         .text-dark { color: var(--color-brand-dark); }
         
+        /* Protección de Imagen */
         .protected-img {
             user-select: none;
             -webkit-user-drag: none;
             pointer-events: auto;
         }
 
+        /* Botones */
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 12px 30px;
+            padding: 14px 35px;
             border-radius: 50px;
             font-family: var(--font-display);
             font-weight: 700;
@@ -76,7 +92,7 @@
             letter-spacing: 1px;
             text-decoration: none;
             transition: all 0.3s var(--ease-out);
-            font-size: 12px;
+            font-size: 13px;
             cursor: pointer;
             border: 2px solid transparent;
         }
@@ -88,8 +104,8 @@
         }
         .btn-primary:hover {
             background: var(--color-brand-light);
-            transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(32, 155, 216, 0.4);
+            transform: translateY(-2px);
         }
 
         .btn-outline {
@@ -103,7 +119,7 @@
             transform: translateY(-2px);
         }
 
-        /* NAVEGACION */
+        /* --- 3. NAVEGACIÓN --- */
         #navbar {
             position: fixed;
             top: 0; left: 0; width: 100%;
@@ -123,7 +139,7 @@
         .nav-menu a {
             color: var(--color-text-main);
             font-weight: 600;
-            font-size: 13px;
+            font-size: 14px;
             text-transform: uppercase;
             position: relative;
         }
@@ -135,130 +151,7 @@
         }
         .nav-menu a:hover::after { width: 100%; }
 
-        /* Estilos Nuevos para Notificaciones en Navbar */
-        .nav-extras {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .notification-wrapper {
-            position: relative;
-        }
-
-        .notification-btn {
-            position: relative;
-            font-size: 20px;
-            color: var(--color-brand-dark);
-            cursor: pointer;
-            transition: color 0.3s;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 50%;
-        }
-        .notification-btn:hover {
-            background-color: rgba(32, 155, 216, 0.1);
-            color: var(--color-brand-light);
-        }
-
-        .notify-badge {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 10px;
-            height: 10px;
-            background-color: #ff5f56;
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 0 5px rgba(255, 95, 86, 0.5);
-        }
-
-        .notification-dropdown {
-            position: absolute;
-            top: 50px;
-            right: -10px;
-            width: 320px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(35, 36, 83, 0.15);
-            border: 1px solid #f1f5f9;
-            padding: 15px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(10px);
-            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-            z-index: 1100;
-        }
-        .notification-dropdown.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        /* Flechita del dropdown */
-        .notification-dropdown::before {
-            content: '';
-            position: absolute;
-            top: -6px;
-            right: 22px;
-            width: 12px;
-            height: 12px;
-            background: white;
-            transform: rotate(45deg);
-            border-top: 1px solid #f1f5f9;
-            border-left: 1px solid #f1f5f9;
-        }
-
-        .notify-header {
-            font-family: var(--font-display);
-            font-weight: 800;
-            font-size: 13px;
-            color: var(--color-brand-dark);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .notify-item {
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-            padding: 12px;
-            border-radius: 8px;
-            background: #fffbeb; /* Fondo amarillento suave para alertas */
-            border: 1px solid #fef3c7;
-            transition: background 0.2s;
-        }
-        .notify-item:hover {
-            background: #fff7ed;
-        }
-
-        .notify-icon {
-            color: #d97706; /* Amber color */
-            font-size: 18px;
-            margin-top: 2px;
-        }
-
-        .notify-text strong {
-            display: block;
-            font-size: 13px;
-            color: #92400e;
-            margin-bottom: 4px;
-        }
-        .notify-text p {
-            font-size: 12px;
-            color: #78350f;
-            line-height: 1.4;
-            margin: 0;
-        }
-
-        .mobile-menu-btn { display: none; font-size: 24px; color: var(--color-brand-dark); cursor: pointer; }
-
-        /* SECCION HERO */
+        /* --- 4. HERO SECTION --- */
         .hero {
             position: relative;
             min-height: 100vh;
@@ -280,7 +173,7 @@
         .hero-layout {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 40px;
+            gap: 60px;
             align-items: center;
             width: 100%;
             max-width: 1300px;
@@ -295,34 +188,34 @@
             display: inline-block;
             background: rgba(32, 155, 216, 0.1);
             color: var(--color-brand-light);
-            padding: 6px 14px;
+            padding: 8px 16px;
             border-radius: 30px;
             font-weight: 700;
-            font-size: 11px;
+            font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 2px;
             margin-bottom: 20px;
-            border: 1px solid rgba(32, 155, 216, 0.2);
         }
 
         .hero-title {
             font-family: var(--font-display);
-            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
             line-height: 1.1;
             font-weight: 900;
             color: var(--color-brand-dark);
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .hero-desc {
             font-size: 1.1rem;
-            max-width: 500px;
-            margin-bottom: 30px;
+            max-width: 550px;
+            margin-bottom: 40px;
             color: #64748b;
             border-left: 4px solid var(--color-brand-light);
             padding-left: 20px;
         }
 
+        /* Hero Image Container */
         .hero-visual {
             position: relative;
             height: 100%;
@@ -333,7 +226,7 @@
 
         .hero-img-wrapper {
             width: 100%;
-            max-width: 550px;
+            max-width: 600px;
             aspect-ratio: 4/3;
             border-radius: 20px;
             overflow: hidden;
@@ -355,39 +248,30 @@
 
         .hero-img.active { opacity: 1; z-index: 2; }
 
-        /* SECCION CARRERAS */
-        #carreras { padding: 60px 0; background: var(--color-bg-alt); }
+        /* --- 5. CARRERAS (BENTO GRID) --- */
+        #carreras { padding: 80px 0; background: var(--color-bg-alt); }
         
-        .section-header { text-align: center; margin-bottom: 40px; }
-        
+        .section-header { text-align: center; margin-bottom: 50px; }
         .section-tag {
-            display: inline-block;
-            background: rgba(32, 155, 216, 0.1);
             color: var(--color-brand-light);
-            padding: 6px 14px;
-            border-radius: 30px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 2px;
-            font-size: 11px;
+            font-size: 13px;
             margin-bottom: 10px;
-            border: 1px solid rgba(32, 155, 216, 0.2);
+            display: block;
         }
-
         .section-title {
             font-family: var(--font-display);
-            font-size: 36px;
+            font-size: 42px;
             font-weight: 800;
             color: var(--color-brand-dark);
         }
 
         .bento-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr;
-            grid-template-rows: repeat(3, 180px);
-            gap: 20px;
-            max-width: 1100px;
-            margin: 0 auto;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
         }
 
         .bento-card {
@@ -395,35 +279,34 @@
             border-radius: 16px;
             overflow: hidden;
             box-shadow: var(--shadow-card);
-            transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);
+            transition: all 0.4s var(--ease-out);
             position: relative;
             display: flex;
             flex-direction: column;
-            border: none;
+            border: 1px solid #e2e8f0;
             cursor: pointer;
-            height: 100%;
-            order: 2; /* Orden por defecto para el stack */
-            
+            height: 350px;
             --card-color: var(--color-brand-light); 
             --card-color-glow: rgba(32, 155, 216, 0.2);
+            border: none; 
         }
 
         .bento-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px -5px var(--card-color-glow);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px -5px var(--card-color-glow);
+            border-color: var(--card-color);
         }
 
-        /* HIGHLIGHT: Ocupa columna 1 y las 3 filas */
         .bento-card.highlight {
-            grid-column: 1;
-            grid-row: 1 / span 3;
+            grid-column: span 2;
+            grid-row: span 2;
+            height: 725px;
             background: var(--card-color);
-            order: 1; /* Prioridad en el orden visual */
         }
         
-        /* STACK: Ocupan columna 2, y se apilan automáticamente */
-        .bento-card:not(.highlight) {
-            grid-column: 2;
+        .bento-card.wide {
+            grid-column: span 3;
+            height: 250px;
         }
 
         .bento-img {
@@ -449,7 +332,7 @@
             position: absolute;
             bottom: 0; left: 0; width: 100%;
             background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-            padding: 25px;
+            padding: 30px;
             z-index: 2;
             color: white;
             display: flex;
@@ -459,61 +342,49 @@
             pointer-events: none;
         }
         .bento-card.highlight .bento-overlay {
+            padding-top: 100px;
             background: linear-gradient(to top, rgba(35, 36, 83, 0.9) 0%, transparent 40%);
             padding-top: 0;
         }
 
         .bento-icon {
-            width: 40px; height: 40px;
+            width: 50px; height: 50px;
             background: rgba(255,255,255,0.2);
             backdrop-filter: blur(5px);
             border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
-            font-size: 18px;
+            font-size: 20px;
             color: white;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             transition: background 0.3s;
         }
-        
-        .bento-card.highlight .bento-icon { width: 60px; height: 60px; font-size: 24px; margin-bottom: 20px; }
         .bento-card:hover .bento-icon { background: var(--card-color); }
 
         .bento-title {
             font-family: var(--font-display);
             font-weight: 800;
-            font-size: 16px; 
-            margin-bottom: 5px;
+            font-size: 24px;
+            margin-bottom: 8px;
             text-shadow: 0 2px 5px rgba(0,0,0,0.5);
             color: white;
-            text-transform: uppercase;
         }
-        .bento-card.highlight .bento-title {
-            font-size: 32px; 
-            margin-bottom: 15px;
-            text-transform: none;
-        }
-
         .bento-desc { 
-            font-size: 12px; 
-            color: rgba(255,255,255,0.9); 
-            line-height: 1.3; 
-            display: none; 
-        }
-        .bento-card.highlight .bento-desc {
-            display: block; 
-            font-size: 16px;
-            max-width: 80%;
+            font-size: 14px; 
+            color: rgba(255,255,255,1); 
+            line-height: 1.4; 
+            max-width: 90%;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
         }
 
-        /* SECCION ADMISIONES */
-        #admisiones { padding: 60px 0; background: white; }
+        /* --- 6. ADMISIONES --- */
+        #admisiones { padding: 80px 0; background: white; }
         
         .process-row {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             position: relative;
-            margin-top: 50px;
+            margin-top: 60px;
         }
         
         .process-line {
@@ -535,7 +406,7 @@
             z-index: 1;
             background: white;
             width: 30%;
-            padding: 25px 15px;
+            padding: 30px 20px;
             border-radius: 12px;
             border: 1px solid #e2e8f0;
             text-align: center;
@@ -551,12 +422,12 @@
             border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
             font-weight: 900;
-            margin: -50px auto 15px auto; 
+            margin: -55px auto 20px auto; 
             border: 5px solid white;
         }
 
-        /* SECCION COMUNIDAD */
-        #social-feed { padding: 60px 0; background: var(--color-bg-alt); }
+        /* --- 7. COMUNIDAD (SOCIAL FEED) --- */
+        #social-feed { padding: 80px 0; background: var(--color-bg-alt); }
 
         .social-container { max-width: 1000px; margin: 0 auto; }
 
@@ -571,7 +442,11 @@
             position: relative;
         }
         
-        .sk-ww-facebook-page-posts { width: 100%; height: 100%; overflow-y: auto; }
+        .sk-ww-facebook-page-posts {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+        }
         
         .social-frame::-webkit-scrollbar { width: 6px; }
         .social-frame::-webkit-scrollbar-track { background: #f1f1f1; }
@@ -622,7 +497,7 @@
             font-weight: 700; color: var(--color-brand-dark); font-size: 13px; text-transform: uppercase;
         }
 
-        /* Modal Styles */
+        /* --- REDISEÑO DE MODAL (POPUP) --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(10, 11, 30, 0.85); backdrop-filter: blur(10px);
@@ -630,58 +505,75 @@
             display: flex; justify-content: center; align-items: center;
             opacity: 0; visibility: hidden;
             transition: all 0.3s ease;
-            padding: 20px; /* Margen de seguridad para pantallas pequeñas */
+            padding: 20px;
         }
         .modal-overlay.active { opacity: 1; visibility: visible; }
         
         .modal-content {
             background: white; 
             width: 100%; 
-            max-width: 500px; /* Ancho máximo ideal */
-            max-height: 90vh; /* Altura máxima del 90% de la pantalla */
-            overflow-y: auto; /* Scroll interno si el contenido es muy alto */
+            max-width: 800px; /* Más ancho para el layout horizontal */
             border-radius: 20px; 
             position: relative;
             transform: scale(0.9); 
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); /* Sombra profunda para destacar */
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: row; /* Layout horizontal por defecto */
+            overflow: hidden; /* Sin scroll */
         }
         
-        /* Personalización del scroll del modal */
-        .modal-content::-webkit-scrollbar { width: 6px; }
-        .modal-content::-webkit-scrollbar-track { background: #f1f1f1; }
-        .modal-content::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
-
         .modal-overlay.active .modal-content { transform: scale(1); }
 
         .modal-close {
             position: absolute; top: 15px; right: 15px;
-            width: 35px; height: 35px; background: rgba(255,255,255,0.9);
+            width: 30px; height: 30px; background: rgba(0,0,0,0.1);
             border-radius: 50%; border: none; cursor: pointer;
-            font-size: 18px; color: var(--color-brand-dark);
+            font-size: 16px; color: var(--color-brand-dark);
             z-index: 10; transition: transform 0.2s;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             display: flex; justify-content: center; align-items: center;
         }
-        .modal-close:hover { transform: rotate(90deg) scale(1.1); background: white; }
+        .modal-close:hover { background: rgba(0,0,0,0.2); transform: rotate(90deg); }
 
+        /* Columna Imagen */
+        .modal-image-col {
+            width: 45%;
+            position: relative;
+            background: #f0f0f0;
+        }
         .modal-img { 
             width: 100%; 
-            height: auto; 
+            height: 100%; 
+            object-fit: cover;
             display: block; 
-            object-fit: cover; /* Asegura que la imagen se adapte bien */
         }
-        
-        .modal-body { padding: 30px; text-align: center; }
+
+        /* Columna Texto */
+        .modal-text-col {
+            width: 55%;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: left;
+        }
+
         .modal-title { 
-            font-family: var(--font-display); font-weight: 800; color: var(--color-brand-dark); 
-            font-size: 22px; margin-bottom: 10px; line-height: 1.2;
+            font-family: var(--font-display); font-weight: 900; color: var(--color-brand-dark); 
+            font-size: 26px; margin-bottom: 15px; line-height: 1.1;
+            text-transform: uppercase;
         }
-        .modal-text { color: #64748b; font-size: 15px; margin-bottom: 25px; line-height: 1.6; }
-        .modal-btn { width: 100%; }
+        .modal-text { 
+            color: #64748b; font-size: 15px; margin-bottom: 30px; line-height: 1.6; 
+        }
+        .modal-btn { 
+            width: auto; 
+            align-self: flex-start; /* Botón a la izquierda */
+            padding: 12px 30px;
+        }
 
 
-        /* FOOTER */
+        /* --- 8. FOOTER --- */
         footer {
             background: var(--color-brand-dark);
             color: white;
@@ -750,7 +642,7 @@
         @keyframes bounceIn { 0% { transform: scale(0); } 60% { transform: scale(1.1); } 100% { transform: scale(1); } }
         @keyframes pulseRing { 0% { transform: scale(0.9); opacity: 0.7; } 100% { transform: scale(1.3); opacity: 0; } }
 
-        /* --- RESPONSIVE MEDIA QUERIES --- */
+        /* --- RESPONSIVE --- */
         @media (max-width: 1024px) {
             .hero-layout { grid-template-columns: 1fr; text-align: center; height: auto; padding: 60px 20px; }
             .hero-content { width: 100%; padding: 0; margin-bottom: 40px; }
@@ -788,14 +680,11 @@
             .f-col:last-child { border-bottom: none; }
             .contact-item { justify-content: center; text-align: center; }
 
-            /* Notificaciones Móvil */
-            .notification-dropdown {
-                position: fixed;
-                top: 70px;
-                right: 20px;
-                left: 20px;
-                width: auto;
-            }
+            /* Modal Responsive */
+            .modal-content { flex-direction: column; max-height: 80vh; overflow-y: auto; }
+            .modal-image-col { width: 100%; height: 200px; }
+            .modal-text-col { width: 100%; padding: 30px; }
+            .modal-btn { width: 100%; text-align: center; }
         }
     </style>
 </head>
@@ -823,35 +712,9 @@
                 <li><a href="#social-feed">Comunidad</a></li>
                 <li><a href="#contacto">Contacto</a></li>
             </ul>
-            
-            <!-- Grupo de Acciones Derecha -->
-            <div class="nav-extras">
-                
-                <!-- Notificaciones Bell -->
-                <div class="notification-wrapper">
-                    <div class="notification-btn" id="notify-btn" title="Avisos Importantes">
-                        <i class="fa-solid fa-bell"></i>
-                        <span class="notify-badge"></span>
-                    </div>
-                    <!-- Dropdown -->
-                    <div class="notification-dropdown" id="notify-dropdown">
-                        <div class="notify-header">Avisos Importantes</div>
-                        
-                        <!-- Item Notificación -->
-                        <div class="notify-item">
-                            <i class="fa-solid fa-circle-exclamation notify-icon"></i>
-                            <div class="notify-text">
-                                <strong>Evaluación Docente</strong>
-                                <p>Recuerda haber realizado la evaluación docente en la plataforma SIGA para rendir el examen del actual periodo.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <a href="https://academico.istg.edu.ec/" target="_blank" class="btn btn-primary" style="padding: 10px 25px;">
-                    Campus Virtual <i class="fa-solid fa-arrow-up-right-from-square" style="margin-left: 8px;"></i>
-                </a>
-            </div>
+            <a href="https://academico.istg.edu.ec/" target="_blank" class="btn btn-primary" style="padding: 10px 25px;">
+                Campus Virtual <i class="fa-solid fa-arrow-up-right-from-square" style="margin-left: 8px;"></i>
+            </a>
         </div>
     </nav>
 
@@ -865,21 +728,25 @@
         <span class="alert-text">Horarios Disponibles</span>
     </div>
 
-    <!-- MODAL OVERLAY -->
+    <!-- MODAL OVERLAY (REDISEÑADO) -->
     <div class="modal-overlay" id="news-modal">
         <div class="modal-content">
             <button class="modal-close" id="modal-close"><i class="fa-solid fa-xmark"></i></button>
-            <div class="modal-body" style="padding: 0;">
+            
+            <!-- Columna Izquierda: Imagen -->
+            <div class="modal-image-col">
                 <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/popup.jpeg" 
                      alt="Comunicado Importante" 
                      class="modal-img">
-                <div style="padding: 30px;">
-                    <h3 class="modal-title">¡Atención Estudiantes!</h3>
-                    <p class="modal-text">Ya se encuentra disponible el cronograma de exámenes para el presente periodo.</p>
-                    <a href="https://f.mtr.cool/ryktmtwllh" target="_blank" class="btn btn-primary modal-btn">
-                        <i class="fa-solid fa-calendar-days" style="margin-right: 8px;"></i> Ver Horario de Exámenes
-                    </a>
-                </div>
+            </div>
+
+            <!-- Columna Derecha: Texto -->
+            <div class="modal-text-col">
+                <h3 class="modal-title">¡Atención Estudiantes!</h3>
+                <p class="modal-text">Ya se encuentra disponible el cronograma de exámenes para el presente periodo.</p>
+                <a href="https://f.mtr.cool/ryktmtwllh" target="_blank" class="btn btn-primary modal-btn">
+                    <i class="fa-solid fa-calendar-days" style="margin-right: 8px;"></i> Ver Horario de Exámenes
+                </a>
             </div>
         </div>
     </div>
@@ -958,7 +825,7 @@
                 </div>
 
                 <!-- 4. CONTABILIDAD -->
-                <div class="bento-card reveal-item" onclick="swapCareer(this)" style="--card-color: #06b6d4; --card-color-glow: rgba(6, 182, 212, 0.4);">
+                <div class="bento-card wide reveal-item" onclick="swapCareer(this)" style="--card-color: #06b6d4; --card-color-glow: rgba(6, 182, 212, 0.4);">
                     <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/contabilidad.jpg" class="bento-img" loading="lazy" alt="Contabilidad" onerror="this.src='https://placehold.co/800x600/06b6d4/FFF?text=Contabilidad'">
                     <div class="bento-overlay">
                         <div class="bento-icon"><i class="fa-solid fa-calculator"></i></div>
@@ -985,7 +852,7 @@
                 <div class="process-step reveal-item">
                     <div class="step-bubble">1</div>
                     <h3 style="color: var(--color-brand-dark); margin-bottom: 10px;">Registro Nacional</h3>
-                    <p style="color: #64748b; font-size: 14px;">Registro obligatorio en la SENESCYT.</p>
+                    <p style="color: #64748b; font-size: 14px;">Cumple con el registro obligatorio en la plataforma de la SENESCYT.</p>
                 </div>
                 <div class="process-step reveal-item" style="transition-delay: 0.2s;">
                     <div class="step-bubble">2</div>
@@ -1111,11 +978,8 @@
         if (heroImages.length > 1) {
             let currentHeroIndex = 0;
             setInterval(() => {
-                // Remove active from current
                 heroImages[currentHeroIndex].classList.remove('active');
-                // Calculate next index
                 currentHeroIndex = (currentHeroIndex + 1) % heroImages.length;
-                // Add active to next
                 heroImages[currentHeroIndex].classList.add('active');
             }, 4000);
         }
@@ -1134,22 +998,6 @@
             });
             modal.addEventListener('click', (e) => {
                 if(e.target === modal) modal.classList.remove('active');
-            });
-        }
-
-        // Dropdown Notification Logic
-        const notifyBtn = document.getElementById('notify-btn');
-        const notifyDropdown = document.getElementById('notify-dropdown');
-        if (notifyBtn && notifyDropdown) {
-            notifyBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                notifyDropdown.classList.toggle('active');
-            });
-            // Close when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!notifyBtn.contains(e.target) && !notifyDropdown.contains(e.target)) {
-                    notifyDropdown.classList.remove('active');
-                }
             });
         }
     </script>
