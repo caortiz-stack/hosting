@@ -3,740 +3,617 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISTG | Innovación y Tecnología</title>
+    <meta name="description" content="Instituto Superior Tecnológico Guayaquil - Formación de tercer nivel en Diseño, Software, Marketing y Contabilidad.">
+    <title>ISTG | Instituto Superior Tecnológico Guayaquil</title>
     
-    <!-- Fonts -->
+    <!-- FAVICON -->
+    <link rel="icon" href="https://raw.githubusercontent.com/caortiz-stack/hosting/428d37be735801b9daac0104b576765808ffb296/faviconmdpi.svg?v=2" type="image/svg+xml">
+
+    <!-- Fuentes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- Icons -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
-
-    <!-- Scroll Reveal Library -->
+    <!-- Iconos CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Librerías Externas -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/scrollreveal"></script>
 
+    <!-- Script Anti-Errores -->
+    <script>
+        (function() {
+            const originalConsoleError = console.error;
+            window.onerror = function(msg) {
+                if (msg && (msg.includes('ResizeObserver') || msg.includes('limit exceeded'))) return true;
+                return false;
+            };
+        })();
+    </script>
+
     <style>
-        /* --- 1. CORE VARIABLES & RESET --- */
+        /* --- 1. VARIABLES --- */
         :root {
-            /* Brand Colors */
-            --color-brand-dark: #232453; /* Azul Profundo */
-            --color-brand-light: #209bd8; /* Cian/Celeste */
-            
-            /* Theme Colors (Light Mode) */
-            --color-bg-body: #ffffff;
-            --color-bg-alt: #f8fafc; /* Very light gray for sections */
-            --color-text-main: #232453;
-            --color-text-body: #475569;
-            
-            /* Typography */
+            --brand-dark: #232453;
+            --brand-light: #209bd8;
+            --bg-body: #ffffff;
+            --bg-alt: #f8fafc;
+            --text-main: #232453;
+            --text-body: #475569;
             --font-display: 'Montserrat', sans-serif;
             --font-body: 'Lato', sans-serif;
-            
-            /* Effects */
             --shadow-card: 0 10px 30px -5px rgba(35, 36, 83, 0.08);
-            --shadow-hover: 0 20px 40px -5px rgba(32, 155, 216, 0.15);
-            --ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+            --shadow-premium: 0 25px 50px -12px rgba(35, 36, 83, 0.15);
+            --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
-
-        body {
-            background-color: var(--color-bg-body);
-            color: var(--color-text-body);
-            font-family: var(--font-body);
-            overflow-x: hidden;
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-        }
-
+        body { background-color: var(--bg-body); color: var(--text-body); font-family: var(--font-body); overflow-x: hidden; line-height: 1.6; }
         img { max-width: 100%; display: block; }
-        a { text-decoration: none; }
+        a { text-decoration: none; color: inherit; }
+        iframe { border: none; }
 
-        /* --- 2. UTILITY CLASSES --- */
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            padding: 0 20px; 
-            width: 100%;
-        }
-        
-        .text-accent { color: var(--color-brand-light); }
-        .text-dark { color: var(--color-brand-dark); }
-        
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 14px 35px;
-            border-radius: 50px;
-            font-family: var(--font-display);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-decoration: none;
-            transition: all 0.3s var(--ease-out);
-            font-size: 13px;
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
+        /* --- 2. UTILIDADES --- */
+        .container-custom { max-width: 1200px; margin: 0 auto; padding: 0 20px; width: 100%; box-sizing: border-box; }
+        .text-accent { color: var(--brand-light); }
+        .protected-img { user-select: none; pointer-events: auto; }
 
-        .btn-primary {
-            background: var(--color-brand-dark);
-            color: white;
-            box-shadow: 0 4px 15px rgba(35, 36, 83, 0.2);
+        /* Botones */
+        .btn-custom {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 12px 30px; border-radius: 50px;
+            font-family: var(--font-display); font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px; font-size: 12px;
+            cursor: pointer; border: 2px solid transparent; transition: all 0.3s;
         }
-        .btn-primary:hover {
-            background: var(--color-brand-light);
-            box-shadow: 0 10px 25px rgba(32, 155, 216, 0.4);
-            transform: translateY(-2px);
-        }
+        .btn-primary-c { background: var(--brand-dark); color: white; box-shadow: 0 4px 15px rgba(35, 36, 83, 0.2); }
+        .btn-primary-c:hover { background: var(--brand-light); transform: translateY(-2px); }
+        .btn-outline-c { background: transparent; color: var(--brand-dark); border-color: var(--brand-dark); }
+        .btn-outline-c:hover { background: var(--brand-dark); color: white; transform: translateY(-2px); }
 
-        .btn-outline {
-            background: transparent;
-            color: var(--color-brand-dark);
-            border-color: var(--color-brand-dark);
-        }
-        .btn-outline:hover {
-            background: var(--color-brand-dark);
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        /* --- 3. NAVIGATION --- */
-        #navbar {
-            position: fixed;
-            top: 0; left: 0; width: 100%;
-            padding: 15px 0;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(35, 36, 83, 0.05);
-            transition: all 0.3s ease;
-        }
-
+        /* --- 3. NAVBAR --- */
+        #navbar { position: fixed; top: 0; left: 0; width: 100%; padding: 15px 0; z-index: 1000; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0,0,0,0.05); transition: all 0.3s; }
         .nav-content { display: flex; justify-content: space-between; align-items: center; }
-
-        /* Estilos base para el logo (imagen) */
-        .logo {
-            display: block; /* Asegura que el link se comporte como bloque para la imagen */
-            text-decoration: none;
-        }
-        .logo img {
-            display: block;
-            /* Altura predeterminada, ajustable en el HTML */
-            height: 50px; 
-            width: auto;
-        }
-
-        .nav-menu { display: flex; gap: 30px; list-style: none; }
-        .nav-menu a {
-            color: var(--color-text-main);
-            font-weight: 600;
-            font-size: 14px;
-            text-transform: uppercase;
-            position: relative;
-        }
-        .nav-menu a::after {
-            content: '';
-            position: absolute; bottom: -5px; left: 0; width: 0; height: 2px;
-            background: var(--color-brand-light);
-            transition: width 0.3s;
-        }
+        .logo img { height: 50px; width: auto; }
+        .nav-menu { display: flex; gap: 30px; list-style: none; margin: 0; padding: 0; }
+        .nav-menu a { color: var(--text-main); font-weight: 600; font-size: 13px; text-transform: uppercase; position: relative; text-decoration: none; }
+        .nav-menu a::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px; background: var(--brand-light); transition: width 0.3s; }
         .nav-menu a:hover::after { width: 100%; }
+        .nav-actions { display: flex; align-items: center; gap: 20px; }
+        .mobile-menu-btn { display: none; font-size: 24px; cursor: pointer; color: var(--brand-dark); }
 
-        /* --- 4. HERO SECTION (FIXED & STABLE) --- */
-        .hero {
-            position: relative;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            background: #ffffff;
-            overflow: hidden;
-            padding-top: 80px; 
-        }
+        /* Notificaciones */
+        .notification-wrapper { position: relative; }
+        .notify-btn { background: none; border: none; font-size: 20px; color: var(--brand-dark); cursor: pointer; padding: 5px; }
+        .notify-badge { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; background: #ff4757; border-radius: 50%; border: 2px solid white; }
+        .notify-dropdown { position: absolute; top: 50px; right: 0; width: 320px; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); border: 1px solid #f0f0f0; opacity: 0; visibility: hidden; transform: translateY(10px); transition: 0.3s; padding: 10px; z-index: 1100; }
+        .notify-dropdown.active { opacity: 1; visibility: visible; transform: translateY(0); }
+        .notify-header { padding: 10px 15px; font-family: var(--font-display); font-weight: 800; font-size: 11px; color: #94a3b8; text-transform: uppercase; }
+        .notify-item { display: flex; gap: 12px; padding: 12px; border-radius: 8px; background: white; border: 1px solid #f1f5f9; cursor: pointer; transition: 0.2s; margin-bottom: 5px; }
+        .notify-item:hover { transform: translateY(-2px); border-color: var(--brand-light); }
+        .notify-icon-box { width: 35px; height: 35px; border-radius: 50%; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+        .notify-item.warning .notify-icon-box { background: #fff7ed; color: #f97316; }
+        .notify-item.info .notify-icon-box { background: #f0f9ff; color: var(--brand-light); }
+        .notify-content strong { display: block; font-size: 13px; color: var(--brand-dark); margin-bottom: 3px; }
+        .notify-content p { font-size: 11px; color: #64748b; margin: 0; line-height: 1.3; }
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -20%; left: -10%; width: 50%; height: 100%;
-            background: radial-gradient(circle, rgba(32,155,216,0.05) 0%, transparent 70%);
-            z-index: 0;
-        }
+        /* --- 4. HERO --- */
+        .hero { position: relative; min-height: 100vh; display: flex; align-items: center; padding-top: 80px; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: -20%; left: -10%; width: 50%; height: 100%; background: radial-gradient(circle, rgba(32,155,216,0.05) 0%, transparent 70%); z-index: 0; }
+        .hero-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; width: 100%; height: 100%; }
+        .hero-content { position: relative; z-index: 2; padding-right: 20px; }
+        .hero-tag { display: inline-block; background: rgba(32, 155, 216, 0.1); color: var(--brand-light); padding: 8px 16px; border-radius: 30px; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; border: 1px solid rgba(32, 155, 216, 0.2); }
+        .hero-title { font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.1; font-weight: 900; color: var(--brand-dark); margin-bottom: 20px; }
+        .hero-desc { font-size: 1.1rem; max-width: 500px; margin-bottom: 30px; color: #64748b; border-left: 4px solid var(--brand-light); padding-left: 20px; }
+        .hero-visual { position: relative; height: 100%; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .hero-img-wrapper { width: 100%; max-width: 550px; aspect-ratio: 5/4; border-radius: 20px; overflow: hidden; box-shadow: 20px 20px 0px rgba(32, 155, 216, 0.2); position: relative; margin: 20px; }
+        .hero-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 1s; z-index: 1; }
+        .hero-img.active { opacity: 1; z-index: 2; }
 
-        .hero-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
-            align-items: center;
-            width: 100%;
-            max-width: 1300px;
-            margin: 0 auto;
-            padding: 0 20px;
-            height: 100%;
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 2;
-            padding-right: 20px;
-        }
-
-        .hero-tag {
-            display: inline-block;
-            background: rgba(32, 155, 216, 0.1);
-            color: var(--color-brand-light);
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-weight: 700;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 20px;
-        }
-
-        .hero-title {
-            font-family: var(--font-display);
-            font-size: clamp(2.5rem, 5vw, 4.5rem);
-            line-height: 1.1;
-            font-weight: 900;
-            color: var(--color-brand-dark);
-            margin-bottom: 25px;
-        }
-
-        .hero-desc {
-            font-size: 1.1rem;
-            max-width: 550px;
-            margin-bottom: 40px;
-            color: #64748b;
-            border-left: 4px solid var(--color-brand-light);
-            padding-left: 20px;
-        }
-
-        /* Hero Image */
-        .hero-visual {
-            position: relative;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .hero-img-wrapper {
-            width: 100%;
-            max-width: 600px;
-            aspect-ratio: 4/3;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 20px 20px 0px rgba(32, 155, 216, 0.2);
-            position: relative;
-        }
-        
-        .hero-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        /* --- 5. CARRERAS (BENTO GRID) --- */
-        #carreras { padding: 100px 0; background: var(--color-bg-alt); }
-        
-        .section-header { text-align: center; margin-bottom: 60px; }
-        .section-tag {
-            color: var(--color-brand-light);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-size: 13px;
-            margin-bottom: 10px;
-            display: block;
-        }
-        .section-title {
-            font-family: var(--font-display);
-            font-size: 42px;
-            font-weight: 800;
-            color: var(--color-brand-dark);
-        }
+        /* --- 5. CARRERAS (BENTO GRID - FIXED) --- */
+        #carreras { padding: 60px 0; background: var(--bg-alt); }
+        .section-header { text-align: center; margin-bottom: 40px; }
+        .section-tag { display: inline-block; background: rgba(32, 155, 216, 0.1); color: var(--brand-light); padding: 6px 14px; border-radius: 30px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; font-size: 11px; margin-bottom: 10px; border: 1px solid rgba(32, 155, 216, 0.2); }
+        .section-title { font-family: var(--font-display); font-size: 36px; font-weight: 800; color: var(--brand-dark); }
 
         .bento-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
+            grid-template-columns: 2.5fr 1fr;
+            grid-template-rows: repeat(3, 180px);
+            gap: 20px;
+            max-width: 1300px; margin: 0 auto;
         }
 
         .bento-card {
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: var(--shadow-card);
-            transition: all 0.4s var(--ease-out);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid #e2e8f0;
-            cursor: pointer;
-            height: 350px;
-            --card-color: var(--color-brand-light); 
-            --card-color-glow: rgba(32, 155, 216, 0.2);
+            background: white; border-radius: 16px; overflow: hidden;
+            box-shadow: var(--shadow-card); transition: all 0.3s;
+            position: relative; display: flex; flex-direction: column;
+            border: none; cursor: pointer; height: 100%;
+            /* Defaults */
+            --card-color: var(--brand-light);
         }
+        .bento-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px -5px rgba(32, 155, 216, 0.2); }
 
-        .bento-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px -5px var(--card-color-glow);
-            border-color: var(--card-color);
+        /* Tarjeta Principal */
+        #main-card {
+            grid-column: 1; grid-row: 1 / span 3;
+            display: flex; flex-direction: row; 
+            background: white; border: 2px solid #f8f8f8;
         }
-
-        .bento-card.highlight {
-            grid-column: span 2;
-            grid-row: span 2;
-            height: 725px;
+        #main-card .bento-visual { width: 55%; height: 100%; position: relative; overflow: hidden; }
+        #main-card .bento-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; transition: opacity 0.3s; }
+        #main-card .bento-content {
+            width: 45%; height: 100%;
+            background: white; color: var(--brand-dark);
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: flex-start; padding: 40px; border-left: 1px solid #f0f0f0;
         }
-
-        .bento-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.6s;
-            position: absolute;
-            top: 0; left: 0;
-            filter: brightness(0.9);
-        }
-        .bento-card:hover .bento-img { transform: scale(1.05); filter: brightness(1); }
-
-        .bento-overlay {
-            position: absolute;
-            bottom: 0; left: 0; width: 100%;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-            padding: 30px;
-            z-index: 2;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            height: 100%;
-        }
-        .bento-card.highlight .bento-overlay {
-            padding-top: 100px;
-            background: linear-gradient(to top, rgba(35, 36, 83, 0.95), transparent);
-        }
-
-        .bento-icon {
-            width: 50px; height: 50px;
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(5px);
-            border-radius: 50%;
+        #main-card .bento-header-row { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; width: 100%; }
+        #main-card .bento-icon {
+            width: 60px; height: 60px; font-size: 24px; border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
-            font-size: 20px;
-            color: white;
-            margin-bottom: 15px;
-            transition: background 0.3s;
+            background: #f8fafc; color: var(--card-color); border: 1px solid #e2e8f0; flex-shrink: 0;
         }
-        .bento-card:hover .bento-icon { background: var(--card-color); }
+        #main-card .bento-title {
+            font-family: var(--font-display); font-size: 28px; font-weight: 800;
+            color: var(--brand-dark); line-height: 1.1; margin: 0; text-transform: none;
+        }
+        #main-card .bento-desc { font-size: 15px; color: #64748b; line-height: 1.6; margin: 0; display: block; }
 
-        .bento-title {
-            font-family: var(--font-display);
-            font-weight: 800;
-            font-size: 24px;
-            margin-bottom: 8px;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
-            color: white;
+        /* Tarjetas Pila (Stack) */
+        .stack-card { grid-column: 2; position: relative; }
+        .stack-card .bento-visual { display: none; }
+        .stack-card .bento-content {
+            width: 100%; height: 100%; padding: 10px 5px; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: var(--card-color); color: white; text-align: center;
         }
-        .bento-desc { 
-            font-size: 14px; 
-            color: rgba(255,255,255,0.9); 
-            line-height: 1.4; 
-            max-width: 90%;
+        /* Icono eliminado de stack-card según solicitud anterior */
+        .stack-card .bento-title {
+            font-family: var(--font-display); font-weight: 800; font-size: 13px;
+            text-transform: uppercase; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.2); margin: 0;
+            width: 100%; word-wrap: break-word;
         }
+        .stack-card .bento-desc { display: none; }
+
 
         /* --- 6. ADMISIONES --- */
-        #admisiones { padding: 100px 0; background: white; }
-        
-        .process-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            position: relative;
-            margin-top: 60px;
-        }
-        
-        .process-line {
-            position: absolute;
-            top: 25px; left: 0; width: 100%; height: 3px;
-            background: #f1f5f9;
-            z-index: 0;
-        }
-        .process-line-fill {
-            position: absolute;
-            top: 25px; left: 0; width: 0%; height: 3px;
-            background: var(--color-brand-light);
-            z-index: 0;
-            transition: width 1.5s ease-out;
-        }
+        #admisiones { padding: 60px 0; background: white; }
+        .process-row { display: flex; justify-content: space-between; position: relative; margin-top: 50px; }
+        .process-line { position: absolute; top: 25px; left: 0; width: 100%; height: 3px; background: #f1f5f9; z-index: 0; }
+        .process-line-fill { position: absolute; top: 25px; left: 0; width: 0%; height: 3px; background: var(--brand-light); z-index: 0; transition: width 1.5s ease-out; }
+        .process-step { position: relative; z-index: 1; background: white; width: 30%; padding: 25px 15px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center; box-shadow: var(--shadow-card); transition: transform 0.3s; }
+        .process-step:hover { transform: translateY(-5px); border-color: var(--brand-light); }
+        .step-bubble { width: 50px; height: 50px; background: var(--brand-dark); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 900; margin: -50px auto 15px auto; border: 5px solid white; }
 
-        .process-step {
-            position: relative;
-            z-index: 1;
-            background: white;
-            width: 30%;
-            padding: 30px 20px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            text-align: center;
-            transition: transform 0.3s;
-            box-shadow: var(--shadow-card);
-        }
-        .process-step:hover { transform: translateY(-5px); border-color: var(--color-brand-light); }
+        /* --- 7. SOCIAL --- */
+        #social-feed { padding: 60px 0; background: var(--color-bg-alt); }
+        .social-frame { border: none; border-radius: 20px; overflow: hidden; background: white; box-shadow: 0 25px 50px -12px rgba(35, 36, 83, 0.25); height: 580px; width: 100%; position: relative; padding-top: 60px; }
+        .social-btn-container { position: absolute; top: 20px; left: 0; width: 100%; z-index: 100; display: flex; justify-content: center; gap: 15px; pointer-events: none; }
+        .social-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: transform 0.2s; pointer-events: auto; text-decoration: none; font-size: 20px; }
+        .social-btn:hover { transform: scale(1.1); }
+        .sk-ww-facebook-page-posts { width: 100%; height: 100%; }
+        .widget-cover-patch { position: absolute; bottom: 0; left: 0; width: 100%; height: 35px; background: white; z-index: 50; pointer-events: auto; }
 
-        .step-bubble {
-            width: 50px; height: 50px;
-            background: var(--color-brand-dark);
-            color: white;
-            border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            font-weight: 900;
-            margin: -55px auto 20px auto; 
-            border: 5px solid white;
-        }
+        /* --- 8. FOOTER --- */
+        footer { background: var(--brand-dark); color: white; padding: 60px 0 30px 0; position: relative; }
+        footer::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: var(--brand-light); }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 0; }
+        .f-col { padding: 0 40px; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; }
+        .f-col:last-child { border-right: none; }
+        .f-title { font-family: var(--font-display); font-weight: 700; margin-bottom: 20px; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; }
+        .f-link { display: block; color: #cbd5e1; margin-bottom: 10px; font-size: 14px; transition: 0.2s; }
+        .f-link:hover { color: var(--brand-light); transform: translateX(5px); }
+        .contact-item { display: flex; gap: 10px; margin-bottom: 15px; font-size: 14px; color: #cbd5e1; }
+        .contact-item i { color: var(--brand-light); font-size: 16px; margin-top: 4px; }
 
-        /* --- 7. FOOTER --- */
-        footer {
-            background: var(--color-brand-dark);
-            color: white;
-            padding: 80px 0 30px 0;
-            position: relative;
-        }
-        footer::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 5px;
-            background: var(--color-brand-light);
-        }
+        /* MODAL */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10,11,30,0.85); backdrop-filter: blur(10px); z-index: 10000; display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.3s; padding: 20px; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { background: white; width: 100%; max-width: 700px; height: 420px; border-radius: 20px; overflow: hidden; display: flex; transform: scale(0.9); transition: 0.3s; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-close { position: absolute; top: 15px; right: 15px; width: 30px; height: 30px; background: rgba(0,0,0,0.1); border-radius: 50%; border: none; cursor: pointer; color: #333; z-index: 20; display: flex; justify-content: center; align-items: center; font-size: 18px; }
+        .modal-image-col { width: 45%; background: #ffffff; }
+        .modal-img { width: 100%; height: 100%; object-fit: contain; }
+        .modal-text-col { width: 55%; padding: 30px; display: flex; flex-direction: column; justify-content: center; }
+        .modal-title { font-family: var(--font-display); font-weight: 900; color: var(--color-brand-dark); font-size: 22px; margin-bottom: 12px; text-transform: uppercase; line-height: 1.2; }
+        #iframe-container { width: 100%; height: 100%; display: flex; flex-direction: column; background: white; flex: 1; }
+        #schedule-iframe { flex-grow: 1; border: none; height: 100%; }
 
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 40px;
-        }
-        
-        .f-title { font-family: var(--font-display); font-weight: 700; margin-bottom: 20px; color: white; }
-        
-        .f-link {
-            display: block;
-            color: #cbd5e1;
-            text-decoration: none;
-            margin-bottom: 10px;
-            font-size: 14px;
-            transition: color 0.2s;
-        }
-        .f-link:hover { color: var(--color-brand-light); }
+        /* ALERT & CURSOR */
+        .floating-alert { position: fixed; bottom: 30px; left: 30px; background: white; border-radius: 50px; padding: 10px 20px; box-shadow: 0 10px 30px rgba(32,155,216,0.4); display: flex; align-items: center; gap: 12px; z-index: 9990; cursor: pointer; border: 2px solid var(--brand-light); animation: bounceIn 1s; }
+        .alert-pulse { position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border-radius: 50px; border: 2px solid var(--brand-light); opacity: 0; animation: pulseRing 2s infinite; }
+        .alert-icon { width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; background: #f0f9ff; border-radius: 50%; position: relative; color: var(--color-brand-dark); font-size: 20px; }
+        @keyframes bounceIn { 0% { transform: scale(0); } 60% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes pulseRing { 0% { transform: scale(0.9); opacity: 0.7; } 100% { transform: scale(1.3); opacity: 0; } }
+        #cursor { position: fixed; top: 0; left: 0; width: 20px; height: 20px; border: 2px solid var(--color-brand-light); border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 99999; display: none; transition: transform 0.1s; }
 
-        /* --- RESPONSIVE --- */
+        /* RESPONSIVE */
         @media (max-width: 1024px) {
-            .hero-layout { grid-template-columns: 1fr; text-align: center; height: auto; padding: 60px 20px; }
-            .hero-content { width: 100%; padding: 0; margin-bottom: 40px; }
-            .hero-desc { margin: 20px auto; border: none; padding: 0; }
-            .hero-visual { justify-content: center; }
-            .hero-img-wrapper { max-width: 500px; margin: 0 auto; }
-            .bento-grid { grid-template-columns: 1fr 1fr; }
-            .bento-card.highlight { grid-column: span 2; grid-row: span 1; height: 350px; }
+            .hero-layout { grid-template-columns: 1fr; text-align: center; }
+            .hero-img-wrapper { margin: 0 auto; max-width: 500px; }
+            .bento-grid { grid-template-columns: 1fr; grid-template-rows: auto; }
+            .bento-card { height: 250px; }
+            #main-card { grid-column: span 1; grid-row: span 1; height: 500px; flex-direction: column; }
+            #main-card .bento-visual { width: 100%; height: 250px; }
+            #main-card .bento-content { width: 100%; height: auto; border-left: none; border-top: 1px solid #eee; padding: 30px; }
+            .stack-card { grid-column: span 1; height: 200px; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+            .f-col { border: none; padding: 0; }
         }
-
         @media (max-width: 768px) {
-            .nav-menu { display: none; }
-            .hero-title { font-size: 2.5rem; }
-            .bento-grid { grid-template-columns: 1fr; }
-            .bento-card.highlight { grid-column: span 1; }
-            .process-row { flex-direction: column; gap: 40px; }
-            .process-step { width: 100%; }
-            .process-line { width: 3px; height: 100%; left: 50%; top: 0; transform: translateX(-50%); }
-            .process-line-fill { width: 3px !important; height: 0%; left: 50%; top: 0; transform: translateX(-50%); }
+            .nav-menu { display: none; } .mobile-menu-btn { display: block; } .nav-actions { display: none; }
+            .process-row { flex-direction: column; gap: 40px; } .process-line { display: none; } .process-step { width: 100%; }
             .footer-grid { grid-template-columns: 1fr; text-align: center; }
+            .contact-item { justify-content: center; }
+            .modal-content { flex-direction: column; height: auto; max-height: 85vh; overflow-y: auto; }
+            #initial-view { flex-direction: column; }
+            .modal-image-col { width: 100%; height: 200px; }
+            .modal-text-col { width: 100%; padding: 30px; }
+            .floating-alert { bottom: 20px; left: 20px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- NAVBAR -->
+    <div id="cursor"></div>
+
     <nav id="navbar">
-        <div class="container nav-content">
-            <!-- LOGO: Reemplaza 'tu-logo-aqui.png' con tu archivo -->
-            <a href="#" class="logo">
-                <!-- Se usa un SVG de placeholder, pero la estructura está lista para una imagen -->
-                <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/4d0023a4a1e80af12ac0c1725f64f702cc835788/Recurso%201.svg" alt="ISTG Logo" style="height: 50px; width: auto;">
+        <div class="container-custom nav-content">
+            <a href="https://istg.edu.ec/" class="logo">
+                <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/4d0023a4a1e80af12ac0c1725f64f702cc835788/Recurso%201.svg" alt="ISTG Logo" class="protected-img" style="height: 50px; width: auto;" draggable="false" oncontextmenu="return false;">
             </a>
             
+            <i class="fa-solid fa-bars mobile-menu-btn" onclick="alert('Menú móvil')"></i>
+
             <ul class="nav-menu">
-                <li><a href="#">Inicio</a></li>
+                <li><a href="https://istg.edu.ec/">Inicio</a></li>
                 <li><a href="#carreras">Oferta Académica</a></li>
                 <li><a href="#admisiones">Admisión</a></li>
+                <li><a href="#social-feed">Comunidad</a></li>
                 <li><a href="#contacto">Contacto</a></li>
             </ul>
-            <a href="https://academico.istg.edu.ec/" target="_blank" class="btn btn-primary" style="padding: 10px 25px;">
-                Campus Virtual <i class="fa-solid fa-arrow-up-right-from-square" style="margin-left: 8px;"></i>
-            </a>
+
+            <div class="nav-actions">
+                <div class="notification-wrapper">
+                    <button id="notify-btn" class="notify-btn" title="Avisos Importantes">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="notify-badge"></span>
+                    </button>
+                    <div class="notify-dropdown" id="notify-dropdown">
+                        <div class="notify-header">Avisos Recientes</div>
+                        <div class="notify-body">
+                            <div class="notify-item warning">
+                                <div class="notify-icon-box"><i class="fa-solid fa-circle-exclamation"></i></div>
+                                <div class="notify-content">
+                                    <strong>Evaluación Docente</strong>
+                                    <p>Recuerda realizar la evaluación en SIGA para rendir exámenes.</p>
+                                </div>
+                            </div>
+                            <div class="notify-item info" id="trigger-modal-notify">
+                                <div class="notify-icon-box"><i class="fa-solid fa-calendar-days"></i></div>
+                                <div class="notify-content">
+                                    <strong>Horario de Exámenes</strong>
+                                    <p>Cronograma 2do Parcial. Clic para ver.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <a href="https://academico.istg.edu.ec/" target="_blank" class="btn-custom btn-primary-c">Campus Virtual</a>
+            </div>
         </div>
     </nav>
 
-    <!-- HERO SECTION -->
+    <div class="floating-alert" id="floating-alert">
+        <div class="alert-pulse"></div>
+        <div class="alert-icon"><i class="fa-solid fa-bell"></i><span class="notification-badge"></span></div>
+        <span class="alert-text">Horarios Disponibles</span>
+    </div>
+
+    <!-- Modal Horario -->
+    <div class="modal-overlay" id="news-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close"><i class="fa-solid fa-xmark"></i></button>
+            <div id="initial-view">
+                <div class="modal-image-col">
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/popup.jpeg" alt="Aviso" class="modal-img">
+                </div>
+                <div class="modal-text-col">
+                    <h3 class="modal-title">¡Atención Estudiantes!</h3>
+                    <p class="modal-text">Ya se encuentra disponible el cronograma de exámenes del <strong>2do Parcial</strong>.</p>
+                    <button id="btn-show-iframe" class="btn-custom btn-primary-c" style="width: 100%;">
+                        <i class="fa-solid fa-calendar-days" style="margin-right: 8px;"></i> Ver Horario
+                    </button>
+                </div>
+            </div>
+            <div id="iframe-container" style="display: none;">
+                <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between;">
+                    <button id="btn-back-modal" class="btn-custom btn-outline-c" style="padding: 8px 15px; font-size: 12px; border: 1px solid #ccc; color: #666;">
+                        <i class="fa-solid fa-arrow-left"></i> Volver
+                    </button>
+                    <span style="font-weight: 700; color: var(--color-brand-dark); font-size: 14px;">VISOR DE HORARIOS</span>
+                    <div style="width: 60px;"></div>
+                </div>
+                <iframe id="schedule-iframe" src="" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero -->
     <section class="hero">
-        <div class="hero-layout">
-            
-            <!-- Left Text -->
+        <div class="container-custom hero-layout">
             <div class="hero-content reveal-left">
                 <span class="hero-tag"><i class="fa-solid fa-bolt"></i> Tecnología Superior</span>
-                <h1 class="hero-title">
-                    EL FUTURO SE <br>
-                    <span class="text-accent">DISEÑA AQUÍ.</span>
-                </h1>
-                <p class="hero-desc">
-                    Fórmate con excelencia académica en el corazón de Guayaquil. 
-                    Títulos de tercer nivel en 2 años con enfoque práctico y alta empleabilidad.
-                </p>
-                <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: flex-start;">
-                    <a href="#carreras" class="btn btn-primary">Ver Carreras</a>
-                    <a href="#admisiones" class="btn btn-outline">Proceso de Admisión</a>
+                <h1 class="hero-title">EL FUTURO SE <br><span class="text-accent">DISEÑA AQUÍ.</span></h1>
+                <p class="hero-desc">Fórmate con excelencia académica en el corazón de Guayaquil. Títulos de tercer nivel en 2 años con enfoque práctico.</p>
+                <div style="display: flex; gap: 15px;">
+                    <a href="#carreras" class="btn-custom btn-primary-c">Ver Carreras</a>
+                    <a href="#admisiones" class="btn-custom btn-outline-c">Admisión</a>
                 </div>
             </div>
-
-            <!-- Right Visual -->
             <div class="hero-visual reveal-right">
                 <div class="hero-img-wrapper">
-                    <!-- High quality image of students -->
-                    <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop" 
-                         class="hero-img" 
-                         alt="Estudiantes ISTG"
-                         onerror="this.src='https://placehold.co/600x500/232453/FFF?text=ISTG'">
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto1.png" class="hero-img active" style="object-position: top;" alt="Estudiante">
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto2.png" class="hero-img" alt="Grupo">
+                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto3.png" class="hero-img" alt="Lab">
                 </div>
             </div>
-            
         </div>
     </section>
 
-    <!-- CARRERAS (BENTO GRID - INTERACTIVE) -->
+    <!-- Carreras Bento -->
     <section id="carreras">
-        <div class="container">
+        <div class="container-custom">
             <div class="section-header reveal-bottom">
                 <span class="section-tag">Oferta Académica</span>
                 <h2 class="section-title">Carreras para el <span class="text-accent">Mundo Real</span></h2>
                 <p style="color: #64748b; font-size: 14px; margin-top: 10px;">(Haz clic en las tarjetas para expandir)</p>
             </div>
-
             <div class="bento-grid" id="careerGrid">
                 
-                <!-- 1. DISEÑO GRÁFICO (Initial Highlight) - Naranja -->
-                <div class="bento-card highlight reveal-item" onclick="swapCareer(this)" style="--card-color: #f97316; --card-color-glow: rgba(249, 115, 22, 0.4);">
-                    <img src="https://images.unsplash.com/photo-1572044162444-ad60f128bdea?q=80&w=2070&auto=format&fit=crop" 
-                         class="bento-img" 
-                         alt="Diseño Gráfico" 
-                         onerror="this.src='https://placehold.co/800x600/f97316/FFF?text=Diseno'">
-                    <div class="bento-overlay">
-                        <div class="bento-icon"><i class="fa-solid fa-pen-nib"></i></div>
-                        <h3 class="bento-title">Diseño Gráfico</h3>
-                        <p class="bento-desc">Crea identidades visuales impactantes. Domina Adobe Suite, Branding, UI/UX y Animación.</p>
+                <!-- MAIN CARD (Fijo) -->
+                <div id="main-card" class="bento-card highlight reveal-item" 
+                     style="--card-color: #f97316;">
+                    <div class="bento-visual">
+                        <img id="main-img" src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/dise%C3%B1o.jpg?q=80&w=1350&h=1080&auto=format&fit=crop" class="bento-img" alt="Principal">
+                    </div>
+                    <div class="bento-content">
+                        <div class="bento-header-row">
+                            <div class="bento-icon" id="main-icon-container" style="color: #f97316;"><i id="main-icon" class="fa-solid fa-pen-nib"></i></div>
+                            <h3 id="main-title" class="bento-title">Diseño Gráfico</h3>
+                        </div>
+                        <p id="main-desc" class="bento-desc">No solo diseñes, crea realidades. Domina UX/UI, Motion Graphics y Branding para marcas que desafían lo convencional.</p>
                     </div>
                 </div>
 
-                <!-- 2. DESARROLLO DE SOFTWARE - Azul Oscuro -->
-                <div class="bento-card reveal-item" onclick="swapCareer(this)" style="--card-color: #1e3a8a; --card-color-glow: rgba(30, 58, 138, 0.4);">
-                    <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2072&auto=format&fit=crop" 
-                         class="bento-img" 
-                         alt="Software" 
-                         onerror="this.src='https://placehold.co/800x600/1e3a8a/FFF?text=Software'">
-                    <div class="bento-overlay">
-                        <div class="bento-icon"><i class="fa-solid fa-code"></i></div>
-                        <h3 class="bento-title">Desarrollo de Software</h3>
-                        <p class="bento-desc">Programación Full Stack, Bases de Datos y Apps Móviles.</p>
+                <!-- STACK CARDS (Fijas) -->
+                <div class="stack-card bento-card reveal-item" id="stack-0" onclick="swapContent(0)" style="--card-color: #1e3a8a;">
+                    <div class="bento-content">
+                        <h3 id="stack-title-0" class="bento-title">Desarrollo Software</h3>
                     </div>
                 </div>
-
-                <!-- 3. MARKETING DIGITAL - Magenta Púrpura -->
-                <div class="bento-card reveal-item" onclick="swapCareer(this)" style="--card-color: #d946ef; --card-color-glow: rgba(217, 70, 239, 0.4);">
-                    <img src="https://images.unsplash.com/photo-1533750349088-cd8773a88763?q=80&w=2070&auto=format&fit=crop" 
-                         class="bento-img" 
-                         alt="Marketing" 
-                         onerror="this.src='https://placehold.co/800x600/d946ef/FFF?text=Marketing'">
-                    <div class="bento-overlay">
-                        <div class="bento-icon"><i class="fa-solid fa-bullhorn"></i></div>
-                        <h3 class="bento-title">Marketing Digital</h3>
-                        <p class="bento-desc">Estrategias SEO/SEM, gestión de redes y analítica web.</p>
+                <div class="stack-card bento-card reveal-item" id="stack-1" onclick="swapContent(1)" style="--card-color: #d946ef;">
+                    <div class="bento-content">
+                        <h3 id="stack-title-1" class="bento-title">Marketing Digital</h3>
                     </div>
                 </div>
-
-                <!-- 4. CONTABILIDAD - Cian/Celeste -->
-                <div class="bento-card reveal-item" onclick="swapCareer(this)" style="--card-color: #06b6d4; --card-color-glow: rgba(6, 182, 212, 0.4);">
-                    <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=2072&auto=format&fit=crop" 
-                         class="bento-img" 
-                         alt="Contabilidad" 
-                         onerror="this.src='https://placehold.co/800x600/06b6d4/FFF?text=Contabilidad'">
-                    <div class="bento-overlay">
-                        <div class="bento-icon"><i class="fa-solid fa-calculator"></i></div>
-                        <h3 class="bento-title">Contabilidad</h3>
-                        <p class="bento-desc">Gestión financiera, tributación y auditoría empresarial.</p>
+                <div class="stack-card bento-card reveal-item" id="stack-2" onclick="swapContent(2)" style="--card-color: #06b6d4;">
+                    <div class="bento-content">
+                        <h3 id="stack-title-2" class="bento-title">Contabilidad</h3>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
 
-    <!-- ADMISIONES (CLEAN PROCESS) -->
+    <!-- Admisiones -->
     <section id="admisiones">
-        <div class="container">
-            <div class="section-header reveal-bottom">
-                <span class="section-tag">Proceso de Admisión</span>
-                <h2 class="section-title">Tu futuro comienza <span class="text-accent">Hoy</span></h2>
-            </div>
-
+        <div class="container-custom">
+            <div class="section-header reveal-bottom"><span class="section-tag">Proceso de Admisión</span><h2 class="section-title">Tu futuro comienza <span class="text-accent">Hoy</span></h2></div>
             <div class="process-row">
-                <div class="process-line"></div>
-                <div class="process-line-fill" id="process-fill"></div>
-
-                <div class="process-step reveal-item">
-                    <div class="step-bubble">1</div>
-                    <h3 style="color: var(--color-brand-dark); margin-bottom: 10px;">Registro Nacional</h3>
-                    <p style="color: #64748b; font-size: 14px;">Cumple con el registro obligatorio en la plataforma de la SENESCYT.</p>
-                </div>
-                <div class="process-step reveal-item" style="transition-delay: 0.2s;">
-                    <div class="step-bubble">2</div>
-                    <h3 style="color: var(--color-brand-dark); margin-bottom: 10px;">Evaluación</h3>
-                    <p style="color: #64748b; font-size: 14px;">Rinde la evaluación de competencias y capacidades.</p>
-                </div>
-                <div class="process-step reveal-item" style="transition-delay: 0.4s;">
-                    <div class="step-bubble">3</div>
-                    <h3 style="color: var(--color-brand-dark); margin-bottom: 10px;">Postulación</h3>
-                    <p style="color: #64748b; font-size: 14px;">Elige al ISTG como tu primera opción en la plataforma.</p>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin-top: 50px;">
-                <a href="https://www.registrounicoedusup.gob.ec/" target="_blank" class="btn btn-primary">Ir al Registro Único</a>
+                <div class="process-line"><div class="process-line-fill" id="process-fill"></div></div>
+                <div class="process-step reveal-item"><div class="step-bubble">1</div><h3>Registro Nacional</h3><p style="font-size:14px; color:#64748b;">Plataforma SENESCYT.</p></div>
+                <div class="process-step reveal-item" style="transition-delay: 0.1s;"><div class="step-bubble">2</div><h3>Evaluación</h3><p style="font-size:14px; color:#64748b;">Competencias y capacidades.</p></div>
+                <div class="process-step reveal-item" style="transition-delay: 0.2s;"><div class="step-bubble">3</div><h3>Postulación</h3><p style="font-size:14px; color:#64748b;">Elige al ISTG.</p></div>
             </div>
         </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer id="contacto">
-        <div class="container">
-            <div class="footer-grid">
-                <!-- Col 1 -->
-                <div class="f-col">
-                    <!-- LOGO FOOTER: Reemplaza el src con tu archivo de imagen -->
-                    <a href="#" class="logo" style="margin-bottom: 20px;">
-                        <img src="https://placehold.co/150x50/232453/FFFFFF?text=ISTG+LOGO" alt="ISTG Logo Footer" style="height: 50px; width: auto;">
-                    </a>
-                    
-                    <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px; line-height: 1.6;">
-                        Formamos profesionales de excelencia con visión tecnológica y humana. Líderes en educación superior técnica.
-                    </p>
-                    <div style="display: flex; gap: 15px;">
-                        <a href="#" style="color: white; font-size: 18px;"><i class="fa-brands fa-facebook"></i></a>
-                        <a href="#" style="color: white; font-size: 18px;"><i class="fa-brands fa-instagram"></i></a>
-                        <a href="#" style="color: white; font-size: 18px;"><i class="fa-brands fa-tiktok"></i></a>
-                    </div>
-                </div>
+    <!-- Social -->
+    <section id="social-feed">
+        <div class="container-custom">
+            <div class="section-header reveal-bottom"><span class="section-tag">Comunidad ISTG</span><h2 class="section-title">Lo que pasa en el <span class="text-accent">Campus</span></h2></div>
+            
+            <!-- Botones Flotantes Centrados -->
+            <div class="social-btn-container">
+                <a href="https://www.facebook.com/istg.ec" target="_blank" class="social-btn" style="color:#1877F2;"><i class="fa-brands fa-facebook"></i></a>
+                <a href="https://www.instagram.com/istg.ec" target="_blank" class="social-btn" style="color:#E1306C;"><i class="fa-brands fa-instagram"></i></a>
+            </div>
 
-                <!-- Col 2 -->
-                <div class="f-col">
-                    <div class="f-title">Academia</div>
-                    <a href="#carreras" class="f-link">Oferta Académica</a>
-                    <a href="#admisiones" class="f-link">Proceso de Admisión</a>
-                    <a href="https://academico.istg.edu.ec/" class="f-link">Campus Virtual</a>
-                    <a href="#" class="f-link">Biblioteca</a>
-                </div>
-
-                <!-- Col 3 -->
-                <div class="f-col">
-                    <div class="f-title">Institucional</div>
-                    <a href="#" class="f-link">Nosotros</a>
-                    <a href="#" class="f-link">Autoridades</a>
-                    <a href="#" class="f-link">Rendición de Cuentas</a>
-                    <a href="#" class="f-link">Bolsa de Empleo</a>
-                </div>
-
-                <!-- Col 4 -->
-                <div class="f-col">
-                    <div class="f-title">Contacto</div>
-                    <div style="color: #94a3b8; font-size: 14px; margin-bottom: 10px;">
-                        <i class="fa-solid fa-location-dot text-accent"></i> Gómez Rendón, entre Quito y José de Antepara
-                    </div>
-                    <div style="color: #94a3b8; font-size: 14px; margin-bottom: 10px;">
-                        <i class="fa-solid fa-phone text-accent"></i> +593 96 837 4270
-                    </div>
-                    <div style="color: #94a3b8; font-size: 14px;">
-                        <i class="fa-solid fa-envelope text-accent"></i> info@istg.edu.ec
-                    </div>
+            <div style="max-width:1000px; margin:0 auto;">
+                <div class="social-frame">
+                    <script src="https://elfsightcdn.com/platform.js" async></script>
+                    <div class="elfsight-app-22901817-ec27-44a1-a507-25c34a732644" data-elfsight-app-lazy></div>
+                    <div class="widget-cover-patch"></div>
                 </div>
             </div>
-            
-            <div style="text-align: center; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 50px; padding-top: 20px; font-size: 12px; color: #64748b;">
-                &copy; 2026 Instituto Superior Tecnológico Guayaquil. Todos los derechos reservados.
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contacto">
+        <div class="container-custom">
+            <div class="footer-grid">
+                <div class="f-col">
+                    <div class="logo" style="margin-bottom:25px;"><img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/Recurso%204mdpi.svg" alt="ISTG Footer" class="protected-img" style="height:60px;"></div>
+                    <p style="color:#94a3b8; font-size:14px; margin-bottom:20px;">Líderes en educación superior técnica en el Ecuador.</p>
+                </div>
+                <div class="f-col"><div class="f-title">ACADEMIA</div><a href="#carreras" class="f-link">Oferta Académica</a><a href="#admisiones" class="f-link">Admisiones</a><a href="https://academico.istg.edu.ec/" class="f-link">Campus Virtual</a><a href="#" class="f-link">Biblioteca Digital</a></div>
+                <div class="f-col"><div class="f-title">INSTITUCIONAL</div><a href="https://istg.edu.ec/nosotros" class="f-link">Sobre Nosotros</a><a href="https://istg.edu.ec/autoridades" class="f-link">Autoridades</a><a href="https://istg.edu.ec/rendicion-cuentas" class="f-link">Rendición de Cuentas</a></div>
+                <div class="f-col"><div class="f-title">CONTACTO</div>
+                    <div class="contact-item"><i class="fa-solid fa-location-dot"></i><span>Gómez Rendón, entre Quito y José de Antepara.</span></div>
+                    <div class="contact-item"><i class="fa-solid fa-phone"></i><span>+593 96 837 4270</span></div>
+                    <div class="contact-item"><i class="fa-solid fa-envelope"></i><span>info@istg.edu.ec</span></div>
+                </div>
+            </div>
+            <div style="text-align:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:20px; font-size:12px; color:#64748b;">
+                &copy; 2026 ISTG. Creado por <strong style="color:var(--brand-light);">Christian Ortiz</strong>, 2DO A.
             </div>
         </div>
     </footer>
 
     <script>
-        // Scroll Reveal Configuration
-        const sr = ScrollReveal({
-            origin: 'bottom',
-            distance: '30px',
-            duration: 1000,
-            delay: 100,
-            easing: 'cubic-bezier(0.5, 0, 0, 1)'
+        const sr=ScrollReveal({origin:'bottom',distance:'30px',duration:1000,delay:100}); sr.reveal('.reveal-bottom'); sr.reveal('.reveal-left',{origin:'left'}); sr.reveal('.reveal-right',{origin:'right'}); sr.reveal('.reveal-item',{interval:150});
+        
+        window.addEventListener('scroll',()=>{
+            const nav=document.getElementById('navbar');
+            if(nav) nav.style.padding=window.scrollY>50?'10px 0':'15px 0'; nav.style.boxShadow=window.scrollY>50?'0 5px 20px rgba(0,0,0,0.1)':'none';
+            const pf=document.getElementById('process-fill'); const ps=document.getElementById('admisiones');
+            if(ps&&pf && ps.getBoundingClientRect().top < window.innerHeight/1.3) pf.style.width='100%';
         });
 
-        sr.reveal('.reveal-bottom');
-        sr.reveal('.reveal-left', { origin: 'left' });
-        sr.reveal('.reveal-right', { origin: 'right' });
-        sr.reveal('.reveal-item', { interval: 150 });
-
-        // Navbar Scroll Effect
-        window.addEventListener('scroll', () => {
-            const nav = document.getElementById('navbar');
-            if(nav) {
-                if(window.scrollY > 50) {
-                    nav.style.padding = '10px 0';
-                    nav.style.boxShadow = '0 5px 20px rgba(0,0,0,0.1)';
-                } else {
-                    nav.style.padding = '15px 0';
-                    nav.style.boxShadow = 'none';
-                }
+        // DATA SWAP LOGIC
+        const careers = {
+            'diseno': {
+                title: "Diseño Gráfico",
+                desc: "No solo diseñes, crea realidades. Domina UX/UI, Motion Graphics y Branding para marcas que desafían lo convencional.",
+                img: "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/dise%C3%B1o.jpg?q=80&w=1350&h=1080&auto=format&fit=crop",
+                color: "#f97316", icon: "fa-pen-nib", bg: "#fff7ed"
+            },
+            'software': {
+                title: "Desarrollo Software",
+                desc: "Codifica el futuro. Construye ecosistemas digitales, IAs y aplicaciones que mueven al mundo. Sé el arquitecto de la era digital.",
+                img: "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/desarrollo.jpg?q=80&w=1350&h=1080&auto=format&fit=crop",
+                color: "#1e3a8a", icon: "fa-code", bg: "#eff6ff"
+            },
+            'marketing': {
+                title: "Marketing Digital",
+                desc: "Hackea el algoritmo. Domina estrategias de crecimiento, neuromarketing y data analytics para liderar mercados globales.",
+                img: "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/marketing.jpg?q=80&w=1350&h=1080&auto=format&fit=crop",
+                color: "#d946ef", icon: "fa-bullhorn", bg: "#fdf4ff"
+            },
+            'contabilidad': {
+                title: "Contabilidad",
+                desc: "Fintech & Estrategia. Evoluciona de los números a la inteligencia financiera. Gestiona el capital de las empresas del mañana.",
+                img: "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/contabilidad.jpg?q=80&w=1350&h=1080&auto=format&fit=crop",
+                color: "#06b6d4", icon: "fa-calculator", bg: "#ecfeff"
             }
-            
-            // Animate Process Line
-            const processSection = document.getElementById('admisiones');
-            const fill = document.getElementById('process-fill');
-            
-            if(processSection && fill) {
-                const sectionPos = processSection.getBoundingClientRect().top;
-                const screenPos = window.innerHeight / 1.3;
-                
-                if(sectionPos < screenPos) {
-                    fill.style.width = '100%';
-                }
-            }
-        });
+        };
 
-        // --- CAREER SWAP INTERACTIVITY ---
-        function swapCareer(selectedCard) {
-            const grid = document.getElementById('careerGrid');
-            if(!grid) return;
+        let currentMainId = 'diseno'; 
+        let stackIds = ['software', 'marketing', 'contabilidad'];
+
+        function swapContent(stackPosIndex) {
+            const clickedId = stackIds[stackPosIndex];
             
-            const currentHighlight = grid.querySelector('.highlight');
+            // Datos nuevos y viejos
+            const newMainData = careers[clickedId];
+            const oldMainData = careers[currentMainId];
+
+            // 1. Actualizar Main
+            const mainCard = document.getElementById('main-card');
+            const mainImg = document.getElementById('main-img');
             
-            // Si hacemos clic en la misma tarjeta destacada, no hacer nada
-            if (selectedCard === currentHighlight) return;
+            mainImg.style.opacity = '0';
+            setTimeout(() => {
+                mainImg.src = newMainData.img;
+                mainImg.style.opacity = '1';
+            }, 150);
+
+            document.getElementById('main-title').innerText = newMainData.title;
+            document.getElementById('main-desc').innerText = newMainData.desc;
             
-            // Intercambiar clases
-            if(currentHighlight) currentHighlight.classList.remove('highlight');
-            selectedCard.classList.add('highlight');
+            // RE-INYECCION DE ICONO
+            document.getElementById('main-icon-container').innerHTML = `<i class="fa-solid ${newMainData.icon}"></i>`;
+            document.getElementById('main-icon-container').style.color = newMainData.color;
             
-            // Mover la tarjeta seleccionada al inicio para que ocupe el espacio grande
-            grid.prepend(selectedCard);
+            mainCard.style.setProperty('--card-color', newMainData.color);
+
+            // 2. Actualizar Tarjeta Pequeña
+            const stackTitle = document.getElementById(`stack-title-${stackPosIndex}`);
+            const stackCard = document.getElementById(`stack-${stackPosIndex}`);
+
+            stackTitle.innerText = oldMainData.title;
+            
+            stackCard.style.setProperty('--card-color', oldMainData.color);
+            
+            // Intercambiar en lógica
+            stackIds[stackPosIndex] = currentMainId;
+            currentMainId = clickedId;
         }
+
+        const heroImages=document.querySelectorAll('.hero-img');
+        if(heroImages.length>1){
+            let idx=0; setInterval(()=>{
+                heroImages[idx].classList.remove('active'); idx=(idx+1)%heroImages.length; heroImages[idx].classList.add('active');
+            },4000);
+        }
+
+        // Modal y Notificaciones
+        const modal = document.getElementById('news-modal');
+        const trigger = document.getElementById('trigger-modal-notify');
+        const close = document.getElementById('modal-close');
+        const iframeView = document.getElementById('iframe-container');
+        const initialView = document.getElementById('initial-view');
+        const showIframe = document.getElementById('btn-show-iframe');
+        const back = document.getElementById('btn-back-modal');
+        const iframe = document.getElementById('schedule-iframe');
+        const notifyBtn = document.getElementById('notify-btn');
+        const notifyDrop = document.getElementById('notify-dropdown');
+        const alertBtn = document.getElementById('floating-alert');
+
+        if(notifyBtn) {
+            notifyBtn.addEventListener('click', (e) => { e.stopPropagation(); notifyDrop.classList.toggle('active'); });
+            document.addEventListener('click', (e) => { if(!notifyBtn.contains(e.target)) notifyDrop.classList.remove('active'); });
+        }
+        
+        // Funcion para abrir y resetear el modal
+        const openModal = () => { 
+            modal.classList.add('active'); 
+            if(notifyDrop) notifyDrop.classList.remove('active');
+            // Forzar reset de vista
+            initialView.style.display='flex';
+            iframeView.style.display='none';
+            iframe.src='';
+        };
+
+        if(trigger) trigger.addEventListener('click', openModal);
+        if(alertBtn) alertBtn.addEventListener('click', openModal);
+        if(close) close.addEventListener('click', () => { modal.classList.remove('active'); });
+        if(modal) modal.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('active'); });
+
+        if(showIframe) {
+            showIframe.addEventListener('click', () => { initialView.style.display='none'; iframeView.style.display='flex'; iframe.src='https://f.mtr.cool/ryktmtwllh'; });
+        }
+        
+        if(back) {
+            back.addEventListener('click', () => { iframeView.style.display='none'; initialView.style.display='flex'; });
+        }
+
+        // Cursor
+        const cursor=document.getElementById('cursor');
+        if(cursor && window.matchMedia("(hover: hover)").matches){
+            cursor.style.display='block';
+            document.addEventListener('mousemove',e=>{cursor.style.left=e.clientX+'px';cursor.style.top=e.clientY+'px';});
+            document.querySelectorAll('a, button, .bento-card, .process-step, .notify-item').forEach(el=>{
+                el.addEventListener('mouseenter',()=>{cursor.style.transform='translate(-50%, -50%) scale(1.5)';cursor.style.background='rgba(32,155,216,0.1)';});
+                el.addEventListener('mouseleave',()=>{cursor.style.transform='translate(-50%, -50%) scale(1)';cursor.style.background='transparent';});
+            });
+        }
+        
+        // Anti-Branding Elfsight
+        setInterval(() => {
+            try {
+                const links = document.querySelectorAll('a[href*="elfsight.com"]');
+                links.forEach(link => {
+                    if (!link.querySelector('img')) { link.style.display='none'; link.style.visibility='hidden'; }
+                });
+                const tb = document.querySelector('.eapps-widget-toolbar'); if(tb) tb.style.display='none';
+            } catch (e) {}
+        }, 500);
     </script>
 </body>
 </html>
-
