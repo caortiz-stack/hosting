@@ -293,6 +293,15 @@
             };
         }, []);
 
+        // Define los enlaces con sus destinos específicos
+        const navLinks = [
+            { name: 'Inicio', link: '#' },
+            { name: 'Oferta Académica', link: '#carreras' },
+            { name: 'Admisión', link: '#admisiones' },
+            { name: 'Comunidad', link: '#social-feed' },
+            { name: 'Contacto', link: '#contacto' }
+        ];
+
         return (
             <nav className={`fixed top-0 left-0 w-full z-[1000] transition-all duration-300 ${isScrolled ? 'py-2 shadow-sm bg-white/95 backdrop-blur-md' : 'py-4 bg-white/95 backdrop-blur-md border-b border-gray-100/50'}`}>
             <div className="max-w-[1200px] mx-auto px-5 flex justify-between items-center">
@@ -302,10 +311,10 @@
 
                 {/* Menu Desktop */}
                 <ul className="hidden md:flex gap-8 list-none nav-menu">
-                {['Inicio', 'Oferta Académica', 'Admisión', 'Comunidad', 'Contacto'].map((item) => (
-                    <li key={item}>
-                    <a href={`#${item.toLowerCase().replace(' ', '-')}`} className="nav-link text-[#232453] font-semibold text-sm uppercase relative group hover:text-[#209bd8] transition-colors">
-                        {item}
+                {navLinks.map((item) => (
+                    <li key={item.name}>
+                    <a href={item.link} className="nav-link text-[#232453] font-semibold text-sm uppercase relative group hover:text-[#209bd8] transition-colors">
+                        {item.name}
                         <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#209bd8] transition-all duration-300 group-hover:w-full"></span>
                     </a>
                     </li>
