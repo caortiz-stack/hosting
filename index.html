@@ -502,7 +502,7 @@
             );
         };
 
-        /* --- COMPONENTE MODAL UNIFICADO (IMÁGENES NATIVAS) --- */
+        /* --- COMPONENTE MODAL UNIFICADO (IMÁGENES NATIVAS SIN ESCALADO) --- */
         const Modal = ({ isOpen, onClose, type }) => {
             const [view, setView] = useState('initial'); 
             
@@ -540,12 +540,15 @@
 
                         {view === 'initial' ? (
                             <div className="flex w-full h-full flex-col md:flex-row">
-                                {/* IMAGEN (Izquierda) - MODO NATIVO */}
-                                {/* Se usa flex para centrar, bg-gray-50 para el fondo del espacio vacío, y object-contain para no cortar */}
-                                <div className="w-full md:w-[45%] h-48 md:h-full bg-gray-100 relative flex items-center justify-center p-4 border-r border-gray-50 overflow-hidden">
+                                {/* IMAGEN (Izquierda) - MODO NATIVO REAL */}
+                                {/* Se usa flex center para centrar la imagen. bg-gray-50 para el fondo. overflow-hidden para las esquinas. */}
+                                <div className="w-full md:w-[45%] h-48 md:h-full bg-gray-50 relative flex items-center justify-center overflow-hidden border-r border-gray-50">
                                     <img 
                                         src={content.image} 
-                                        className="w-auto h-auto max-w-full max-h-full object-contain shadow-sm" 
+                                        // Quitamos w-full h-full y object-cover.
+                                        // Usamos max-w/max-h para contenerla sin estirarla si es pequeña.
+                                        // w-auto h-auto mantienen la proporción nativa.
+                                        className="w-auto h-auto max-w-full max-h-full pointer-events-none select-none" 
                                         alt="Aviso" 
                                     />
                                 </div>
