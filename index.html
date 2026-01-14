@@ -1,956 +1,922 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, Phone, Mail, Bell, AlertCircle, Calendar, ArrowLeft, PenTool, Code, Megaphone, Calculator, Menu, X, Facebook, Instagram, ShieldCheck, ExternalLink, Lock, FileText, CheckCircle2, Clock, MapPin as LocationIcon } from 'lucide-react';
-
-/**
- * COMPONENTE: GlobalStyles
- * DESCRIPCIÓN: Inyección de estilos CSS globales y definición de variables (CSS Custom Properties).
- * Se encarga de la importación de tipografías y la normalización de estilos base.
- */
-const GlobalStyles = () => (
-  <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Montserrat:wght@400;600;700;800;900&display=swap');
-
-    :root {
-      /* Definición de tokens de diseño */
-      --font-display: 'Montserrat', sans-serif;
-      --font-body: 'Lato', sans-serif;
-      
-      --brand-dark: #232453;
-      --brand-light: #209bd8;
-    }
-
-    /* Normalización de fuentes base */
-    body, input, textarea, select, a, .nav-link, li, p {
-      font-family: var(--font-body);
-    }
-
-    /* Asignación de tipografía Display para jerarquía visual alta */
-    .hero-title, 
-    .section-title, 
-    .bento-title, 
-    .modal-title, 
-    .f-title,
-    .btn-custom, 
-    .hero-tag, 
-    .section-tag,
-    .notify-header,
-    h3, h4, strong {
-      font-family: var(--font-display);
-    }
-
-    /* Overrides de especificidad para títulos */
-    .hero-title { font-weight: 900 !important; }
-    .section-title { font-weight: 800 !important; }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instituto Superior Tecnológico Guayaquil</title>
     
-    /* Mixins y utilidades para botones */
-    .btn-custom {
-      display: inline-flex; align-items: center; justify-content: center;
-      padding: 12px 30px; border-radius: 50px;
-      font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 12px;
-      cursor: pointer; border: 2px solid transparent; transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      text-decoration: none;
-    }
-    .btn-primary-c {
-      background-color: var(--brand-dark); color: white;
-      box-shadow: 0 4px 15px rgba(35, 36, 83, 0.2);
-    }
-    .btn-primary-c:hover {
-      background-color: var(--brand-light); transform: translateY(-2px);
-    }
-    .btn-outline-c {
-      background: transparent; color: var(--brand-dark); border-color: var(--brand-dark);
-    }
-    .btn-outline-c:hover {
-      background: var(--brand-dark); color: white; transform: translateY(-2px);
-    }
-
-    /* Keyframes para micro-interacciones (Icono de notificación) */
-    @keyframes bellRing {
-      0%, 100% { transform: rotate(0); }
-      15% { transform: rotate(15deg); }
-      30% { transform: rotate(-15deg); }
-      45% { transform: rotate(10deg); }
-      60% { transform: rotate(-10deg); }
-      75% { transform: rotate(5deg); }
-      90% { transform: rotate(-5deg); }
-    }
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    .hover-ring:hover .icon-bell {
-      animation: bellRing 0.8s ease-in-out;
-      transform-origin: top center;
-    }
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
-    /* Personalización del Webkit Scrollbar para contenedores internos */
-    .custom-scroll::-webkit-scrollbar { width: 6px; }
-    .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
-    .custom-scroll::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
-    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #bbb; }
-
-    /* Estilos específicos para el contenedor del Widget Social */
-    .clean-container {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        padding: 20px 10px;
-        box-sizing: border-box;
-    }
-
-    .feed-wrapper {
-        position: relative;
-        width: 100%;
-        max-width: 1200px;
-        background: white;
-        border-radius: 12px;
-        opacity: 0;
-        /* Animación de entrada compuesta: opacidad + traslación */
-        animation: slideUpFade 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-        transition: transform 0.4s ease, box-shadow 0.4s ease;
-    }
-
-    @keyframes slideUpFade {
-        0% { opacity: 0; transform: translateY(40px); }
-        100% { opacity: 1; transform: translateY(0); }
-    }
-
-    .feed-wrapper:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -5px rgba(0, 0, 0, 0.04);
-    }
-
-    /* Elemento de máscara para ocultar branding de terceros */
-    .widget-cover-patch {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 40px; 
-        background: white;
-        z-index: 50;
-        pointer-events: auto;
-        cursor: default;
-        border-bottom-left-radius: 12px;
-        border-bottom-right-radius: 12px;
-    }
-  `}</style>
-);
-
-/**
- * CONSTANTE: CAREERS_DATA
- * Estructura de datos inmutable que contiene la información de las carreras.
- * Se utiliza para renderizar dinámicamente el BentoGrid.
- */
-const CAREERS_DATA = {
-  diseno: {
-    id: 'diseno',
-    title: "Diseño Gráfico",
-    desc: "No solo diseñes, crea realidades. Domina UX/UI, Motion Graphics y Branding para marcas que desafían lo convencional.",
-    img: "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/dise%C3%B1o.jpg",
-    color: "#f97316",
-    bg: "#fff7ed",
-    icon: <PenTool size={24} />
-  },
-  software: {
-    id: 'software',
-    title: "Desarrollo Software",
-    desc: "Codifica el futuro. Construye ecosistemas digitales, IAs y aplicaciones que mueven al mundo. Sé el arquitecto de la era digital.",
-    img: "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/desarrollo.jpg",
-    color: "#1e3a8a",
-    bg: "#eff6ff",
-    icon: <Code size={24} />
-  },
-  marketing: {
-    id: 'marketing',
-    title: "Marketing Digital",
-    desc: "Hackea el algoritmo. Domina estrategias de crecimiento, neuromarketing y data analytics para liderar mercados globales.",
-    img: "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/marketing.jpg",
-    color: "#d946ef",
-    bg: "#fdf4ff",
-    icon: <Megaphone size={24} />
-  },
-  contabilidad: {
-    id: 'contabilidad',
-    title: "Contabilidad",
-    desc: "Fintech & Estrategia. Evoluciona de los números a la inteligencia financiera. Gestiona el capital de las empresas del mañana.",
-    img: "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/contabilidad.jpg",
-    color: "#06b6d4",
-    bg: "#ecfeff",
-    icon: <Calculator size={24} />
-  }
-};
-
-/**
- * Arreglo de URLs para la rotación del carrusel del Hero.
- */
-const HERO_IMAGES = [
-  "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto1.png",
-  "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto2.png",
-  "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto3.png"
-];
-
-// --- SECCIÓN DE COMPONENTES ---
-
-/**
- * COMPONENTE: Cursor
- * Implementa un cursor personalizado que sigue el movimiento del mouse.
- * Utiliza useRef para manipulación directa del DOM y evitar re-renderizados excesivos.
- * Incluye lógica de detección de elementos interactivos ('hover') para efectos de escala.
- */
-const Cursor = () => {
-  const cursorRef = useRef(null);
-
-  useEffect(() => {
-    // Manejador del evento mousemove
-    const moveCursor = (e) => {
-      if (cursorRef.current) {
-        cursorRef.current.style.left = `${e.clientX}px`;
-        cursorRef.current.style.top = `${e.clientY}px`;
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.292.0"
       }
-    };
-    
-    // Verificación de capacidades del dispositivo (solo en desktop/puntero fino)
-    if (window.matchMedia("(hover: hover)").matches) {
-      window.addEventListener('mousemove', moveCursor);
-      
-      const hoverables = document.querySelectorAll('a, button, .interactive, .bento-card');
-      hoverables.forEach(el => {
-        el.addEventListener('mouseenter', () => {
-            if(cursorRef.current) {
-                cursorRef.current.style.transform = 'translate(-50%, -50%) scale(1.8)';
-                cursorRef.current.style.backgroundColor = 'rgba(32, 155, 216, 0.1)';
-            }
-        });
-        el.addEventListener('mouseleave', () => {
-            if(cursorRef.current) {
-                cursorRef.current.style.transform = 'translate(-50%, -50%) scale(1)';
-                cursorRef.current.style.backgroundColor = 'transparent';
-            }
-        });
-      });
     }
-
-    // Cleanup del event listener al desmontar
-    return () => window.removeEventListener('mousemove', moveCursor);
-  }, []);
-
-  return (
-    <div 
-      ref={cursorRef}
-      className="fixed pointer-events-none w-5 h-5 border-2 border-[#209bd8] rounded-full z-[9999] -translate-x-1/2 -translate-y-1/2 transition-transform duration-100 hidden md:block"
-    />
-  );
-};
-
-/**
- * COMPONENTE: SplashScreen
- * Pantalla de carga inicial con temporizador.
- * Gestiona la transición de opacidad antes de desmontarse del DOM.
- */
-const SplashScreen = ({ onFinish }) => {
-  const [visible, setVisible] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setVisible(false);
-      setTimeout(onFinish, 600); // Callback para restaurar el scroll del body
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [onFinish]);
-
-  if (!visible) return null;
-
-  return (
-    <div className={`fixed inset-0 bg-white z-[999999] flex flex-col items-center justify-center transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-      <div className="relative w-32 h-32 flex items-center justify-center">
-        <img 
-          src="https://raw.githubusercontent.com/caortiz-stack/hosting/428d37be735801b9daac0104b576765808ffb296/faviconmdpi.svg?v=2" 
-          alt="ISTG Logo" 
-          className="w-16 h-auto z-10 animate-pulse"
-        />
-        <div className="absolute inset-0 border-4 border-[#209bd8]/10 border-t-[#209bd8] rounded-full animate-spin"></div>
-      </div>
-    </div>
-  );
-};
-
-/**
- * COMPONENTE: Navbar
- * Barra de navegación superior responsive con efecto de "backdrop-blur" al hacer scroll.
- * Contiene el sistema de notificaciones dropdown y control del menú móvil.
- */
-const Navbar = ({ onOpenModal, onOpenCampus }) => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isNotifyOpen, setIsNotifyOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    // Detección de posición de scroll para cambio de estilos
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
+    </script>
     
-    // Detector de clics fuera del dropdown para cerrarlo (Click Outside pattern)
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsNotifyOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
 
-  return (
-    <nav className={`fixed top-0 left-0 w-full z-[1000] transition-all duration-300 ${isScrolled ? 'py-2 shadow-sm bg-white/95 backdrop-blur-md' : 'py-4 bg-white/95 backdrop-blur-md border-b border-gray-100/50'}`}>
-      <div className="max-w-[1200px] mx-auto px-5 flex justify-between items-center">
-        <a href="#" className="block w-40">
-          <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/4d0023a4a1e80af12ac0c1725f64f702cc835788/Recurso%201.svg" alt="ISTG Logo" className="h-12 w-auto pointer-events-none" />
-        </a>
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'react';
+        import ReactDOM from 'react-dom/client';
+        import { MapPin, Phone, Mail, Bell, AlertCircle, Calendar, ArrowLeft, PenTool, Code, Megaphone, Calculator, Menu, X, Facebook, Instagram, ShieldCheck, ExternalLink, Lock, FileText, CheckCircle2, Clock, MapPin as LocationIcon } from 'lucide-react';
 
-        {/* Navegación Desktop */}
-        <ul className="hidden md:flex gap-8 list-none nav-menu">
-          {['Inicio', 'Oferta Académica', 'Admisión', 'Comunidad', 'Contacto'].map((item) => (
-            <li key={item}>
-              <a href={`#${item.toLowerCase().replace(' ', '-')}`} className="nav-link text-[#232453] font-semibold text-sm uppercase relative group hover:text-[#209bd8] transition-colors">
-                {item}
-                <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#209bd8] transition-all duration-300 group-hover:w-full"></span>
-              </a>
-            </li>
-          ))}
-        </ul>
-
-        {/* Panel de Acciones y Notificaciones */}
-        <div className="hidden md:flex items-center gap-6">
-            <div className="relative hover-ring" ref={dropdownRef}>
-                <button 
-                    onClick={() => setIsNotifyOpen(!isNotifyOpen)}
-                    className="p-2 transition-transform active:scale-95 outline-none relative"
-                    title="Notificaciones"
-                >
-                    <Bell 
-                        size={24} 
-                        className="icon-bell text-[#232453]" 
-                        fill="currentColor"
-                    />
-                    <span className="absolute top-1 right-1.5 w-2.5 h-2.5 bg-[#ff4757] rounded-full border-2 border-white"></span>
-                </button>
-                
-                {/* Dropdown de Notificaciones */}
-                {isNotifyOpen && (
-                    <div className="absolute top-14 right-[-20px] w-96 bg-white rounded-2xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-3 origin-top-right z-50 backdrop-blur-sm bg-white/95">
-                        <div className="px-5 py-4 bg-white/50 border-b border-gray-50 flex justify-between items-center">
-                            <span className="font-['Montserrat'] font-bold text-xs text-gray-400 uppercase tracking-widest">Centro de Novedades</span>
-                            <span className="text-[10px] bg-blue-50 text-[#209bd8] px-2 py-1 rounded-full font-bold">2 Nuevas</span>
-                        </div>
-                        
-                        <div className="p-2 flex flex-col gap-1 max-h-[400px] overflow-y-auto custom-scroll">
-                            
-                            {/* Ítem: Reingreso */}
-                            <div 
-                                onClick={() => { onOpenModal('homologacion'); setIsNotifyOpen(false); }}
-                                className="group flex gap-4 p-4 rounded-xl hover:bg-[#f8fafc] cursor-pointer transition-all border border-transparent hover:border-gray-100 relative overflow-hidden"
-                            >
-                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#10b981] to-[#059669] opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                <div className="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
-                                    <FileText size={18} fill="currentColor" className="opacity-20 absolute" />
-                                    <FileText size={18} />
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <strong className="text-sm font-bold text-[#232453]">Reingreso y Homologación</strong>
-                                        <span className="text-[10px] bg-green-100 text-green-700 px-1.5 rounded font-medium">Nuevo</span>
-                                    </div>
-                                    <p className="text-xs text-gray-500 leading-snug">Proceso abierto hasta el 23 de Enero. Revisa los requisitos aquí.</p>
-                                </div>
-                            </div>
-
-                            {/* Ítem: Exámenes */}
-                            <div 
-                                onClick={() => { onOpenModal('examenes'); setIsNotifyOpen(false); }}
-                                className="group flex gap-4 p-4 rounded-xl hover:bg-[#f8fafc] cursor-pointer transition-all border border-transparent hover:border-gray-100 relative overflow-hidden"
-                            >
-                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#209bd8] to-[#1e3a8a] opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                <div className="w-10 h-10 rounded-full bg-blue-50 text-[#209bd8] flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
-                                    <Calendar size={18} fill="currentColor" className="opacity-20 absolute" />
-                                    <Calendar size={18} />
-                                </div>
-                                <div>
-                                    <strong className="text-sm font-bold text-[#232453] block mb-1">Horario de Exámenes</strong>
-                                    <p className="text-xs text-gray-500 leading-snug">Cronograma 2do Parcial disponible. Planifica tu semana.</p>
-                                </div>
-                            </div>
-
-                            {/* Ítem: Evaluación */}
-                            <div className="group flex gap-4 p-4 rounded-xl hover:bg-[#f8fafc] cursor-pointer transition-all border border-transparent hover:border-gray-100 relative overflow-hidden opacity-80">
-                                <div className="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center shrink-0 shadow-sm">
-                                    <AlertCircle size={18} />
-                                </div>
-                                <div>
-                                    <strong className="text-sm font-bold text-[#232453] block mb-1">Evaluación Docente</strong>
-                                    <p className="text-xs text-gray-500 leading-snug">Recuerda completar este requisito en la plataforma SIGA.</p>
-                                </div>
-                            </div>
-
-                        </div>
-                        <div className="bg-gray-50 p-2 text-center">
-                            <span className="text-[10px] text-gray-400 font-medium">Centro de Notificaciones ISTG</span>
-                        </div>
-                    </div>
-                )}
-            </div>
+        // --- ESTILOS GLOBALES Y TIPOGRAFÍA ---
+        const GlobalStyles = () => (
+        <style>{`
+            :root {
+            --font-display: 'Montserrat', sans-serif;
+            --font-body: 'Lato', sans-serif;
             
-            <button 
-                onClick={onOpenCampus}
-                className="btn-custom btn-primary-c shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5"
-            >
-                Campus Virtual
-            </button>
-        </div>
-
-        {/* Botón Toggle para Menú Móvil */}
-        <button className="md:hidden text-[#232453]" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-            {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-        </button>
-      </div>
-    </nav>
-  );
-};
-
-/**
- * COMPONENTE: BentoGrid
- * Renderiza la oferta académica utilizando un diseño de cuadrícula tipo "Bento".
- * Gestiona un estado local `layout` para permitir el intercambio (swap) de tarjetas al hacer clic.
- */
-const BentoGrid = () => {
-    const [layout, setLayout] = useState(['diseno', 'software', 'marketing', 'contabilidad']);
-    
-    // Función para intercambiar la posición del elemento seleccionado con el elemento principal (índice 0)
-    const swap = (stackIndex) => {
-        const realIndex = stackIndex + 1;
-        setLayout(prevLayout => {
-            const newLayout = [...prevLayout];
-            const temp = newLayout[0];
-            newLayout[0] = newLayout[realIndex];
-            newLayout[realIndex] = temp;
-            return newLayout;
-        });
-    };
-
-    const mainCareer = CAREERS_DATA[layout[0]];
-
-    return (
-        <section id="carreras" className="py-20 bg-[#f8fafc]">
-            <div className="max-w-[1300px] mx-auto px-5">
-                <div className="text-center mb-10">
-                    <span className="section-tag inline-block px-4 py-1.5 rounded-full bg-blue-50 text-[#209bd8] text-xs font-bold uppercase tracking-widest border border-blue-100 mb-3">
-                        Oferta Académica
-                    </span>
-                    <h2 className="section-title text-4xl text-[#232453]">Carreras para el <span className="text-[#209bd8]">Mundo Real</span></h2>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] grid-rows-3 lg:grid-rows-[repeat(3,180px)] gap-5 h-auto lg:h-[580px]">
-                    
-                    {/* Tarjeta Principal (Expandida) */}
-                    <div className="col-span-1 lg:row-span-3 bg-white rounded-2xl overflow-hidden shadow-lg border-2 border-gray-50 flex flex-col lg:flex-row relative group interactive">
-                         <div className="w-full lg:w-[55%] h-64 lg:h-full relative overflow-hidden bg-gray-100">
-                            <img 
-                                key={mainCareer.img}
-                                src={mainCareer.img} 
-                                alt={mainCareer.title} 
-                                className="w-full h-full object-cover object-top animate-[fadeIn_0.5s_ease-out] pointer-events-none select-none"
-                            />
-                         </div>
-                         <div className="w-full lg:w-[45%] p-8 lg:p-10 flex flex-col justify-center bg-white border-l border-gray-50">
-                            <div className="flex items-center gap-4 mb-5">
-                                <div 
-                                    className="w-14 h-14 rounded-full flex items-center justify-center border transition-colors duration-300"
-                                    style={{ backgroundColor: mainCareer.bg, color: mainCareer.color, borderColor: '#e5e7eb' }}
-                                >
-                                    {mainCareer.icon}
-                                </div>
-                                <h3 className="bento-title text-2xl lg:text-3xl text-[#232453] leading-tight">
-                                    {mainCareer.title}
-                                </h3>
-                            </div>
-                            <p key={mainCareer.desc} className="text-sm lg:text-[15px] text-gray-500 leading-relaxed animate-[fadeIn_0.5s_ease-out]">
-                                {mainCareer.desc}
-                            </p>
-                         </div>
-                    </div>
-
-                    {/* Tarjetas Secundarias (Stack Lateral) */}
-                    {[1, 2, 3].map((layoutIndex, visualIndex) => {
-                        const careerId = layout[layoutIndex];
-                        const data = CAREERS_DATA[careerId];
-                        
-                        return (
-                            <div 
-                                key={visualIndex}
-                                onClick={() => swap(visualIndex)}
-                                className="bento-card bg-white rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-2.5 interactive border border-transparent hover:border-blue-100 h-[150px] lg:h-full"
-                                style={{ backgroundColor: data.color }}
-                            >
-                                <div className="text-white mb-2 opacity-90">
-                                    {React.cloneElement(data.icon, { size: 28 })}
-                                </div>
-                                <h3 className="bento-title text-white font-black text-sm uppercase tracking-wide text-center drop-shadow-md w-full break-words">
-                                    {data.title}
-                                </h3>
-                            </div>
-                        );
-                    })}
-
-                </div>
-            </div>
-        </section>
-    );
-};
-
-/**
- * COMPONENTE: Modal
- * Modal unificado y polimórfico. Renderiza contenido diferente basándose en la prop `type` ('homologacion' | 'examenes').
- * Gestiona un estado interno `view` para alternar entre la vista de información y el iframe incrustado.
- */
-const Modal = ({ isOpen, onClose, type }) => {
-    const [view, setView] = useState('initial'); 
-    
-    // Reseteo de vista al abrir/cerrar
-    useEffect(() => {
-        if (isOpen) setView('initial');
-    }, [isOpen]);
-
-    if (!isOpen) return null;
-
-    // Objeto de configuración de contenido basado en el tipo de modal
-    const content = type === 'homologacion' 
-        ? { 
-            image: "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/homolo.png",
-            title: "COMUNIDAD ESTUDIANTIL ISTG",
-            btnText: "Acceder Ahora",
-            isSecurity: true
-        } 
-        : { // Fallback por defecto: Exámenes
-            image: "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/popup.jpeg",
-            title: "¡ATENCIÓN ESTUDIANTES!",
-            text: "Ya se encuentra disponible el cronograma oficial de exámenes del 2do Parcial.",
-            btnText: "Ver Horario",
-            isSecurity: false
-        };
-
-    return (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center px-4">
-            <div className="absolute inset-0 bg-[#0f172a]/90 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
-            
-            <div className="bg-white w-full max-w-[800px] h-[400px] rounded-3xl shadow-2xl relative z-10 flex overflow-hidden animate-[bounceIn_0.5s_ease-out]">
-                <button onClick={onClose} className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur rounded-full hover:bg-gray-100 transition text-[#232453] shadow-sm">
-                    <X size={20} />
-                </button>
-
-                {view === 'initial' ? (
-                    <div className="flex w-full h-full flex-col md:flex-row">
-                        {/* Columna Izquierda: Imagen */}
-                        <div className="w-full md:w-[45%] h-48 md:h-full bg-white relative flex items-center justify-center p-0 border-r border-gray-50 overflow-hidden">
-                             <img 
-                                src={content.image} 
-                                className="w-full h-full object-cover pointer-events-none select-none" 
-                                alt="Aviso" 
-                             />
-                        </div>
-
-                        {/* Columna Derecha: Información */}
-                        <div className="w-full md:w-[55%] p-8 md:p-8 flex flex-col justify-center bg-white custom-scroll overflow-y-auto">
-                             
-                             <h3 className="modal-title text-xl lg:text-2xl font-black text-[#232453] uppercase mb-3 leading-tight tracking-tight">
-                                 {content.title}
-                             </h3>
-
-                             {content.isSecurity ? (
-                                 // Renderizado Condicional: Contenido Homologación
-                                 <div className="space-y-3 text-sm text-gray-600">
-                                     <p>Hola 👋, te informamos que podrás realizar tu <strong>REINGRESO, HOMOLOGACION INTERNA Y EXTERNA</strong>, hasta el <strong>23 de enero 2026</strong>.</p>
-                                     
-                                     <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100">
-                                        <h4 className="font-bold text-[#232453] text-[10px] uppercase mb-2 flex items-center gap-2 border-b border-blue-100 pb-1">
-                                            📌 Detalles del Proceso
-                                        </h4>
-                                        <ul className="space-y-1 text-[11px] text-gray-500">
-                                            <li className="flex items-start gap-2">
-                                                <FileText size={12} className="text-[#209bd8] mt-0.5 shrink-0" />
-                                                <span>Solicitud impresa en Secretaría.</span>
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <CheckCircle2 size={12} className="text-green-500 mt-0.5 shrink-0" />
-                                                <span>Realizar la solicitud física (venir presencial).</span>
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <LocationIcon size={12} className="text-[#232453] mt-0.5 shrink-0" />
-                                                <span><strong>Lugar:</strong> Matriz Colegio Guayaquil</span>
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <Clock size={12} className="text-[#232453] mt-0.5 shrink-0" />
-                                                <span><strong>Horario:</strong> 11h00 a 18h00</span>
-                                            </li>
-                                        </ul>
-                                     </div>
-                                 </div>
-                             ) : (
-                                 // Renderizado Condicional: Contenido Exámenes
-                                 <p className="text-sm text-gray-500 mb-6 leading-relaxed">
-                                     {content.text}
-                                 </p>
-                             )}
-
-                             {/* Área de Acción */}
-                             <div className="mt-5">
-                                {content.isSecurity ? (
-                                    <div className="text-xs text-gray-400 italic">Acércate a secretaría para más información.</div>
-                                ) : (
-                                    <button 
-                                        onClick={() => setView('iframe')}
-                                        className="btn-custom btn-primary-c self-start px-6 py-3 shadow-lg hover:shadow-xl hover:-translate-y-1 flex items-center gap-2"
-                                    >
-                                        <Calendar size={14} /> {content.btnText}
-                                    </button>
-                                )}
-                             </div>
-                        </div>
-                    </div>
-                ) : (
-                    // VISTA SECUNDARIA: IFRAME DE HORARIO
-                    <div className="w-full h-full flex flex-col bg-white">
-                        <div className="h-12 border-b border-gray-100 flex items-center justify-between px-6 shrink-0 bg-white">
-                            <button onClick={() => setView('initial')} className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-[#209bd8] transition-colors uppercase tracking-wider">
-                                <ArrowLeft size={16} /> Volver
-                            </button>
-                            <span className="text-xs font-bold text-[#232453] tracking-widest">VISOR OFICIAL</span>
-                            <div className="w-8"></div>
-                        </div>
-                        <iframe src="https://f.mtr.cool/ryktmtwllh" className="w-full flex-grow border-none bg-gray-100" title="Horario"></iframe>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-};
-
-/**
- * COMPONENTE: SecurityModal
- * Intercepta la navegación hacia plataformas externas sensibles (SGA).
- * Provee feedback visual de seguridad (TLS) antes de redirigir.
- */
-const SecurityModal = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 z-[10001] flex items-center justify-center px-4">
-      <div className="absolute inset-0 bg-[#0f172a]/85 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
-      <div className="bg-white w-full max-w-sm rounded-[30px] shadow-2xl relative z-10 flex flex-col items-center text-center p-10 overflow-hidden animate-[bounceIn_0.4s_ease-out]">
-        <button onClick={onClose} className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center bg-gray-50 rounded-full text-gray-400 hover:text-[#232453] hover:bg-gray-100 transition-all">
-            <X size={18} />
-        </button>
-        
-        {/* Branding */}
-        <img 
-            src="https://raw.githubusercontent.com/caortiz-stack/hosting/4d0023a4a1e80af12ac0c1725f64f702cc835788/Recurso%201.svg" 
-            alt="ISTG Security" 
-            className="w-16 h-auto mb-5 pointer-events-none select-none"
-        />
-
-        {/* Indicador de Seguridad */}
-        <div className="bg-green-50/80 border border-green-200 rounded-full px-5 py-2 flex items-center gap-2.5 mb-6">
-             <div className="relative flex items-center justify-center">
-                 <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-30 animate-ping"></span>
-                 <ShieldCheck size={18} className="text-green-600 relative z-10" />
-             </div>
-             <span className="text-green-700 text-xs font-bold uppercase tracking-wide">Conexión Segura TLS</span>
-        </div>
-        
-        <h3 className="modal-title text-2xl font-black text-[#232453] mb-2 uppercase tracking-tight">Campus Virtual ISTG</h3>
-        
-        <p className="text-gray-500 text-sm mb-8 leading-relaxed px-2">
-            Estás a punto de ingresar a la plataforma académica. Por protocolos de seguridad, el acceso se abrirá en una nueva ventana autenticada.
-        </p>
-        
-        <a 
-            href="https://academico.istg.edu.ec/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            onClick={onClose}
-            className="btn-custom w-full max-w-[280px] btn-primary-c flex items-center justify-center gap-2 mb-4 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
-        >
-            <span>Acceder Ahora</span> <ExternalLink size={16} />
-        </a>
-        
-        <p className="text-[11px] text-gray-400 mt-6">
-            Si tienes problemas de acceso, contacta a <a href="mailto:soporte@istg.edu.ec" className="text-[#209bd8] font-bold hover:underline">soporte@istg.edu.ec</a>
-        </p>
-      </div>
-    </div>
-  );
-};
-
-/**
- * COMPONENTE: SocialFeed
- * Integra un widget de terceros (Elfsight) para mostrar feeds sociales.
- * Incluye lógica de sanitización del DOM para eliminar elementos de branding no deseados
- * mediante un script de ejecución periódica (interval).
- */
-const SocialFeed = () => {
-    useEffect(() => {
-        // Inyección asíncrona del script de la plataforma externa
-        const script = document.createElement('script');
-        script.src = "https://elfsightcdn.com/platform.js";
-        script.async = true;
-        document.body.appendChild(script);
-        
-        // Lógica de limpieza del DOM (Sanitización visual)
-        const domSanitizer = setInterval(() => {
-            try {
-                // 1. Ocultamiento de enlaces de atribución
-                const links = document.querySelectorAll('a[href*="elfsight.com"]');
-                links.forEach(link => {
-                    if (!link.querySelector('img') || link.innerText.toLowerCase().includes('free')) {
-                        forceInvisible(link);
-                        // Comprobación heurística de contenedores padres pequeños
-                        if (link.parentElement && link.parentElement.offsetHeight < 50) {
-                             forceInvisible(link.parentElement);
-                        }
-                    }
-                });
-
-                // 2. Ocultamiento de barras de herramientas inyectadas
-                const toolbars = document.querySelectorAll('.eapps-widget-toolbar, .eapps-link');
-                toolbars.forEach(tb => forceInvisible(tb));
-
-                // 3. Filtrado por contenido de texto
-                const candidates = document.querySelectorAll('div, span, a, p');
-                candidates.forEach(el => {
-                    const text = (el.innerText || "").toLowerCase();
-                    if (text.includes('free social feed') || text.includes('elfsight')) {
-                        if (el.offsetHeight < 100 && el.children.length < 5) { 
-                            forceInvisible(el);
-                        }
-                    }
-                });
-
-            } catch (e) {
-                // Manejo silencioso de errores durante la manipulación del DOM
+            --brand-dark: #232453;
+            --brand-light: #209bd8;
             }
-        }, 100);
 
-        // Función helper para aplicar estilos inline de alta prioridad
-        function forceInvisible(el) {
-            if (!el) return;
-            el.style.setProperty('opacity', '0', 'important');
-            el.style.setProperty('pointer-events', 'none', 'important');
-            el.style.setProperty('visibility', 'hidden', 'important');
-            el.style.setProperty('width', '0', 'important');
-            el.style.setProperty('height', '0', 'important');
-            el.style.setProperty('position', 'absolute', 'important');
-            el.style.setProperty('z-index', '-9999', 'important');
-            el.style.setProperty('display', 'none', 'important');
+            /* Asignación Base (Lato) */
+            body, input, textarea, select, a, .nav-link, li, p {
+            font-family: var(--font-body);
+            }
+
+            /* Asignación Display (Títulos e Impacto - Montserrat) */
+            .hero-title, 
+            .section-title, 
+            .bento-title, 
+            .modal-title, 
+            .f-title,
+            .btn-custom, 
+            .hero-tag, 
+            .section-tag,
+            .notify-header,
+            h3, h4, strong {
+            font-family: var(--font-display);
+            }
+
+            /* Pesos Específicos */
+            .hero-title { font-weight: 900 !important; }
+            .section-title { font-weight: 800 !important; }
+            
+            /* ESTILOS DE BOTONES */
+            .btn-custom {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 12px 30px; border-radius: 50px;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 12px;
+            cursor: pointer; border: 2px solid transparent; transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            text-decoration: none;
+            }
+            .btn-primary-c {
+            background-color: var(--brand-dark); color: white;
+            box-shadow: 0 4px 15px rgba(35, 36, 83, 0.2);
+            }
+            .btn-primary-c:hover {
+            background-color: var(--brand-light); transform: translateY(-2px);
+            }
+            .btn-outline-c {
+            background: transparent; color: var(--brand-dark); border-color: var(--brand-dark);
+            }
+            .btn-outline-c:hover {
+            background: var(--brand-dark); color: white; transform: translateY(-2px);
+            }
+
+            /* Animación Campana */
+            @keyframes bellRing {
+            0%, 100% { transform: rotate(0); }
+            15% { transform: rotate(15deg); }
+            30% { transform: rotate(-15deg); }
+            45% { transform: rotate(10deg); }
+            60% { transform: rotate(-10deg); }
+            75% { transform: rotate(5deg); }
+            90% { transform: rotate(-5deg); }
+            }
+            
+            .hover-ring:hover .icon-bell {
+            animation: bellRing 0.8s ease-in-out;
+            transform-origin: top center;
+            }
+
+            /* Scrollbar Personalizado para el Modal */
+            .custom-scroll::-webkit-scrollbar { width: 6px; }
+            .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+            .custom-scroll::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+            .custom-scroll::-webkit-scrollbar-thumb:hover { background: #bbb; }
+
+            /* --- ESTILOS SOCIAL FEED --- */
+            .clean-container {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                padding: 20px 10px;
+                box-sizing: border-box;
+            }
+
+            .feed-wrapper {
+                position: relative;
+                width: 100%;
+                max-width: 1200px;
+                background: white;
+                border-radius: 12px;
+                opacity: 0;
+                animation: slideUpFade 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+                transition: transform 0.4s ease, box-shadow 0.4s ease;
+            }
+
+            @keyframes slideUpFade {
+                0% { opacity: 0; transform: translateY(40px); }
+                100% { opacity: 1; transform: translateY(0); }
+            }
+
+            .feed-wrapper:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+
+            .widget-cover-patch {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 40px; 
+                background: white;
+                z-index: 50;
+                pointer-events: auto;
+                cursor: default;
+                border-bottom-left-radius: 12px;
+                border-bottom-right-radius: 12px;
+            }
+        `}</style>
+        );
+
+        // --- DATOS CONSTANTES ---
+        const CAREERS_DATA = {
+        diseno: {
+            id: 'diseno',
+            title: "Diseño Gráfico",
+            desc: "No solo diseñes, crea realidades. Domina UX/UI, Motion Graphics y Branding para marcas que desafían lo convencional.",
+            img: "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/dise%C3%B1o.jpg",
+            color: "#f97316",
+            bg: "#fff7ed",
+            icon: <PenTool size={24} />
+        },
+        software: {
+            id: 'software',
+            title: "Desarrollo Software",
+            desc: "Codifica el futuro. Construye ecosistemas digitales, IAs y aplicaciones que mueven al mundo. Sé el arquitecto de la era digital.",
+            img: "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/desarrollo.jpg",
+            color: "#1e3a8a",
+            bg: "#eff6ff",
+            icon: <Code size={24} />
+        },
+        marketing: {
+            id: 'marketing',
+            title: "Marketing Digital",
+            desc: "Hackea el algoritmo. Domina estrategias de crecimiento, neuromarketing y data analytics para liderar mercados globales.",
+            img: "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/marketing.jpg",
+            color: "#d946ef",
+            bg: "#fdf4ff",
+            icon: <Megaphone size={24} />
+        },
+        contabilidad: {
+            id: 'contabilidad',
+            title: "Contabilidad",
+            desc: "Fintech & Estrategia. Evoluciona de los números a la inteligencia financiera. Gestiona el capital de las empresas del mañana.",
+            img: "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/contabilidad.jpg",
+            color: "#06b6d4",
+            bg: "#ecfeff",
+            icon: <Calculator size={24} />
         }
-        
-        // Cleanup al desmontar el componente
-        return () => {
-            document.body.removeChild(script);
-            clearInterval(domSanitizer);
         };
-    }, []);
 
-    return (
-        <section id="social-feed" className="py-20 bg-[#f8fafc]">
-            <div className="max-w-[1000px] mx-auto px-5 text-center">
-                <div className="mb-8">
-                    <span className="section-tag inline-block px-4 py-1.5 rounded-full bg-blue-50 text-[#209bd8] text-xs font-bold uppercase tracking-widest border border-blue-100 mb-3">Comunidad ISTG</span>
-                    <h2 className="section-title text-4xl text-[#232453]">Lo que pasa en el <span className="text-[#209bd8]">Campus</span></h2>
-                </div>
-                
-                <div className="flex justify-center gap-4 mb-8">
-                      <a href="https://www.facebook.com/istg.ec" target="_blank" className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#1877F2] shadow-md hover:scale-110 transition-transform">
-                        <Facebook size={24} fill="currentColor" strokeWidth={0} />
-                      </a>
-                      <a href="https://www.instagram.com/istg.ec" target="_blank" className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#E1306C] shadow-md hover:scale-110 transition-transform">
-                        <Instagram size={24} />
-                      </a>
-                </div>
+        const HERO_IMAGES = [
+        "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto1.png",
+        "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto2.png",
+        "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/foto3.png"
+        ];
 
-                <div className="clean-container">
-                    <div className="feed-wrapper shadow-sm">
-                        <div className="w-full h-full relative z-10" style={{minHeight: '300px'}}>
-                            <div className="elfsight-app-22901817-ec27-44a1-a507-25c34a732644" data-elfsight-app-lazy></div>
-                        </div>
-                        <div className="widget-cover-patch"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    );
-};
+        // --- COMPONENTES ---
 
-/**
- * COMPONENTE PRINCIPAL: App
- * Punto de entrada de la aplicación.
- * Gestiona el estado global de los modales y el ciclo de vida de la imagen del Hero.
- */
-const App = () => {
-  const [modalType, setModalType] = useState(null); // Estado para controlar qué modal está activo
-  const [securityModalOpen, setSecurityModalOpen] = useState(false);
-  const [heroIndex, setHeroIndex] = useState(0);
+        const Cursor = () => {
+        const cursorRef = useRef(null);
 
-  // Efecto para la rotación automática del carrusel de imágenes (4 segundos)
-  useEffect(() => {
-    const interval = setInterval(() => {
-        setHeroIndex(prev => (prev + 1) % HERO_IMAGES.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const openModal = (type) => setModalType(type);
-  const closeModal = () => setModalType(null);
-
-  return (
-    <>
-      <GlobalStyles />
-      <SplashScreen onFinish={() => document.body.style.overflowY = 'auto'} />
-      <Cursor />
-      
-      {/* Navegación Principal */}
-      <Navbar onOpenModal={openModal} onOpenCampus={() => setSecurityModalOpen(true)} />
-      
-      {/* Botón de Acción Flotante (FAB) - Exámenes */}
-      <button 
-        onClick={() => openModal('examenes')}
-        className="fixed bottom-8 left-8 bg-white px-6 py-3 rounded-full shadow-xl flex items-center gap-3 cursor-pointer z-50 border-2 border-[#209bd8] hover:-translate-y-1 transition-transform group hover-ring"
-      >
-        <span className="absolute inset-0 rounded-full border-2 border-[#209bd8] animate-ping opacity-20"></span>
-        <Bell size={20} className="text-[#232453] icon-bell fill-current" />
-        <span className="font-bold text-[#232453] text-xs uppercase tracking-wide">Horarios Exámenes</span>
-      </button>
-
-      {/* Renderizado de Modales Globales */}
-      <Modal isOpen={!!modalType} type={modalType} onClose={closeModal} />
-      <SecurityModal isOpen={securityModalOpen} onClose={() => setSecurityModalOpen(false)} />
-
-      {/* Sección Hero con Parallax e Imágenes de Fondo */}
-      <section className="relative min-h-screen pt-20 flex items-center overflow-hidden bg-white">
-        <div className="absolute top-[-20%] left-[-10%] w-1/2 h-full bg-[radial-gradient(circle,rgba(32,155,216,0.05)_0%,transparent_70%)] -z-0"></div>
-        
-        {/* Overlay de gradiente para suavizar la transición inferior */}
-        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-b from-transparent to-[#f8fafc] pointer-events-none z-0"></div>
-
-        <div className="max-w-[1200px] mx-auto px-5 w-full grid grid-cols-1 lg:grid-cols-2 gap-10 items-center h-full relative z-10">
-            <div className="pr-0 lg:pr-10 text-center lg:text-left">
-                <span className="hero-tag inline-block px-4 py-1.5 rounded-full bg-blue-50 text-[#209bd8] text-xs font-bold uppercase tracking-widest border border-blue-100 mb-6">
-                    Tecnología Superior
-                </span>
-                <h1 className="hero-title font-['Montserrat'] text-5xl lg:text-6xl font-black text-[#232453] mb-6 leading-tight">
-                    EL FUTURO SE <br/><span className="text-[#209bd8]">DISEÑA AQUÍ.</span>
-                </h1>
-                <p className="text-lg text-gray-500 mb-8 max-w-lg mx-auto lg:mx-0 border-l-4 border-[#209bd8] pl-6">
-                    Fórmate con excelencia académica en el corazón de Guayaquil. Títulos de tercer nivel en 2 años con enfoque práctico.
-                </p>
-                <div className="flex gap-4 flex-wrap justify-center lg:justify-start">
-                    <a href="#carreras" className="btn-custom btn-primary-c flex items-center justify-center px-8 py-3 rounded-full bg-[#232453] text-white font-bold text-xs uppercase tracking-wide hover:bg-[#209bd8] shadow-lg transition-all hover:-translate-y-1">
-                        Ver Carreras
-                    </a>
-                    <a href="#admisiones" className="btn-custom flex items-center justify-center px-8 py-3 rounded-full border border-[#232453] text-[#232453] font-bold text-xs uppercase tracking-wide hover:bg-[#232453] hover:text-white transition-all hover:-translate-y-1">
-                        Admisión
-                    </a>
-                </div>
-            </div>
-
-            <div className="flex justify-center p-5">
-                <div className="w-full max-w-[550px] aspect-[5/4] rounded-[24px] overflow-hidden shadow-[20px_20px_0px_rgba(32,155,216,0.2)] relative bg-white">
-                    {HERO_IMAGES.map((src, idx) => (
-                        <img 
-                            key={idx}
-                            src={src} 
-                            className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${idx === heroIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-                            style={{ objectPosition: 'top center' }}
-                            alt="Hero"
-                        />
-                    ))}
-                </div>
-            </div>
-        </div>
-      </section>
-
-      <BentoGrid />
-
-      {/* Sección: Proceso de Admisión */}
-      <section id="admisiones" className="py-20 bg-white">
-        <div className="max-w-[1200px] mx-auto px-5">
-            <div className="text-center mb-12">
-                <span className="section-tag text-[#209bd8] font-bold text-xs uppercase tracking-widest">Proceso de Admisión</span>
-                <h2 className="section-title text-4xl text-[#232453] mt-2">Tu futuro comienza <span className="text-[#209bd8]">Hoy</span></h2>
-            </div>
+        useEffect(() => {
+            const moveCursor = (e) => {
+            if (cursorRef.current) {
+                cursorRef.current.style.left = `${e.clientX}px`;
+                cursorRef.current.style.top = `${e.clientY}px`;
+            }
+            };
             
-            <div className="flex flex-col md:flex-row justify-between relative mt-16 gap-10 md:gap-0">
-                <div className="absolute top-6 left-0 w-full h-[3px] bg-gray-100 hidden md:block"></div>
-                <div className="absolute top-6 left-0 w-0 h-[3px] bg-[#209bd8] hidden md:block" id="process-fill"></div>
-                
-                {[
-                    { num: 1, title: "Registro", desc: "Plataforma SENESCYT" },
-                    { num: 2, title: "Evaluación", desc: "Competencias" },
-                    { num: 3, title: "Postulación", desc: "Elige al ISTG" }
-                ].map((step, i) => (
-                    <div key={i} className="relative z-10 bg-white w-full md:w-[30%] p-8 rounded-2xl border border-gray-100 text-center shadow-sm hover:-translate-y-1 hover:border-blue-200 transition-all interactive">
-                        <div className="w-12 h-12 bg-[#232453] text-white rounded-full flex items-center justify-center font-black text-lg mx-auto -mt-14 mb-4 border-4 border-white relative z-20">
-                            {step.num}
-                        </div>
-                        <h3 className="font-bold text-[#232453] mb-2">{step.title}</h3>
-                        <p className="text-sm text-gray-500">{step.desc}</p>
-                    </div>
+            if (window.matchMedia("(hover: hover)").matches) {
+            window.addEventListener('mousemove', moveCursor);
+            
+            const hoverables = document.querySelectorAll('a, button, .interactive, .bento-card');
+            hoverables.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    if(cursorRef.current) {
+                        cursorRef.current.style.transform = 'translate(-50%, -50%) scale(1.8)';
+                        cursorRef.current.style.backgroundColor = 'rgba(32, 155, 216, 0.1)';
+                    }
+                });
+                el.addEventListener('mouseleave', () => {
+                    if(cursorRef.current) {
+                        cursorRef.current.style.transform = 'translate(-50%, -50%) scale(1)';
+                        cursorRef.current.style.backgroundColor = 'transparent';
+                    }
+                });
+            });
+            }
+
+            return () => window.removeEventListener('mousemove', moveCursor);
+        }, []);
+
+        return (
+            <div 
+            ref={cursorRef}
+            className="fixed pointer-events-none w-5 h-5 border-2 border-[#209bd8] rounded-full z-[9999] -translate-x-1/2 -translate-y-1/2 transition-transform duration-100 hidden md:block"
+            />
+        );
+        };
+
+        const SplashScreen = ({ onFinish }) => {
+        const [visible, setVisible] = useState(true);
+
+        useEffect(() => {
+            const timer = setTimeout(() => {
+            setVisible(false);
+            setTimeout(onFinish, 600);
+            }, 2000);
+            return () => clearTimeout(timer);
+        }, [onFinish]);
+
+        if (!visible) return null;
+
+        return (
+            <div className={`fixed inset-0 bg-white z-[999999] flex flex-col items-center justify-center transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            <div className="relative w-32 h-32 flex items-center justify-center">
+                <img 
+                src="https://raw.githubusercontent.com/caortiz-stack/hosting/428d37be735801b9daac0104b576765808ffb296/faviconmdpi.svg?v=2" 
+                alt="ISTG Logo" 
+                className="w-16 h-auto z-10 animate-pulse"
+                />
+                <div className="absolute inset-0 border-4 border-[#209bd8]/10 border-t-[#209bd8] rounded-full animate-spin"></div>
+            </div>
+            </div>
+        );
+        };
+
+        const Navbar = ({ onOpenModal, onOpenCampus }) => {
+        const [isScrolled, setIsScrolled] = useState(false);
+        const [isNotifyOpen, setIsNotifyOpen] = useState(false);
+        const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+        const dropdownRef = useRef(null);
+
+        useEffect(() => {
+            const handleScroll = () => setIsScrolled(window.scrollY > 50);
+            window.addEventListener('scroll', handleScroll);
+            
+            const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsNotifyOpen(false);
+            }
+            };
+            document.addEventListener('mousedown', handleClickOutside);
+            
+            return () => {
+            window.removeEventListener('scroll', handleScroll);
+            document.removeEventListener('mousedown', handleClickOutside);
+            };
+        }, []);
+
+        return (
+            <nav className={`fixed top-0 left-0 w-full z-[1000] transition-all duration-300 ${isScrolled ? 'py-2 shadow-sm bg-white/95 backdrop-blur-md' : 'py-4 bg-white/95 backdrop-blur-md border-b border-gray-100/50'}`}>
+            <div className="max-w-[1200px] mx-auto px-5 flex justify-between items-center">
+                <a href="#" className="block w-40">
+                <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/4d0023a4a1e80af12ac0c1725f64f702cc835788/Recurso%201.svg" alt="ISTG Logo" className="h-12 w-auto pointer-events-none" />
+                </a>
+
+                {/* Menu Desktop */}
+                <ul className="hidden md:flex gap-8 list-none nav-menu">
+                {['Inicio', 'Oferta Académica', 'Admisión', 'Comunidad', 'Contacto'].map((item) => (
+                    <li key={item}>
+                    <a href={`#${item.toLowerCase().replace(' ', '-')}`} className="nav-link text-[#232453] font-semibold text-sm uppercase relative group hover:text-[#209bd8] transition-colors">
+                        {item}
+                        <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#209bd8] transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    </li>
                 ))}
-            </div>
-        </div>
-      </section>
+                </ul>
 
-      <SocialFeed />
+                {/* Acciones */}
+                <div className="hidden md:flex items-center gap-6">
+                    <div className="relative hover-ring" ref={dropdownRef}>
+                        <button 
+                            onClick={() => setIsNotifyOpen(!isNotifyOpen)}
+                            className="p-2 transition-transform active:scale-95 outline-none relative"
+                            title="Notificaciones"
+                        >
+                            <Bell 
+                                size={24} 
+                                className="icon-bell text-[#232453]" 
+                                fill="currentColor" /* Relleno sólido */
+                            />
+                            <span className="absolute top-1 right-1.5 w-2.5 h-2.5 bg-[#ff4757] rounded-full border-2 border-white"></span>
+                        </button>
+                        
+                        {/* Dropdown Notificaciones */}
+                        {isNotifyOpen && (
+                            <div className="absolute top-14 right-[-20px] w-96 bg-white rounded-2xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-3 origin-top-right z-50 backdrop-blur-sm bg-white/95">
+                                <div className="px-5 py-4 bg-white/50 border-b border-gray-50 flex justify-between items-center">
+                                    <span className="font-['Montserrat'] font-bold text-xs text-gray-400 uppercase tracking-widest">Centro de Novedades</span>
+                                    <span className="text-[10px] bg-blue-50 text-[#209bd8] px-2 py-1 rounded-full font-bold">2 Nuevas</span>
+                                </div>
+                                
+                                <div className="p-2 flex flex-col gap-1 max-h-[400px] overflow-y-auto custom-scroll">
+                                    
+                                    {/* Notificación Reingreso */}
+                                    <div 
+                                        onClick={() => { onOpenModal('homologacion'); setIsNotifyOpen(false); }}
+                                        className="group flex gap-4 p-4 rounded-xl hover:bg-[#f8fafc] cursor-pointer transition-all border border-transparent hover:border-gray-100 relative overflow-hidden"
+                                    >
+                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#10b981] to-[#059669] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <div className="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+                                            <FileText size={18} fill="currentColor" className="opacity-20 absolute" />
+                                            <FileText size={18} />
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <strong className="text-sm font-bold text-[#232453]">Reingreso y Homologación</strong>
+                                                <span className="text-[10px] bg-green-100 text-green-700 px-1.5 rounded font-medium">Nuevo</span>
+                                            </div>
+                                            <p className="text-xs text-gray-500 leading-snug">Proceso abierto hasta el 23 de Enero. Revisa los requisitos aquí.</p>
+                                        </div>
+                                    </div>
 
-      {/* Footer Institucional */}
-      <footer id="contacto" className="bg-[#232453] text-white py-16 relative border-t-4 border-[#209bd8]">
-         <div className="max-w-[1200px] mx-auto px-5">
-            <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr_1.2fr] gap-10 mb-10">
-                <div className="pr-0 md:pr-10 border-r-0 md:border-r border-white/10">
-                    <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/Recurso%204mdpi.svg" alt="Footer Logo" className="h-16 mb-6" />
-                    <p className="text-sm text-white leading-relaxed">Formamos profesionales de excelencia con visión tecnológica y humana. Líderes en educación superior técnica en el Ecuador.</p>
-                </div>
-                <div className="md:px-8 border-r-0 md:border-r border-white/10">
-                    <h4 className="f-title font-bold text-[#209bd8] text-xs uppercase tracking-widest mb-6">Academia</h4>
-                    <ul className="space-y-3 text-sm text-white">
-                        <li><a href="#" className="hover:text-[#209bd8] transition">Oferta Académica</a></li>
-                        <li><a href="#" className="hover:text-[#209bd8] transition">Admisiones</a></li>
-                        <li><a href="#" className="hover:text-[#209bd8] transition">Campus Virtual</a></li>
-                        <li><a href="#" className="hover:text-[#209bd8] transition">Biblioteca Digital</a></li>
-                    </ul>
-                </div>
-                <div className="md:px-8 border-r-0 md:border-r border-white/10">
-                    <h4 className="f-title font-bold text-[#209bd8] text-xs uppercase tracking-widest mb-6">Institucional</h4>
-                    <ul className="space-y-3 text-sm text-white">
-                        <li><a href="#" className="hover:text-[#209bd8] transition">Sobre Nosotros</a></li>
-                        <li><a href="#" className="hover:text-[#209bd8] transition">Autoridades</a></li>
-                        <li><a href="#" className="hover:text-[#209bd8] transition">Rendición de Cuentas</a></li>
-                    </ul>
-                </div>
-                <div className="md:pl-8">
-                    <h4 className="f-title font-bold text-[#209bd8] text-xs uppercase tracking-widest mb-6">Contacto</h4>
-                    <ul className="space-y-4 text-sm text-white">
-                        <li className="flex gap-3"><MapPin size={16} className="text-[#209bd8] shrink-0 mt-1" /> Gómez Rendón, entre Quito y Antepara.</li>
-                        <li className="flex gap-3"><Phone size={16} className="text-[#209bd8] shrink-0 mt-1" /> +593 96 837 4270</li>
-                        <li className="flex gap-3"><Mail size={16} className="text-[#209bd8] shrink-0 mt-1" /> info@istg.edu.ec</li>
-                    </ul>
-                </div>
-            </div>
-            <div className="text-center pt-8 border-t border-white/10 text-xs text-gray-500">
-                &copy; 2026 Instituto Superior Tecnológico Guayaquil. Creado por <strong className="text-[#209bd8]">Christian Ortiz</strong>, de 2DO A, Plantilla e Ilustración.
-            </div>
-         </div>
-      </footer>
-    </>
-  );
-};
+                                    {/* Notificación Exámenes */}
+                                    <div 
+                                        onClick={() => { onOpenModal('examenes'); setIsNotifyOpen(false); }}
+                                        className="group flex gap-4 p-4 rounded-xl hover:bg-[#f8fafc] cursor-pointer transition-all border border-transparent hover:border-gray-100 relative overflow-hidden"
+                                    >
+                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#209bd8] to-[#1e3a8a] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <div className="w-10 h-10 rounded-full bg-blue-50 text-[#209bd8] flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+                                            <Calendar size={18} fill="currentColor" className="opacity-20 absolute" />
+                                            <Calendar size={18} />
+                                        </div>
+                                        <div>
+                                            <strong className="text-sm font-bold text-[#232453] block mb-1">Horario de Exámenes</strong>
+                                            <p className="text-xs text-gray-500 leading-snug">Cronograma 2do Parcial disponible. Planifica tu semana.</p>
+                                        </div>
+                                    </div>
 
-export default App;
+                                    {/* Notificación Evaluación */}
+                                    <div className="group flex gap-4 p-4 rounded-xl hover:bg-[#f8fafc] cursor-pointer transition-all border border-transparent hover:border-gray-100 relative overflow-hidden opacity-80">
+                                        <div className="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center shrink-0 shadow-sm">
+                                            <AlertCircle size={18} />
+                                        </div>
+                                        <div>
+                                            <strong className="text-sm font-bold text-[#232453] block mb-1">Evaluación Docente</strong>
+                                            <p className="text-xs text-gray-500 leading-snug">Recuerda completar este requisito en la plataforma SIGA.</p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div className="bg-gray-50 p-2 text-center">
+                                    <span className="text-[10px] text-gray-400 font-medium">Centro de Notificaciones ISTG</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    
+                    <button 
+                        onClick={onOpenCampus}
+                        className="btn-custom btn-primary-c shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5"
+                    >
+                        Campus Virtual
+                    </button>
+                </div>
+
+                {/* Mobile Toggle */}
+                <button className="md:hidden text-[#232453]" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                    {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+                </button>
+            </div>
+            </nav>
+        );
+        };
+
+        const BentoGrid = () => {
+            const [layout, setLayout] = useState(['diseno', 'software', 'marketing', 'contabilidad']);
+            
+            const swap = (stackIndex) => {
+                const realIndex = stackIndex + 1;
+                setLayout(prevLayout => {
+                    const newLayout = [...prevLayout];
+                    const temp = newLayout[0];
+                    newLayout[0] = newLayout[realIndex];
+                    newLayout[realIndex] = temp;
+                    return newLayout;
+                });
+            };
+
+            const mainCareer = CAREERS_DATA[layout[0]];
+
+            return (
+                <section id="carreras" className="py-20 bg-[#f8fafc]">
+                    <div className="max-w-[1300px] mx-auto px-5">
+                        <div className="text-center mb-10">
+                            <span className="section-tag inline-block px-4 py-1.5 rounded-full bg-blue-50 text-[#209bd8] text-xs font-bold uppercase tracking-widest border border-blue-100 mb-3">
+                                Oferta Académica
+                            </span>
+                            <h2 className="section-title text-4xl text-[#232453]">Carreras para el <span className="text-[#209bd8]">Mundo Real</span></h2>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] grid-rows-3 lg:grid-rows-[repeat(3,180px)] gap-5 h-auto lg:h-[580px]">
+                            
+                            {/* MAIN CARD */}
+                            <div className="col-span-1 lg:row-span-3 bg-white rounded-2xl overflow-hidden shadow-lg border-2 border-gray-50 flex flex-col lg:flex-row relative group interactive">
+                                <div className="w-full lg:w-[55%] h-64 lg:h-full relative overflow-hidden bg-gray-100">
+                                    <img 
+                                        key={mainCareer.img}
+                                        src={mainCareer.img} 
+                                        alt={mainCareer.title} 
+                                        className="w-full h-full object-cover object-top animate-[fadeIn_0.5s_ease-out] pointer-events-none select-none"
+                                    />
+                                </div>
+                                <div className="w-full lg:w-[45%] p-8 lg:p-10 flex flex-col justify-center bg-white border-l border-gray-50">
+                                    <div className="flex items-center gap-4 mb-5">
+                                        <div 
+                                            className="w-14 h-14 rounded-full flex items-center justify-center border transition-colors duration-300"
+                                            style={{ backgroundColor: mainCareer.bg, color: mainCareer.color, borderColor: '#e5e7eb' }}
+                                        >
+                                            {mainCareer.icon}
+                                        </div>
+                                        <h3 className="bento-title text-2xl lg:text-3xl text-[#232453] leading-tight">
+                                            {mainCareer.title}
+                                        </h3>
+                                    </div>
+                                    <p key={mainCareer.desc} className="text-sm lg:text-[15px] text-gray-500 leading-relaxed animate-[fadeIn_0.5s_ease-out]">
+                                        {mainCareer.desc}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* STACK CARDS */}
+                            {[1, 2, 3].map((layoutIndex, visualIndex) => {
+                                const careerId = layout[layoutIndex];
+                                const data = CAREERS_DATA[careerId];
+                                
+                                return (
+                                    <div 
+                                        key={visualIndex}
+                                        onClick={() => swap(visualIndex)}
+                                        className="bento-card bg-white rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-2.5 interactive border border-transparent hover:border-blue-100 h-[150px] lg:h-full"
+                                        style={{ backgroundColor: data.color }}
+                                    >
+                                        <div className="text-white mb-2 opacity-90">
+                                            {React.cloneElement(data.icon, { size: 28 })}
+                                        </div>
+                                        <h3 className="bento-title text-white font-black text-sm uppercase tracking-wide text-center drop-shadow-md w-full break-words">
+                                            {data.title}
+                                        </h3>
+                                    </div>
+                                );
+                            })}
+
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        /* --- COMPONENTE MODAL UNIFICADO --- */
+        const Modal = ({ isOpen, onClose, type }) => {
+            const [view, setView] = useState('initial'); 
+            
+            useEffect(() => {
+                if (isOpen) setView('initial');
+            }, [isOpen]);
+
+            if (!isOpen) return null;
+
+            // Configuración de contenido
+            const content = type === 'homologacion' 
+                ? { 
+                    image: "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/homolo.png",
+                    title: "COMUNIDAD ESTUDIANTIL ISTG",
+                    btnText: "Acceder Ahora",
+                    isSecurity: true
+                } 
+                : { // Default: Examenes
+                    image: "https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/popup.jpeg",
+                    title: "¡ATENCIÓN ESTUDIANTES!",
+                    text: "Ya se encuentra disponible el cronograma oficial de exámenes del 2do Parcial.",
+                    btnText: "Ver Horario",
+                    isSecurity: false
+                };
+
+            return (
+                <div className="fixed inset-0 z-[10000] flex items-center justify-center px-4">
+                    <div className="absolute inset-0 bg-[#0f172a]/90 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+                    
+                    {/* Modal de 400px de altura */}
+                    <div className="bg-white w-full max-w-[800px] h-[400px] rounded-3xl shadow-2xl relative z-10 flex overflow-hidden animate-[bounceIn_0.5s_ease-out]">
+                        <button onClick={onClose} className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur rounded-full hover:bg-gray-100 transition text-[#232453] shadow-sm">
+                            <X size={20} />
+                        </button>
+
+                        {view === 'initial' ? (
+                            <div className="flex w-full h-full flex-col md:flex-row">
+                                {/* IMAGEN (Izquierda) */}
+                                <div className="w-full md:w-[45%] h-48 md:h-full bg-white relative flex items-center justify-center p-0 border-r border-gray-50 overflow-hidden">
+                                    <img 
+                                        src={content.image} 
+                                        className="w-full h-full object-cover pointer-events-none select-none" 
+                                        alt="Aviso" 
+                                    />
+                                </div>
+
+                                {/* TEXTO (Derecha) */}
+                                <div className="w-full md:w-[55%] p-8 md:p-8 flex flex-col justify-center bg-white custom-scroll overflow-y-auto">
+                                    
+                                    <h3 className="modal-title text-xl lg:text-2xl font-black text-[#232453] uppercase mb-3 leading-tight tracking-tight">
+                                        {content.title}
+                                    </h3>
+
+                                    {content.isSecurity ? (
+                                        // CONTENIDO HOMOLOGACIÓN
+                                        <div className="space-y-3 text-sm text-gray-600">
+                                            <p>Hola 👋, te informamos que podrás realizar tu <strong>REINGRESO, HOMOLOGACION INTERNA Y EXTERNA</strong>, hasta el <strong>23 de enero 2026</strong>.</p>
+                                            
+                                            <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100">
+                                                <h4 className="font-bold text-[#232453] text-[10px] uppercase mb-2 flex items-center gap-2 border-b border-blue-100 pb-1">
+                                                    📌 Detalles del Proceso
+                                                </h4>
+                                                <ul className="space-y-1 text-[11px] text-gray-500">
+                                                    <li className="flex items-start gap-2">
+                                                        <FileText size={12} className="text-[#209bd8] mt-0.5 shrink-0" />
+                                                        <span>Solicitud impresa en Secretaría.</span>
+                                                    </li>
+                                                    <li className="flex items-start gap-2">
+                                                        <CheckCircle2 size={12} className="text-green-500 mt-0.5 shrink-0" />
+                                                        <span>Realizar la solicitud física (venir presencial).</span>
+                                                    </li>
+                                                    <li className="flex items-start gap-2">
+                                                        <LocationIcon size={12} className="text-[#232453] mt-0.5 shrink-0" />
+                                                        <span><strong>Lugar:</strong> Matriz Colegio Guayaquil</span>
+                                                    </li>
+                                                    <li className="flex items-start gap-2">
+                                                        <Clock size={12} className="text-[#232453] mt-0.5 shrink-0" />
+                                                        <span><strong>Horario:</strong> 11h00 a 18h00</span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        // CONTENIDO EXÁMENES
+                                        <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+                                            {content.text}
+                                        </p>
+                                    )}
+
+                                    {/* BOTÓN UNIFICADO */}
+                                    <div className="mt-5">
+                                        {content.isSecurity ? (
+                                            <div className="text-xs text-gray-400 italic">Acércate a secretaría para más información.</div>
+                                        ) : (
+                                            <button 
+                                                onClick={() => setView('iframe')}
+                                                className="btn-custom btn-primary-c self-start px-6 py-3 shadow-lg hover:shadow-xl hover:-translate-y-1 flex items-center gap-2"
+                                            >
+                                                <Calendar size={14} /> {content.btnText}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            // VISTA IFRAME (LIMPIA)
+                            <div className="w-full h-full flex flex-col bg-white">
+                                <div className="h-12 border-b border-gray-100 flex items-center justify-between px-6 shrink-0 bg-white">
+                                    <button onClick={() => setView('initial')} className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-[#209bd8] transition-colors uppercase tracking-wider">
+                                        <ArrowLeft size={16} /> Volver
+                                    </button>
+                                    <span className="text-xs font-bold text-[#232453] tracking-widest">VISOR OFICIAL</span>
+                                    <div className="w-8"></div>
+                                </div>
+                                <iframe src="https://f.mtr.cool/ryktmtwllh" className="w-full flex-grow border-none bg-gray-100" title="Horario"></iframe>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const SecurityModal = ({ isOpen, onClose }) => {
+        if (!isOpen) return null;
+        return (
+            <div className="fixed inset-0 z-[10001] flex items-center justify-center px-4">
+            <div className="absolute inset-0 bg-[#0f172a]/85 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+            <div className="bg-white w-full max-w-sm rounded-[30px] shadow-2xl relative z-10 flex flex-col items-center text-center p-10 overflow-hidden animate-[bounceIn_0.4s_ease-out]">
+                <button onClick={onClose} className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center bg-gray-50 rounded-full text-gray-400 hover:text-[#232453] hover:bg-gray-100 transition-all">
+                    <X size={18} />
+                </button>
+                
+                {/* Logo pequeño arriba */}
+                <img 
+                    src="https://raw.githubusercontent.com/caortiz-stack/hosting/4d0023a4a1e80af12ac0c1725f64f702cc835788/Recurso%201.svg" 
+                    alt="ISTG Security" 
+                    className="w-16 h-auto mb-5 pointer-events-none select-none"
+                />
+
+                {/* Insignia Verde */}
+                <div className="bg-green-50/80 border border-green-200 rounded-full px-5 py-2 flex items-center gap-2.5 mb-6">
+                    <div className="relative flex items-center justify-center">
+                        <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-30 animate-ping"></span>
+                        <ShieldCheck size={18} className="text-green-600 relative z-10" />
+                    </div>
+                    <span className="text-green-700 text-xs font-bold uppercase tracking-wide">Conexión Segura TLS</span>
+                </div>
+                
+                <h3 className="modal-title text-2xl font-black text-[#232453] mb-2 uppercase tracking-tight">Campus Virtual ISTG</h3>
+                
+                <p className="text-gray-500 text-sm mb-8 leading-relaxed px-2">
+                    Estás a punto de ingresar a la plataforma académica. Por protocolos de seguridad, el acceso se abrirá en una nueva ventana autenticada.
+                </p>
+                
+                <a 
+                    href="https://academico.istg.edu.ec/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    onClick={onClose}
+                    className="btn-custom w-full max-w-[280px] btn-primary-c flex items-center justify-center gap-2 mb-4 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+                >
+                    <span>Acceder Ahora</span> <ExternalLink size={16} />
+                </a>
+                
+                <p className="text-[11px] text-gray-400 mt-6">
+                    Si tienes problemas de acceso, contacta a <a href="mailto:soporte@istg.edu.ec" className="text-[#209bd8] font-bold hover:underline">soporte@istg.edu.ec</a>
+                </p>
+            </div>
+            </div>
+        );
+        };
+
+        const SocialFeed = () => {
+            useEffect(() => {
+                const script = document.createElement('script');
+                script.src = "https://elfsightcdn.com/platform.js";
+                script.async = true;
+                document.body.appendChild(script);
+                
+                // Script Cazafantasmas (In-Component logic)
+                const ghostBuster = setInterval(() => {
+                    try {
+                        // 1. Ocultar enlaces de branding
+                        const links = document.querySelectorAll('a[href*="elfsight.com"]');
+                        links.forEach(link => {
+                            if (!link.querySelector('img') || link.innerText.toLowerCase().includes('free')) {
+                                forceInvisible(link);
+                                if (link.parentElement && link.parentElement.offsetHeight < 50) {
+                                    forceInvisible(link.parentElement);
+                                }
+                            }
+                        });
+
+                        // 2. Ocultar Toolbar
+                        const toolbars = document.querySelectorAll('.eapps-widget-toolbar, .eapps-link');
+                        toolbars.forEach(tb => forceInvisible(tb));
+
+                        // 3. Ocultar por texto
+                        const candidates = document.querySelectorAll('div, span, a, p');
+                        candidates.forEach(el => {
+                            const text = (el.innerText || "").toLowerCase();
+                            if (text.includes('free social feed') || text.includes('elfsight')) {
+                                if (el.offsetHeight < 100 && el.children.length < 5) { 
+                                    forceInvisible(el);
+                                }
+                            }
+                        });
+
+                    } catch (e) {}
+                }, 100);
+
+                function forceInvisible(el) {
+                    if (!el) return;
+                    el.style.setProperty('opacity', '0', 'important');
+                    el.style.setProperty('pointer-events', 'none', 'important');
+                    el.style.setProperty('visibility', 'hidden', 'important');
+                    el.style.setProperty('width', '0', 'important');
+                    el.style.setProperty('height', '0', 'important');
+                    el.style.setProperty('position', 'absolute', 'important');
+                    el.style.setProperty('z-index', '-9999', 'important');
+                    el.style.setProperty('display', 'none', 'important');
+                }
+                
+                return () => {
+                    document.body.removeChild(script);
+                    clearInterval(ghostBuster);
+                };
+            }, []);
+
+            return (
+                <section id="social-feed" className="py-20 bg-[#f8fafc]">
+                    <div className="max-w-[1000px] mx-auto px-5 text-center">
+                        <div className="mb-8">
+                            <span className="section-tag inline-block px-4 py-1.5 rounded-full bg-blue-50 text-[#209bd8] text-xs font-bold uppercase tracking-widest border border-blue-100 mb-3">Comunidad ISTG</span>
+                            <h2 className="section-title text-4xl text-[#232453]">Lo que pasa en el <span className="text-[#209bd8]">Campus</span></h2>
+                        </div>
+                        
+                        <div className="flex justify-center gap-4 mb-8">
+                            <a href="https://www.facebook.com/istg.ec" target="_blank" className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#1877F2] shadow-md hover:scale-110 transition-transform">
+                                <Facebook size={24} fill="currentColor" strokeWidth={0} />
+                            </a>
+                            <a href="https://www.instagram.com/istg.ec" target="_blank" className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#E1306C] shadow-md hover:scale-110 transition-transform">
+                                <Instagram size={24} />
+                            </a>
+                        </div>
+
+                        <div className="clean-container">
+                            <div className="feed-wrapper shadow-sm">
+                                <div className="w-full h-full relative z-10" style={{minHeight: '300px'}}>
+                                    <div className="elfsight-app-22901817-ec27-44a1-a507-25c34a732644" data-elfsight-app-lazy></div>
+                                </div>
+                                <div className="widget-cover-patch"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        // --- COMPONENTE PRINCIPAL APP ---
+        const App = () => {
+        const [modalType, setModalType] = useState(null); // 'examenes' o 'homologacion'
+        const [securityModalOpen, setSecurityModalOpen] = useState(false);
+        const [heroIndex, setHeroIndex] = useState(0);
+
+        useEffect(() => {
+            const interval = setInterval(() => {
+                setHeroIndex(prev => (prev + 1) % HERO_IMAGES.length);
+            }, 4000);
+            return () => clearInterval(interval);
+        }, []);
+
+        const openModal = (type) => setModalType(type);
+        const closeModal = () => setModalType(null);
+
+        return (
+            <>
+            <GlobalStyles />
+            <SplashScreen onFinish={() => document.body.style.overflowY = 'auto'} />
+            <Cursor />
+            
+            {/* Navbar corregido: Pasa la función openModal directamente */}
+            <Navbar onOpenModal={openModal} onOpenCampus={() => setSecurityModalOpen(true)} />
+            
+            {/* Botón Flotante */}
+            <button 
+                onClick={() => openModal('examenes')}
+                className="fixed bottom-8 left-8 bg-white px-6 py-3 rounded-full shadow-xl flex items-center gap-3 cursor-pointer z-50 border-2 border-[#209bd8] hover:-translate-y-1 transition-transform group hover-ring"
+            >
+                <span className="absolute inset-0 rounded-full border-2 border-[#209bd8] animate-ping opacity-20"></span>
+                <Bell size={20} className="text-[#232453] icon-bell fill-current" />
+                <span className="font-bold text-[#232453] text-xs uppercase tracking-wide">Horarios Exámenes</span>
+            </button>
+
+            {/* MODAL UNIFICADO (Examenes / Homologación) */}
+            <Modal isOpen={!!modalType} type={modalType} onClose={closeModal} />
+            
+            {/* MODAL DE SEGURIDAD (Campus Virtual) */}
+            <SecurityModal isOpen={securityModalOpen} onClose={() => setSecurityModalOpen(false)} />
+
+            {/* Hero */}
+            <section className="relative min-h-screen pt-20 flex items-center overflow-hidden bg-white">
+                <div className="absolute top-[-20%] left-[-10%] w-1/2 h-full bg-[radial-gradient(circle,rgba(32,155,216,0.05)_0%,transparent_70%)] -z-0"></div>
+                
+                {/* TRANSICIÓN SUAVE AÑADIDA AL HERO */}
+                <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-b from-transparent to-[#f8fafc] pointer-events-none z-0"></div>
+
+                <div className="max-w-[1200px] mx-auto px-5 w-full grid grid-cols-1 lg:grid-cols-2 gap-10 items-center h-full relative z-10">
+                    <div className="pr-0 lg:pr-10 text-center lg:text-left">
+                        <span className="hero-tag inline-block px-4 py-1.5 rounded-full bg-blue-50 text-[#209bd8] text-xs font-bold uppercase tracking-widest border border-blue-100 mb-6">
+                            Tecnología Superior
+                        </span>
+                        <h1 className="hero-title font-['Montserrat'] text-5xl lg:text-6xl font-black text-[#232453] mb-6 leading-tight">
+                            EL FUTURO SE <br/><span className="text-[#209bd8]">DISEÑA AQUÍ.</span>
+                        </h1>
+                        <p className="text-lg text-gray-500 mb-8 max-w-lg mx-auto lg:mx-0 border-l-4 border-[#209bd8] pl-6">
+                            Fórmate con excelencia académica en el corazón de Guayaquil. Títulos de tercer nivel en 2 años con enfoque práctico.
+                        </p>
+                        <div className="flex gap-4 flex-wrap justify-center lg:justify-start">
+                            <a href="#carreras" className="btn-custom btn-primary-c flex items-center justify-center px-8 py-3 rounded-full bg-[#232453] text-white font-bold text-xs uppercase tracking-wide hover:bg-[#209bd8] shadow-lg transition-all hover:-translate-y-1">
+                                Ver Carreras
+                            </a>
+                            <a href="#admisiones" className="btn-custom flex items-center justify-center px-8 py-3 rounded-full border border-[#232453] text-[#232453] font-bold text-xs uppercase tracking-wide hover:bg-[#232453] hover:text-white transition-all hover:-translate-y-1">
+                                Admisión
+                            </a>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-center p-5">
+                        <div className="w-full max-w-[550px] aspect-[5/4] rounded-[24px] overflow-hidden shadow-[20px_20px_0px_rgba(32,155,216,0.2)] relative bg-white">
+                            {HERO_IMAGES.map((src, idx) => (
+                                <img 
+                                    key={idx}
+                                    src={src} 
+                                    className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${idx === heroIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                                    style={{ objectPosition: 'top center' }}
+                                    alt="Hero"
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <BentoGrid />
+
+            {/* Admisiones */}
+            <section id="admisiones" className="py-20 bg-white">
+                <div className="max-w-[1200px] mx-auto px-5">
+                    <div className="text-center mb-12">
+                        <span className="section-tag text-[#209bd8] font-bold text-xs uppercase tracking-widest">Proceso de Admisión</span>
+                        <h2 className="section-title text-4xl text-[#232453] mt-2">Tu futuro comienza <span className="text-[#209bd8]">Hoy</span></h2>
+                    </div>
+                    
+                    <div className="flex flex-col md:flex-row justify-between relative mt-16 gap-10 md:gap-0">
+                        <div className="absolute top-6 left-0 w-full h-[3px] bg-gray-100 hidden md:block"></div>
+                        <div className="absolute top-6 left-0 w-0 h-[3px] bg-[#209bd8] hidden md:block" id="process-fill"></div>
+                        
+                        {[
+                            { num: 1, title: "Registro", desc: "Plataforma SENESCYT" },
+                            { num: 2, title: "Evaluación", desc: "Competencias" },
+                            { num: 3, title: "Postulación", desc: "Elige al ISTG" }
+                        ].map((step, i) => (
+                            <div key={i} className="relative z-10 bg-white w-full md:w-[30%] p-8 rounded-2xl border border-gray-100 text-center shadow-sm hover:-translate-y-1 hover:border-blue-200 transition-all interactive">
+                                <div className="w-12 h-12 bg-[#232453] text-white rounded-full flex items-center justify-center font-black text-lg mx-auto -mt-14 mb-4 border-4 border-white relative z-20">
+                                    {step.num}
+                                </div>
+                                <h3 className="font-bold text-[#232453] mb-2">{step.title}</h3>
+                                <p className="text-sm text-gray-500">{step.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            <SocialFeed />
+
+            {/* Footer */}
+            <footer id="contacto" className="bg-[#232453] text-white py-16 relative border-t-4 border-[#209bd8]">
+                <div className="max-w-[1200px] mx-auto px-5">
+                    <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr_1.2fr] gap-10 mb-10">
+                        <div className="pr-0 md:pr-10 border-r-0 md:border-r border-white/10">
+                            <img src="https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/Recurso%204mdpi.svg" alt="Footer Logo" className="h-16 mb-6" />
+                            <p className="text-sm text-white leading-relaxed">Formamos profesionales de excelencia con visión tecnológica y humana. Líderes en educación superior técnica en el Ecuador.</p>
+                        </div>
+                        <div className="md:px-8 border-r-0 md:border-r border-white/10">
+                            <h4 className="f-title font-bold text-[#209bd8] text-xs uppercase tracking-widest mb-6">Academia</h4>
+                            <ul className="space-y-3 text-sm text-white">
+                                <li><a href="#" className="hover:text-[#209bd8] transition">Oferta Académica</a></li>
+                                <li><a href="#" className="hover:text-[#209bd8] transition">Admisiones</a></li>
+                                <li><a href="#" className="hover:text-[#209bd8] transition">Campus Virtual</a></li>
+                                <li><a href="#" className="hover:text-[#209bd8] transition">Biblioteca Digital</a></li>
+                            </ul>
+                        </div>
+                        <div className="md:px-8 border-r-0 md:border-r border-white/10">
+                            <h4 className="f-title font-bold text-[#209bd8] text-xs uppercase tracking-widest mb-6">Institucional</h4>
+                            <ul className="space-y-3 text-sm text-white">
+                                <li><a href="#" className="hover:text-[#209bd8] transition">Sobre Nosotros</a></li>
+                                <li><a href="#" className="hover:text-[#209bd8] transition">Autoridades</a></li>
+                                <li><a href="#" className="hover:text-[#209bd8] transition">Rendición de Cuentas</a></li>
+                            </ul>
+                        </div>
+                        <div className="md:pl-8">
+                            <h4 className="f-title font-bold text-[#209bd8] text-xs uppercase tracking-widest mb-6">Contacto</h4>
+                            <ul className="space-y-4 text-sm text-white">
+                                <li className="flex gap-3"><MapPin size={16} className="text-[#209bd8] shrink-0 mt-1" /> Gómez Rendón, entre Quito y Antepara.</li>
+                                <li className="flex gap-3"><Phone size={16} className="text-[#209bd8] shrink-0 mt-1" /> +593 96 837 4270</li>
+                                <li className="flex gap-3"><Mail size={16} className="text-[#209bd8] shrink-0 mt-1" /> info@istg.edu.ec</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div className="text-center pt-8 border-t border-white/10 text-xs text-gray-500">
+                        &copy; 2026 Instituto Superior Tecnológico Guayaquil. Creado por <strong className="text-[#209bd8]">Christian Ortiz</strong>, de 2DO A, Plantilla e Ilustración.
+                    </div>
+                </div>
+            </footer>
+            </>
+        );
+        };
+
+        // RENDERIZADO AL DOM
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
