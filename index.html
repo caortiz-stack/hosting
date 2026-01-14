@@ -502,7 +502,7 @@
             );
         };
 
-        /* --- COMPONENTE MODAL UNIFICADO --- */
+        /* --- COMPONENTE MODAL UNIFICADO (CORREGIDO IMAGEN) --- */
         const Modal = ({ isOpen, onClose, type }) => {
             const [view, setView] = useState('initial'); 
             
@@ -540,12 +540,17 @@
 
                         {view === 'initial' ? (
                             <div className="flex w-full h-full flex-col md:flex-row">
-                                {/* IMAGEN (Izquierda) */}
+                                {/* IMAGEN (Izquierda) - CORREGIDA SIN EFECTOS */}
                                 <div className="w-full md:w-[45%] h-48 md:h-full bg-white relative flex items-center justify-center p-0 border-r border-gray-50 overflow-hidden">
                                     <img 
                                         src={content.image} 
-                                        className="w-full h-full object-cover pointer-events-none select-none" 
+                                        className="w-full h-full object-cover" 
                                         alt="Aviso" 
+                                        style={{ 
+                                            imageRendering: 'auto', 
+                                            filter: 'none', 
+                                            transform: 'none' 
+                                        }}
                                     />
                                 </div>
 
