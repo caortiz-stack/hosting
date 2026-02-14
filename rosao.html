@@ -53,6 +53,11 @@
         /* Ocultar scrollbar */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Transición suave de imágenes */
+        .image-fade {
+            transition: opacity 1s ease-in-out;
+        }
     </style>
 </head>
 <body>
@@ -78,6 +83,13 @@
         const Star = ({ size = 24, fill = "none", className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+        );
+
+        const Camera = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                <circle cx="12" cy="13" r="3"/>
             </svg>
         );
 
@@ -143,13 +155,22 @@
             const [isOpened, setIsOpened] = useState(false);
             const [isPlaying, setIsPlaying] = useState(false);
             const [timeElapsed, setTimeElapsed] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+            const [currentImgIdx, setCurrentImgIdx] = useState(0);
             const audioRef = useRef(null);
 
             // FECHA DE INICIO
             const startDate = new Date('2024-01-01T00:00:00');
 
-            // URL del Audio (Actualizado)
+            // URL del Audio
             const audioUrl = "https://github.com/caortiz-stack/hosting/raw/refs/heads/gh-pages/audio.mp3";
+
+            // LISTA DE IMÁGENES (Original + Nuevas)
+            const images = [
+                "https://scontent.fgye1-2.fna.fbcdn.net/v/t39.30808-6/514007735_732127176642087_8004359617078088970_n.jpg?stp=dst-jpg_s1080x2048_tt6&_nc_cat=101&ccb=1-7&_nc_sid=bdeb5f&_nc_ohc=rtRln_xfXr4Q7kNvwFRmzLo&_nc_oc=Adl3wSeeXkHWxSGLr8jIgvfHJRhvz5XCDrflispbN0Dt76qmw6a0og-BQSNm6B9bck13y4Z_E8ykML4OxL3mtPXk&_nc_zt=23&_nc_ht=scontent.fgye1-2.fna&_nc_gid=gJZrTcwZj6VTZHjwzVxQTw&oh=00_AfsGyvVFRQpqYBiQEDTvQqNQtXKGMcg-LrVIT6I5HV0ynw&oe=6995BAD2",
+                "https://scontent.fgye1-2.fna.fbcdn.net/v/t39.30808-6/502736665_703714022816736_5401629100047717755_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=bdeb5f&_nc_ohc=K8KSx0v01G0Q7kNvwG_CHzQ&_nc_oc=Adl7oTZB9Oe4yk_r_aj-vNuQM58a_MIOlI_ecFJfnJ5y2YdeHnW6ycIi8WsJCRijvuf92BxFe4IYcKFSvsLMXdLD&_nc_zt=23&_nc_ht=scontent.fgye1-2.fna&_nc_gid=Vl8uwYwZZTbr3SJ1IZLHhA&oh=00_Afvy_E4FDE_HPLLjSlcw6Qi5YsQgF8_CagamBBujgYgRIg&oe=6995B6A9",
+                "https://scontent.fgye1-2.fna.fbcdn.net/v/t39.30808-6/497432621_2745252595674065_7998424670295941743_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=669761&_nc_ohc=XMm9E_1TNEAQ7kNvwE0TIgz&_nc_oc=AdnVXpv8RRdXfuA0h8UUU6owqYJ6oK_SfmpHv5W8o0164pa7FxmGdEpj8UROk64eoZjnjTA0QuXCZWS8nC30aEjq&_nc_zt=23&_nc_ht=scontent.fgye1-2.fna&_nc_gid=tVEv9nNYu0QaENsaySkAig&oh=00_AfuQyj1zAlkt01QodSV514gOwkGgyI6bk9LXcXvMvtQ8jQ&oe=6995D4B1",
+                "https://scontent.fgye1-2.fna.fbcdn.net/v/t39.30808-6/496332178_2745252499007408_2763564684452441376_n.jpg?stp=dst-jpg_s1080x2048_tt6&_nc_cat=108&ccb=1-7&_nc_sid=669761&_nc_ohc=M4_WR5oN_yMQ7kNvwGeEJMl&_nc_oc=AdlViv6fQ_qE2g6Bd-0ezdYZk4HRv7cmqg4aVu1KU26ouWBDAonzDTx0MwsCLG9yeTRPavQ0bOfWkZiJobcFqX_s&_nc_zt=23&_nc_ht=scontent.fgye1-2.fna&_nc_gid=L3KmHM20BYa_GNIjB7Dkpg&oh=00_AfsxgQsRwoc9OVlsANX9Z1WnrV-C9uwwlnNMGwGNYKEGzA&oe=6995C9F6"
+            ];
 
             useEffect(() => {
                 const timer = setInterval(() => {
@@ -166,6 +187,15 @@
 
                 return () => clearInterval(timer);
             }, []);
+
+            // Rotación de imágenes (Slideshow)
+            useEffect(() => {
+                if (!isOpened) return;
+                const interval = setInterval(() => {
+                    setCurrentImgIdx((prev) => (prev + 1) % images.length);
+                }, 4000); // Cambia cada 4 segundos
+                return () => clearInterval(interval);
+            }, [isOpened]);
 
             const handleOpenLetter = () => {
                 setIsOpened(true);
@@ -217,24 +247,30 @@
                         /* Contenido Principal */
                         <div className="w-full max-w-sm bg-white/90 backdrop-blur-md rounded-[2rem] shadow-xl border border-white/60 overflow-hidden relative z-10 animate-pop-in flex flex-col max-h-[90vh]">
                             
-                            {/* Encabezado con Foto - Efecto Scrapbook */}
-                            <div className="relative h-64 bg-pink-100 shrink-0 flex items-center justify-center p-4 overflow-hidden">
+                            {/* Encabezado con Slideshow de Fotos - Efecto Scrapbook */}
+                            <div className="relative h-72 bg-pink-100 shrink-0 flex items-center justify-center p-4 overflow-hidden">
                                 <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#ec4899 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
                                 
-                                <div className={`relative transform transition-all duration-500 z-10 ${isPlaying ? 'scale-[1.02]' : '-rotate-3'}`}>
+                                <div className={`relative transform transition-all duration-500 z-10 ${isPlaying ? 'scale-[1.02]' : ''} rotate-[-2deg]`}>
                                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-6 bg-white/40 backdrop-blur-sm shadow-sm z-20 transform -rotate-2 border-l border-r border-white/20"></div>
                                     
                                     <div className={`bg-white p-3 shadow-xl transition-shadow duration-300 ${isPlaying ? 'shadow-pink-400/50' : ''}`} style={{ 
                                         clipPath: 'polygon(2% 0%, 98% 1%, 100% 98%, 1% 99%)',
                                         borderRadius: '2px'
                                     }}>
-                                        <img 
-                                            src="https://scontent.fgye1-2.fna.fbcdn.net/v/t39.30808-6/514007735_732127176642087_8004359617078088970_n.jpg?stp=dst-jpg_s1080x2048_tt6&_nc_cat=101&ccb=1-7&_nc_sid=bdeb5f&_nc_ohc=rtRln_xfXr4Q7kNvwFRmzLo&_nc_oc=Adl3wSeeXkHWxSGLr8jIgvfHJRhvz5XCDrflispbN0Dt76qmw6a0og-BQSNm6B9bck13y4Z_E8ykML4OxL3mtPXk&_nc_zt=23&_nc_ht=scontent.fgye1-2.fna&_nc_gid=gJZrTcwZj6VTZHjwzVxQTw&oh=00_AfsGyvVFRQpqYBiQEDTvQqNQtXKGMcg-LrVIT6I5HV0ynw&oe=6995BAD2"
-                                            alt="Nosotros" 
-                                            className="w-56 h-48 object-cover filter contrast-110 sepia-[.1]"
-                                        />
+                                        {/* Marco de Imagen que Cambia */}
+                                        <div className="w-56 h-56 relative overflow-hidden bg-gray-100">
+                                            <img 
+                                                src={images[currentImgIdx]}
+                                                alt="Nosotros" 
+                                                className="w-full h-full object-cover filter contrast-110 sepia-[.1] image-fade"
+                                                key={currentImgIdx} 
+                                            />
+                                        </div>
+                                        
                                         <div className="mt-2 text-center flex items-center justify-center gap-2">
-                                            <p className="font-script text-gray-500 text-lg">Rosado & Yo</p>
+                                            <Camera size={14} className="text-pink-400" />
+                                            <p className="font-script text-gray-500 text-lg">Nuestros Momentos</p>
                                         </div>
                                     </div>
                                 </div>
