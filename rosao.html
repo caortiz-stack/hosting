@@ -164,7 +164,7 @@
             // URL del Audio
             const audioUrl = "https://github.com/caortiz-stack/hosting/raw/refs/heads/gh-pages/audio.mp3";
 
-            // LISTA DE IMÁGENES (Original + Nuevas)
+            // LISTA DE IMÁGENES
             const images = [
                 "https://scontent.fgye1-2.fna.fbcdn.net/v/t39.30808-6/514007735_732127176642087_8004359617078088970_n.jpg?stp=dst-jpg_s1080x2048_tt6&_nc_cat=101&ccb=1-7&_nc_sid=bdeb5f&_nc_ohc=rtRln_xfXr4Q7kNvwFRmzLo&_nc_oc=Adl3wSeeXkHWxSGLr8jIgvfHJRhvz5XCDrflispbN0Dt76qmw6a0og-BQSNm6B9bck13y4Z_E8ykML4OxL3mtPXk&_nc_zt=23&_nc_ht=scontent.fgye1-2.fna&_nc_gid=gJZrTcwZj6VTZHjwzVxQTw&oh=00_AfsGyvVFRQpqYBiQEDTvQqNQtXKGMcg-LrVIT6I5HV0ynw&oe=6995BAD2",
                 "https://scontent.fgye1-2.fna.fbcdn.net/v/t39.30808-6/502736665_703714022816736_5401629100047717755_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=bdeb5f&_nc_ohc=K8KSx0v01G0Q7kNvwG_CHzQ&_nc_oc=Adl7oTZB9Oe4yk_r_aj-vNuQM58a_MIOlI_ecFJfnJ5y2YdeHnW6ycIi8WsJCRijvuf92BxFe4IYcKFSvsLMXdLD&_nc_zt=23&_nc_ht=scontent.fgye1-2.fna&_nc_gid=Vl8uwYwZZTbr3SJ1IZLHhA&oh=00_Afvy_E4FDE_HPLLjSlcw6Qi5YsQgF8_CagamBBujgYgRIg&oe=6995B6A9",
@@ -244,22 +244,25 @@
                             </p>
                         </div>
                     ) : (
-                        /* Contenido Principal */
-                        <div className="w-full max-w-sm bg-white/90 backdrop-blur-md rounded-[2rem] shadow-xl border border-white/60 overflow-hidden relative z-10 animate-pop-in flex flex-col max-h-[90vh]">
+                        /* Contenido Principal - Ajustado para móvil */
+                        <div className="w-full max-w-sm bg-white/90 backdrop-blur-md rounded-[2rem] shadow-xl border border-white/60 overflow-hidden relative z-10 animate-pop-in flex flex-col max-h-[85vh] sm:max-h-[90vh]">
                             
-                            {/* Encabezado con Slideshow de Fotos - Efecto Scrapbook */}
-                            <div className="relative h-72 bg-pink-100 shrink-0 flex items-center justify-center p-4 overflow-hidden">
-                                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#ec4899 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+                            {/* Encabezado con Slideshow - Altura reducida para móvil y Z-Index ajustado */}
+                            {/* z-20 para que esté por encima del contenido */}
+                            <div className="relative h-56 sm:h-72 bg-pink-100 shrink-0 flex items-center justify-center p-4 overflow-visible z-20">
+                                <div className="absolute inset-0 opacity-10 overflow-hidden" style={{ backgroundImage: 'radial-gradient(#ec4899 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
                                 
-                                <div className={`relative transform transition-all duration-500 z-10 ${isPlaying ? 'scale-[1.02]' : ''} rotate-[-2deg]`}>
-                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-6 bg-white/40 backdrop-blur-sm shadow-sm z-20 transform -rotate-2 border-l border-r border-white/20"></div>
+                                {/* Contenedor de la Imagen con Margen Negativo para efecto sobrepuesto */}
+                                <div className={`relative transform transition-all duration-500 ${isPlaying ? 'scale-[1.02]' : ''} rotate-[-2deg] -mb-12`}>
+                                    {/* Tape / Cinta adhesiva */}
+                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-6 bg-white/40 backdrop-blur-sm shadow-sm z-30 transform -rotate-2 border-l border-r border-white/20"></div>
                                     
-                                    <div className={`bg-white p-3 shadow-xl transition-shadow duration-300 ${isPlaying ? 'shadow-pink-400/50' : ''}`} style={{ 
+                                    <div className={`bg-white p-3 shadow-2xl transition-shadow duration-300 ${isPlaying ? 'shadow-pink-400/50' : ''}`} style={{ 
                                         clipPath: 'polygon(2% 0%, 98% 1%, 100% 98%, 1% 99%)',
                                         borderRadius: '2px'
                                     }}>
-                                        {/* Marco de Imagen que Cambia */}
-                                        <div className="w-56 h-56 relative overflow-hidden bg-gray-100">
+                                        {/* Marco de Imagen */}
+                                        <div className="w-48 h-48 sm:w-56 sm:h-56 relative overflow-hidden bg-gray-100">
                                             <img 
                                                 src={images[currentImgIdx]}
                                                 alt="Nosotros" 
@@ -276,7 +279,8 @@
                                 </div>
                             </div>
 
-                            <div className="p-5 space-y-4 overflow-y-auto no-scrollbar">
+                            {/* Contenido Scrollable - Padding superior extra para acomodar la imagen sobrepuesta */}
+                            <div className="p-5 pt-14 space-y-4 overflow-y-auto flex-1 min-h-0 relative z-10 bg-white/90">
                                 
                                 <div className="text-center space-y-3">
                                     <p className="text-gray-600 text-sm leading-relaxed font-medium">
