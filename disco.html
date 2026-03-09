@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Vinilo - Plantilla Pro Vintage 70s</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            background-color: #050505;
+            color: #f5eedc; 
+            overflow: hidden; 
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* ----- Estilos del Disco de Vinilo Principal ----- */
+        .vinyl-record {
+            background: #0a0a0a;
+            position: relative;
+            border-radius: 50%;
+            box-shadow: 0 0 25px rgba(0,0,0,0.95), inset 0 0 10px rgba(0,0,0,1);
+        }
+
+        .vinyl-grooves {
+            position: absolute;
+            inset: 4px;
+            border-radius: 50%;
+            background: repeating-radial-gradient(
+                #0f0f0f 0px,
+                #0f0f0f 2px,
+                #1a1a1a 3px,
+                #181818 4px
+            );
+            -webkit-mask-image: radial-gradient(circle, white 30%, black 100%);
+            mask-image: radial-gradient(circle, white 30%, black 100%);
+        }
+
+        .vinyl-glare {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 25deg,
+                transparent 0%,
+                rgba(255, 230, 180, 0.08) 15%, 
+                transparent 30%,
+                transparent 50%,
+                rgba(255, 230, 180, 0.08) 65%,
+                transparent 80%
+            );
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        /* ----- Animaciones del Contenedor ----- */
+        .vinyl-wrapper {
+            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translate3d(0, 0, 0); 
+        }
+
+        .vinyl-wrapper.playing {
+            transform: translate3d(50%, 0, 0); 
+        }
+
+        @media (max-width: 768px) {
+            .vinyl-wrapper.playing {
+                transform: translate3d(25%, -15%, 0); 
+            }
+        }
+
+        /* ----- Giro del Disco ----- */
+        .spin {
+            animation: spinRecord 4s linear infinite; /* Giraba a 2.5s, ahora más lento a 4s */
+        }
+        
+        .spin-bg {
+            animation: spinRecord 40s linear infinite; 
+        }
+
+        @keyframes spinRecord {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ----- BRAZO DEL TOCADISCOS ----- */
+        .tonearm {
+            position: absolute;
+            top: 5%;
+            right: 5%;
+            width: 15%;
+            height: 70%;
+            z-index: 25;
+            transform-origin: 80% 10%;
+            transform: rotate(-30deg); 
+            transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition-delay: 0.6s; 
+            pointer-events: none;
+            filter: drop-shadow(-10px 15px 12px rgba(0,0,0,0.8));
+        }
+
+        .vinyl-wrapper.playing .tonearm {
+            transform: rotate(24deg); 
+        }
+
+        .metal-radial { background: radial-gradient(circle at 30% 30%, #e5e5e5, #888, #222); }
+        .metal-linear { background: linear-gradient(90deg, #333 0%, #aaa 30%, #fff 50%, #888 70%, #222 100%); }
+
+        /* ----- Textura Realista del Estuche ----- */
+        .sleeve {
+            box-shadow: -25px 25px 50px rgba(0,0,0,0.95), 10px 10px 25px rgba(0,0,0,0.7);
+            z-index: 30; 
+            position: relative;
+            border-radius: 0.25rem;
+            overflow: hidden;
+        }
+
+        .sleeve-texture {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E"),
+                radial-gradient(circle, transparent 40%, rgba(255,240,220,0.06) 46%, rgba(0,0,0,0.3) 48%, transparent 54%);
+            mix-blend-mode: overlay;
+        }
+
+        .sleeve-wear {
+            position: absolute;
+            inset: 0;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: inset 0 0 40px rgba(0,0,0,1), inset 0 0 5px rgba(255,255,255,0.1);
+            pointer-events: none;
+        }
+
+        /* ----- Letras ----- */
+        .lyric-transition {
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            opacity: 0;
+            transform: translate3d(0, 15px, 0);
+        }
+
+        .lyric-transition.show {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.4), 0 4px 10px rgba(0,0,0,1);
+        }
+
+        .lyric-transition.hide {
+            opacity: 0;
+            transform: translate3d(0, -15px, 0);
+        }
+
+        /* ----- CINEMATOGRAFÍA 70S: Light Leaks y Polvo ----- */
+        .light-leak {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            mix-blend-mode: screen;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        @keyframes float-leak {
+            0%   { transform: translate(0, 0) scale(1); }
+            50%  { transform: translate(4%, 6%) scale(1.05); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+
+        .leak-1 { width: 50vw; height: 50vw; background: rgba(212, 115, 55, 0.2); top: -10%; left: -10%; animation: float-leak 20s ease-in-out infinite; }
+        .leak-2 { width: 60vw; height: 60vw; background: rgba(180, 50, 20, 0.15); bottom: -20%; right: -10%; animation: float-leak 25s ease-in-out infinite; }
+        .leak-3 { width: 40vw; height: 40vw; background: rgba(255, 200, 100, 0.12); top: 30%; left: 40%; animation: float-leak 30s ease-in-out infinite; }
+
+        .dust-container {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 6;
+            animation: sway 15s ease-in-out infinite;
+        }
+
+        @keyframes sway {
+            0%   { transform: translateX(-2vw); }
+            50%  { transform: translateX(2vw); }
+            100% { transform: translateX(-2vw); }
+        }
+
+        .dust-particles {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: transparent;
+            box-shadow:
+                15vw 20vh 2px rgba(255,220,150,0.5),
+                30vw 50vh 1px rgba(255,220,150,0.8),
+                75vw 80vh 2px rgba(255,220,150,0.4),
+                85vw 30vh 1px rgba(255,220,150,0.6),
+                45vw 70vh 2px rgba(255,220,150,0.5),
+                65vw 15vh 1px rgba(255,220,150,0.7),
+                25vw 85vh 2px rgba(255,220,150,0.3),
+                90vw 60vh 1px rgba(255,220,150,0.5);
+            border-radius: 50%;
+            animation: dust-float 35s linear infinite;
+        }
+        
+        .dust-particles::after {
+            content: "";
+            position: absolute;
+            top: 100vh;
+            left: 0;
+            width: 3px;
+            height: 3px;
+            background: transparent;
+            box-shadow: inherit;
+        }
+
+        @keyframes dust-float {
+            0%   { transform: translateY(0); }
+            100% { transform: translateY(-100vh); }
+        }
+
+        /* ----- ANIMACIÓN CUENTA REGRESIVA ----- */
+        @keyframes countAnim {
+            0% { transform: scale(0.5); opacity: 0; }
+            30% { transform: scale(1.1); opacity: 1; }
+            80% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; filter: blur(10px); }
+        }
+        .animate-count {
+            animation: countAnim 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ----- Scrollbar ----- */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        input[type="file"] { display: none; }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(212, 175, 55, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+        }
+        .btn-pulse { animation: pulse-ring 2s infinite; }
+    </style>
+</head>
+<body class="h-screen w-full flex items-center justify-center relative select-none">
+    
+    <!-- FONDO DINÁMICO E INTELIGENTE -->
+    <div class="absolute inset-0 z-0 overflow-hidden flex items-center justify-center bg-[#050505]" id="background-container">
+        <!-- Disco Gigante de Fondo -->
+        <div class="absolute w-[150vw] h-[150vw] sm:w-[120vw] sm:h-[120vw] rounded-full bg-black spin-bg flex items-center justify-center opacity-30">
+            <div class="w-[30%] h-[30%] bg-cover bg-center rounded-full opacity-20" id="bg-vinyl-label" style="background-image: url('maxresdefault.webp');"></div>
+        </div>
+
+        <!-- Imagen de Portada Desenfocada -->
+        <div id="dynamic-bg" class="absolute inset-0 bg-cover bg-center scale-110" style="background-image: url('maxresdefault.webp'); filter: blur(45px) saturate(1.8);"></div>
+        
+        <!-- Degradado -->
+        <div class="absolute inset-0 bg-gradient-to-br from-[#0a0502]/95 via-[#000000]/70 to-[#0a0502]/95"></div>
+        
+        <!-- Filtro de Ruido -->
+        <div class="absolute inset-0 z-10 pointer-events-none opacity-20 mix-blend-overlay" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+    </div>
+
+    <!-- CINE VINTAGE: LIGHT LEAKS Y POLVO FLOTANTE -->
+    <div class="light-leak leak-1"></div>
+    <div class="light-leak leak-2"></div>
+    <div class="light-leak leak-3"></div>
+    
+    <div class="dust-container">
+        <div class="dust-particles"></div>
+    </div>
+
+    <!-- Audio Local -->
+    <audio id="local-audio" class="hidden"></audio>
+
+    <!-- PANTALLA DE CUENTA REGRESIVA -->
+    <div id="countdown-overlay" class="absolute inset-0 z-[70] hidden items-center justify-center bg-black/80 backdrop-blur-md">
+        <span id="countdown-text" class="text-9xl font-bold text-[#d4af37] drop-shadow-[0_0_30px_rgba(212,175,55,0.8)] font-sans">3</span>
+    </div>
+
+    <!-- ESTUDIO DE SINCRONIZACIÓN EN VIVO -->
+    <div id="sync-studio" class="absolute inset-0 z-[60] hidden flex-col items-center justify-center bg-black/95 backdrop-blur-xl p-6 text-center">
+        <h2 class="text-[#d4af37] text-2xl font-bold mb-8 uppercase tracking-widest font-sans">Estudio de Sincronización</h2>
+        <div class="max-w-4xl w-full bg-neutral-900/50 border border-neutral-800 rounded-2xl p-10 mb-8 shadow-2xl">
+            <p class="text-neutral-500 text-lg mb-2 italic">Frase Actual:</p>
+            <p id="sync-current-text" class="text-4xl md:text-6xl font-bold text-white mb-8 min-h-[80px] leading-tight">...</p>
+            <p class="text-neutral-500 text-sm mb-2 uppercase tracking-widest">Siguiente frase a sincronizar:</p>
+            <p id="sync-next-text" class="text-2xl text-[#d4af37] opacity-80 min-h-[40px]">Preparando...</p>
+        </div>
+        <button id="tap-btn" class="w-full max-w-md py-6 bg-[#d4af37] text-black text-xl font-bold rounded-2xl hover:bg-[#ebd488] transition-all btn-pulse shadow-[0_0_30px_rgba(212,175,55,0.3)]">
+            TAP (Espacio) - Siguiente Frase
+        </button>
+        <p class="text-neutral-400 mt-6 max-w-md text-sm">Haz clic o presiona la <b>BARRA ESPACIADORA</b> justo cuando empiece a sonar la frase.</p>
+    </div>
+
+    <!-- PANEL DE CONFIGURACIÓN (PLANTILLA) -->
+    <div id="setup-overlay" class="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-opacity duration-500 overflow-y-auto py-10">
+        <div class="bg-neutral-950 border border-neutral-800 p-8 rounded-2xl shadow-2xl max-w-2xl w-full mx-4 my-auto">
+            <h2 class="text-3xl font-bold mb-6 text-white text-center font-serif">Configuración de Plantilla</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Archivos -->
+                <div class="space-y-4">
+                    <label class="cursor-pointer flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-neutral-700 hover:border-[#d4af37] hover:bg-neutral-900 transition-all rounded-xl group">
+                        <svg class="w-6 h-6 text-neutral-400 group-hover:text-[#d4af37] mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <span id="cover-name" class="text-neutral-300 text-sm group-hover:text-white">Subir Portada (JPG/PNG)</span>
+                        <input type="file" id="cover-input" accept="image/*">
+                    </label>
+
+                    <label class="cursor-pointer flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-neutral-700 hover:border-[#d4af37] hover:bg-neutral-900 transition-all rounded-xl group">
+                        <svg class="w-6 h-6 text-neutral-400 group-hover:text-[#d4af37] mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+                        <span id="audio-name" class="text-neutral-300 text-sm group-hover:text-white">Subir Audio (MP3/WAV)</span>
+                        <input type="file" id="audio-input" accept="audio/*">
+                    </label>
+                </div>
+
+                <!-- Textos Principales -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between bg-neutral-900 border border-neutral-700 rounded-lg p-1">
+                        <button id="btn-sencillo" type="button" class="w-1/2 py-2 rounded-md bg-[#d4af37] text-black text-xs font-bold uppercase tracking-widest transition-all">Sencillo</button>
+                        <button id="btn-album" type="button" class="w-1/2 py-2 rounded-md text-neutral-400 hover:text-white text-xs font-bold uppercase tracking-widest transition-all">Álbum</button>
+                    </div>
+                    
+                    <div id="album-input-container" class="hidden">
+                        <label class="block text-xs text-neutral-500 uppercase tracking-widest mb-1 font-sans">Nombre del Álbum</label>
+                        <input type="text" id="album-name-input" placeholder="Ej. Grandes Éxitos" class="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-3 text-neutral-300 focus:outline-none focus:border-[#d4af37] font-sans text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-neutral-500 uppercase tracking-widest mb-1 font-sans">Título de la Canción</label>
+                        <input type="text" id="song-title-input" value="La Ocasión Hizo al Ladrón" class="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d4af37] font-serif text-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-neutral-500 uppercase tracking-widest mb-1 font-sans">Nombre del Artista</label>
+                        <input type="text" id="artist-name-input" value="Christian Ortiz" class="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-3 text-[#d4af37] focus:outline-none focus:border-[#d4af37] font-sans">
+                    </div>
+                </div>
+            </div>
+
+            <!-- LETRA COMPLETA -->
+            <div class="mb-6">
+                <label class="block text-xs text-neutral-500 uppercase tracking-widest mb-1 font-sans">Letra de la Canción (Completa)</label>
+                <textarea id="lyrics-input" rows="6" class="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-3 text-neutral-300 focus:outline-none focus:border-[#d4af37] font-sans text-sm leading-relaxed resize-y">Era de noche, me miró y la miré
+Una sonrisa pudo más y la acompañé
+Aquel amigo que esperaba no llegó
+Aproveché y la ocasión hizo al ladrón
+Me la llevé a aquel lugar y le gustó
+Era la música que hablaba por los dos
+Yo la abracé, me estremecí, se estremeció
+Y en un solo beso me entregué, se entregó
+No se sorprendieron ni las estrellas junto al mar
+Como la vida, el amor, tienen un final
+Sentía frío y mi abrigo le ofrecí
+Y se apagó, yo me encendí y dije así:
+No me dejes esta noche
+Aunque todo terminó
+Déjame decir tu nombre
+Con amor y sin rencor
+No me dejes esta noche
+Hoy que he encontrado la fe
+Entre los besos tan dulces
+De tu corazón, mujer
+No me dejes esta noche
+Que no te voy a engañar
+Para que mentir cariño
+Si no eres una más...
+(Solo Musical)
+No me dejes esta noche
+Aunque todo terminó
+Déjame decir tu nombre
+Con amor y sin rencor
+No me dejes esta noche
+Hoy que he encontrado la fe
+Entre los besos tan dulces
+De tu corazón, mujer
+No me dejes esta noche...</textarea>
+            </div>
+            
+            <div id="action-buttons" class="flex flex-col gap-4">
+                <button id="open-sync-btn" class="w-full py-3.5 bg-[#1a1a1a] text-[#d4af37] border border-[#d4af37] border-opacity-30 font-bold rounded-xl hover:bg-[#d4af37] hover:text-black transition-all font-sans uppercase tracking-widest text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    1. Tap Sync (Requiere subir audio)
+                </button>
+                <div class="h-px w-full bg-neutral-800 my-1"></div>
+                <button id="play-only-btn" class="w-full py-4 bg-white text-black font-bold rounded-xl hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all font-sans uppercase tracking-widest text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    2. Iniciar Visualizador (Con Cuenta Regresiva)
+                </button>
+            </div>
+            <p class="text-neutral-500 text-xs text-center mt-6">💡 Truco: Haz doble clic en el fondo durante la reproducción para volver a abrir este menú.</p>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL VISUALIZADOR -->
+    <div class="z-10 relative w-full h-full max-w-[120rem] px-8 md:px-16 py-8 flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-32 xl:gap-48 pointer-events-none">
+        
+        <!-- ONDA DE AUDIO VISUALIZADOR (Confinada estrictamente a la izquierda para no cruzar los textos) -->
+        <canvas id="audio-visualizer" class="absolute left-0 top-1/3 lg:top-1/2 transform -translate-y-1/2 w-full lg:w-[55vw] h-[300px] z-0 opacity-80 pointer-events-none"></canvas>
+
+        <!-- Área Izquierda: Reproductor de Vinilo -->
+        <div class="relative w-56 h-56 sm:w-72 sm:h-72 lg:w-[380px] lg:h-[380px] xl:w-[420px] xl:h-[420px] flex-shrink-0 mt-10 lg:mt-0 z-10">
+            
+            <div id="vinyl-wrapper" class="vinyl-wrapper absolute inset-0 z-10">
+                <div class="w-full h-full relative">
+                    <!-- Disco -->
+                    <div id="vinyl" class="w-full h-full vinyl-record flex items-center justify-center shadow-2xl">
+                        <div class="vinyl-grooves"></div>
+                        <div class="relative w-[34%] h-[34%] rounded-full bg-cover bg-center border border-neutral-900 shadow-[inset_0_0_15px_rgba(0,0,0,0.8)] z-10 dynamic-cover" style="background-image: url('maxresdefault.webp');">
+                            <div class="absolute inset-0 rounded-full bg-black bg-opacity-20"></div>
+                            <div class="absolute top-1/2 left-1/2 w-4 h-4 bg-[#050505] rounded-full transform -translate-x-1/2 -translate-y-1/2 border border-neutral-800 shadow-inner"></div>
+                        </div>
+                    </div>
+
+                    <div class="vinyl-glare absolute inset-0"></div>
+
+                    <!-- BRAZO MECÁNICO REALISTA -->
+                    <div class="tonearm">
+                        <div class="absolute top-0 right-0 w-12 h-12 lg:w-16 lg:h-16 metal-radial rounded-full shadow-[0_10px_20px_rgba(0,0,0,0.8),inset_0_0_10px_rgba(0,0,0,0.8)] border border-neutral-700 z-10 flex items-center justify-center">
+                            <div class="w-4 h-4 rounded-full bg-gradient-to-b from-neutral-800 to-black border border-neutral-600 shadow-inner"></div>
+                        </div>
+                        <div class="absolute top-6 right-6 lg:top-8 lg:right-8 w-2.5 lg:w-3 h-[85%] metal-linear rounded-full origin-top transform rotate-[16deg] shadow-[5px_5px_15px_rgba(0,0,0,0.7)]">
+                            <div class="absolute top-[-25px] left-1/2 transform -translate-x-1/2 w-7 h-10 lg:w-9 lg:h-12 bg-gradient-to-r from-neutral-800 via-neutral-500 to-neutral-900 rounded-sm shadow-xl border-y border-neutral-500"></div>
+                            <div class="absolute bottom-[-20px] left-1/2 w-8 h-14 lg:w-10 lg:h-16 bg-gradient-to-b from-[#111] via-[#2a2a2a] to-[#050505] rounded-t-sm rounded-b-lg shadow-2xl origin-top transform -translate-x-1/2 rotate-[26deg] border border-[#444] flex flex-col items-center">
+                                <div class="w-full h-1 bg-[#d4af37] opacity-60 mt-2 shadow-[0_0_5px_rgba(212,175,55,0.5)]"></div>
+                                <div class="absolute bottom-[-6px] left-[15%] w-2 h-4 bg-gradient-to-r from-neutral-400 to-neutral-200 rounded-sm shadow-[-2px_4px_4px_rgba(0,0,0,0.9)] z-[-1]"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estuche de Vinilo -->
+            <div class="sleeve absolute inset-0 bg-[#0c0806] rounded-md z-20">
+                <img src="maxresdefault.webp" alt="Cover" class="w-full h-full object-cover rounded-md border border-[#1a1a1a] dynamic-cover-img">
+                <div class="sleeve-texture"></div>
+                <div class="sleeve-wear"></div>
+                <div class="absolute inset-y-0 right-0 w-8 lg:w-10 bg-gradient-to-l from-black/95 to-transparent rounded-r-md pointer-events-none"></div>
+            </div>
+        </div>
+
+        <!-- Área Derecha: Letras y Título -->
+        <!-- Eliminado text-balance para prevenir cortes raros, ahora respira naturalmente -->
+        <div class="flex-1 flex flex-col justify-center items-center lg:items-start w-full max-w-3xl text-center lg:text-left z-20 lg:pl-12 xl:pl-20">
+            <!-- Margen inferior reducido aún más para subir las letras (mb-2 a mb-1 y lg:mb-6 a lg:mb-4) -->
+            <div class="mb-1 lg:mb-4 w-full">
+                <!-- Álbum: Pequeño y muy sutil -->
+                <h3 id="display-album" class="hidden text-[10px] sm:text-xs lg:text-sm text-[#b0b0b0] font-sans tracking-[0.2em] uppercase mb-1 drop-shadow-md">Nombre del Álbum</h3>
+                
+                <!-- Título: Forzado a 1 sola línea (truncate, whitespace-nowrap) y tamaños ajustados -->
+                <h1 id="display-title" class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-normal mb-1 text-[#fdfbf7] drop-shadow-[0_4px_15px_rgba(0,0,0,0.9)] leading-none italic truncate whitespace-nowrap max-w-full">La Ocasión Hizo al Ladrón</h1>
+                
+                <!-- Artista: Tamaño reducido (text-base lg:text-xl) -->
+                <h2 id="display-artist" class="text-base lg:text-xl text-[#d4af37] font-medium tracking-[0.1em] uppercase drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] mt-1" style="font-family: 'Inter', sans-serif;">Christian Ortiz</h2>
+            </div>
+
+            <!-- Altura mínima reducida para centrar mejor el bloque general -->
+            <div class="relative min-h-[80px] lg:min-h-[120px] flex items-center justify-center lg:justify-start w-full">
+                <p id="lyrics-display" class="lyric-transition absolute w-full text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#f5eedc] leading-relaxed italic">
+                    <!-- La letra inyectada -->
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Referencias UI ---
+        const audioInput = document.getElementById('audio-input');
+        const coverInput = document.getElementById('cover-input');
+        const audioNameDisplay = document.getElementById('audio-name');
+        const coverNameDisplay = document.getElementById('cover-name');
+        
+        // Referencias para el Toggle Álbum/Sencillo
+        const btnSencillo = document.getElementById('btn-sencillo');
+        const btnAlbum = document.getElementById('btn-album');
+        const albumInputContainer = document.getElementById('album-input-container');
+        const albumInput = document.getElementById('album-name-input');
+        const displayAlbum = document.getElementById('display-album');
+
+        const titleInput = document.getElementById('song-title-input');
+        const artistInput = document.getElementById('artist-name-input');
+        const lyricsInput = document.getElementById('lyrics-input');
+        
+        const displayTitle = document.getElementById('display-title');
+        const displayArtist = document.getElementById('display-artist');
+        
+        const localAudio = document.getElementById('local-audio');
+        const setupOverlay = document.getElementById('setup-overlay');
+        const countdownOverlay = document.getElementById('countdown-overlay');
+        const countdownText = document.getElementById('countdown-text');
+        const playOnlyBtn = document.getElementById('play-only-btn');
+        const openSyncBtn = document.getElementById('open-sync-btn');
+        
+        const syncStudio = document.getElementById('sync-studio');
+        const syncCurrentText = document.getElementById('sync-current-text');
+        const syncNextText = document.getElementById('sync-next-text');
+        const tapBtn = document.getElementById('tap-btn');
+
+        const vinylWrapper = document.getElementById('vinyl-wrapper');
+        const vinyl = document.getElementById('vinyl');
+        const lyricsDisplay = document.getElementById('lyrics-display');
+
+        const dynamicCoversBg = document.querySelectorAll('.dynamic-cover');
+        const dynamicCoversImg = document.querySelectorAll('.dynamic-cover-img');
+        const dynamicBg = document.getElementById('dynamic-bg');
+        const bgVinylLabel = document.getElementById('bg-vinyl-label');
+
+        // Variables Visualizador Web Audio API
+        let audioCtx, analyser, source;
+        const canvas = document.getElementById('audio-visualizer');
+        const canvasCtx = canvas.getContext('2d');
+        let dataArray;
+        let bufferLength;
+        let waveTime = 0;
+
+        let isPlaying = false;
+        let isCountingDown = false;
+        let countIntervalId;
+        let animationFrameId;
+        let currentLyricIndex = -1;
+        let lyricTimeout;
+        
+        let rawLyrics = [];
+        let lyricsData = [];
+        let isSyncing = false;
+        let syncIndex = 0;
+        let customLyricsData = [];
+        let isAlbum = false;
+
+        // --- LÓGICA DEL TOGGLE SENCILLO/ÁLBUM ---
+        btnSencillo.addEventListener('click', () => {
+            isAlbum = false;
+            btnSencillo.classList.replace('text-neutral-400', 'text-black');
+            btnSencillo.classList.add('bg-[#d4af37]');
+            btnSencillo.classList.remove('hover:text-white');
+            
+            btnAlbum.classList.remove('bg-[#d4af37]', 'text-black');
+            btnAlbum.classList.add('text-neutral-400', 'hover:text-white');
+            
+            albumInputContainer.classList.add('hidden');
+        });
+
+        btnAlbum.addEventListener('click', () => {
+            isAlbum = true;
+            btnAlbum.classList.replace('text-neutral-400', 'text-black');
+            btnAlbum.classList.add('bg-[#d4af37]');
+            btnAlbum.classList.remove('hover:text-white');
+            
+            btnSencillo.classList.remove('bg-[#d4af37]', 'text-black');
+            btnSencillo.classList.add('text-neutral-400', 'hover:text-white');
+            
+            albumInputContainer.classList.remove('hidden');
+        });
+
+        // 1. Subir Portada
+        coverInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                coverNameDisplay.innerText = "Portada lista ✓";
+                coverNameDisplay.classList.replace('text-neutral-300', 'text-[#d4af37]');
+                const objectUrl = URL.createObjectURL(file);
+                
+                dynamicCoversBg.forEach(el => el.style.backgroundImage = `url('${objectUrl}')`);
+                dynamicCoversImg.forEach(el => el.src = objectUrl);
+                dynamicBg.style.backgroundImage = `url('${objectUrl}')`;
+                bgVinylLabel.style.backgroundImage = `url('${objectUrl}')`;
+            }
+        });
+
+        // 2. Subir Audio
+        audioInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                audioNameDisplay.innerText = "Audio listo ✓";
+                audioNameDisplay.classList.replace('text-neutral-300', 'text-[#d4af37]');
+                const objectUrl = URL.createObjectURL(file);
+                localAudio.src = objectUrl;
+                
+                openSyncBtn.disabled = false;
+                playOnlyBtn.disabled = false;
+            }
+        });
+
+        // Inicializar Audio Context - SE REPARA EL BLOQUEO
+        function initAudioVisualizer() {
+            if (!audioCtx) {
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioCtx.createAnalyser();
+                    analyser.fftSize = 256; 
+                    source = audioCtx.createMediaElementSource(localAudio);
+                    source.connect(analyser);
+                    analyser.connect(audioCtx.destination);
+                    bufferLength = analyser.frequencyBinCount;
+                    dataArray = new Uint8Array(bufferLength);
+                } catch (e) {
+                    console.log("No se pudo iniciar el visualizador", e);
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function parseLyrics() {
+            const text = lyricsInput.value;
+            rawLyrics = text.split('\n').map(l => l.trim()).filter(l => l !== "");
+            rawLyrics.push(""); // Añadir línea final para limpiar al terminar
+        }
+
+        function updateDisplayTexts() {
+            displayTitle.innerText = titleInput.value || "Título Desconocido";
+            displayArtist.innerText = artistInput.value || "Artista Desconocido";
+            
+            if (isAlbum && albumInput.value.trim() !== "") {
+                displayAlbum.innerText = albumInput.value.trim();
+                displayAlbum.classList.remove('hidden');
+            } else {
+                displayAlbum.classList.add('hidden');
+            }
+        }
+
+        // --- ESTUDIO DE SINCRONIZACIÓN ---
+        openSyncBtn.addEventListener('click', () => {
+            parseLyrics();
+            if(rawLyrics.length <= 1) {
+                alert("Por favor, pega la letra de la canción primero.");
+                return;
+            }
+
+            setupOverlay.style.opacity = '0';
+            setTimeout(() => { 
+                setupOverlay.style.display = 'none'; 
+                syncStudio.style.display = 'flex';
+            }, 500);
+            
+            isSyncing = true;
+            syncIndex = 0;
+            customLyricsData = [{ time: 0, text: "" }];
+            
+            syncCurrentText.innerHTML = "... (Esperando inicio)";
+            syncNextText.innerHTML = rawLyrics[0];
+            
+            localAudio.currentTime = 0;
+            localAudio.play();
+        });
+
+        function registerTap() {
+            if (!isSyncing || syncIndex >= rawLyrics.length) return;
+
+            customLyricsData.push({
+                time: localAudio.currentTime,
+                text: rawLyrics[syncIndex]
+            });
+
+            syncCurrentText.innerHTML = rawLyrics[syncIndex];
+            syncIndex++;
+            
+            if (syncIndex < rawLyrics.length) {
+                syncNextText.innerHTML = rawLyrics[syncIndex];
+            } else {
+                syncNextText.innerHTML = "¡Canción terminada!";
+                tapBtn.innerText = "Sincronización Completada ✓";
+                tapBtn.classList.replace('bg-[#d4af37]', 'bg-green-500');
+                
+                setTimeout(() => {
+                    lyricsData = customLyricsData; 
+                    isSyncing = false;
+                    localAudio.pause();
+                    syncStudio.style.display = 'none';
+                    setupOverlay.style.display = 'flex';
+                    setTimeout(() => { setupOverlay.style.opacity = '1'; }, 50);
+                    
+                    openSyncBtn.innerHTML = "✅ Tiempos Creados. Listo para Iniciar.";
+                    openSyncBtn.classList.replace('border-[#d4af37]', 'border-green-500');
+                    openSyncBtn.classList.replace('text-[#d4af37]', 'text-green-500');
+                }, 1500);
+            }
+        }
+
+        tapBtn.addEventListener('click', registerTap);
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && isSyncing) {
+                e.preventDefault(); 
+                registerTap();
+            }
+        });
+
+        // --- REPRODUCCIÓN Y CUENTA REGRESIVA ---
+        playOnlyBtn.addEventListener('click', () => {
+            parseLyrics();
+            updateDisplayTexts();
+            
+            if (lyricsData.length === 0 || lyricsData !== customLyricsData) {
+                lyricsData = rawLyrics.map((text, i) => ({ time: i * 4, text: text }));
+            }
+
+            // INICIALIZACIÓN FORZADA DEL AUDIO PARA QUE EL VISUALIZADOR NO FALLE
+            initAudioVisualizer();
+            localAudio.play().then(() => {
+                localAudio.pause();
+                localAudio.currentTime = 0;
+                
+                setupOverlay.style.opacity = '0';
+                setTimeout(() => { 
+                    setupOverlay.style.display = 'none'; 
+                    startCountdown(); 
+                }, 500);
+
+            }).catch(e => {
+                console.log("Audio unlock falló, procediendo de todos modos...", e);
+                setupOverlay.style.display = 'none';
+                startCountdown();
+            });
+        });
+
+        function triggerCountAnimation() {
+            countdownText.classList.remove('animate-count');
+            void countdownText.offsetWidth; 
+            countdownText.classList.add('animate-count');
+        }
+
+        function startCountdown() {
+            isCountingDown = true;
+            countdownOverlay.style.display = 'flex';
+            
+            let count = 3;
+            countdownText.innerText = count;
+            triggerCountAnimation();
+
+            countIntervalId = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownText.innerText = count;
+                    triggerCountAnimation();
+                } else {
+                    clearInterval(countIntervalId);
+                    countdownOverlay.style.display = 'none';
+                    isCountingDown = false;
+                    startSimulation(); 
+                }
+            }, 1000);
+        }
+
+        // --- DOBLE CLIC PARA DETENER ---
+        document.body.addEventListener('dblclick', () => {
+            if(!isSyncing) {
+                if (isCountingDown) {
+                    clearInterval(countIntervalId);
+                    isCountingDown = false;
+                    countdownOverlay.style.display = 'none';
+                }
+
+                localAudio.pause();
+                isPlaying = false;
+                vinylWrapper.classList.remove('playing');
+                vinyl.classList.remove('spin');
+                cancelAnimationFrame(animationFrameId);
+                lyricsDisplay.classList.remove('show');
+                lyricsDisplay.classList.add('hide');
+                
+                canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+                setupOverlay.style.display = 'flex';
+                setTimeout(() => { setupOverlay.style.opacity = '1'; }, 50);
+            }
+        });
+
+        // --- LÓGICA DE SIMULACIÓN ---
+        function startSimulation() {
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            
+            localAudio.currentTime = 0;
+            localAudio.play();
+            isPlaying = true;
+            currentLyricIndex = -1; 
+            lyricsDisplay.innerHTML = "";
+            
+            vinylWrapper.classList.add('playing');
+            vinyl.classList.add('spin');
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = requestAnimationFrame(syncLoop);
+        }
+
+        localAudio.addEventListener('ended', () => {
+            if(isSyncing) return; 
+            
+            isPlaying = false;
+            vinylWrapper.classList.remove('playing');
+            vinyl.classList.remove('spin');
+            cancelAnimationFrame(animationFrameId);
+            
+            lyricsDisplay.classList.remove('show');
+            lyricsDisplay.classList.add('hide');
+            
+            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        // OSCILOSCOPIO DE SEDA DORADA (Ahora bien delimitado a la izquierda)
+        function drawWave() {
+            if (!analyser || !dataArray) return;
+            
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            
+            if (canvas.width !== width || canvas.height !== height) {
+                canvas.width = width;
+                canvas.height = height;
+            }
+
+            analyser.getByteFrequencyData(dataArray);
+            
+            let sum = 0;
+            for(let i = 0; i < bufferLength; i++) {
+                sum += dataArray[i];
+            }
+            let average = sum / bufferLength;
+            let audioEnergy = average / 128.0;
+
+            canvasCtx.clearRect(0, 0, width, height);
+
+            const gradient = canvasCtx.createLinearGradient(0, 0, width, 0);
+            gradient.addColorStop(0, 'rgba(212, 175, 55, 0)');      
+            gradient.addColorStop(0.3, 'rgba(212, 175, 55, 0.7)'); 
+            gradient.addColorStop(0.7, 'rgba(212, 175, 55, 0.7)'); 
+            gradient.addColorStop(1, 'rgba(212, 175, 55, 0)');      
+
+            canvasCtx.lineWidth = 1.2; 
+            canvasCtx.strokeStyle = gradient;
+            canvasCtx.lineCap = 'round';
+            canvasCtx.lineJoin = 'round';
+
+            waveTime += 0.008;
+
+            const waveCount = 3;
+            for (let w = 0; w < waveCount; w++) {
+                canvasCtx.beginPath();
+                
+                const speed = waveTime * (0.8 + w * 0.15); 
+                const freq = 0.002 + (w * 0.0008); 
+                const amplitude = (15 + (audioEnergy * 30)) * (1 - w * 0.15); 
+
+                for (let x = 0; x <= width; x += 5) {
+                    const y = (height / 2) 
+                            + Math.sin(x * freq + speed) * amplitude
+                            + Math.cos(x * freq * 0.8 - speed) * (amplitude * 0.5);
+
+                    if (x === 0) {
+                        canvasCtx.moveTo(x, y);
+                    } else {
+                        canvasCtx.lineTo(x, y);
+                    }
+                }
+                
+                canvasCtx.globalAlpha = 1 - (w * 0.25); 
+                canvasCtx.shadowBlur = 8 + (audioEnergy * 5); 
+                canvasCtx.shadowColor = 'rgba(212, 175, 55, 0.4)';
+                
+                canvasCtx.stroke();
+            }
+            
+            canvasCtx.globalAlpha = 1.0;
+        }
+
+        // Bucle Visual Principal
+        function syncLoop() {
+            if (isPlaying && !isSyncing) {
+                syncTextDisplay();
+                drawWave(); 
+                animationFrameId = requestAnimationFrame(syncLoop);
+            }
+        }
+
+        // Control de Letras
+        function syncTextDisplay() {
+            if (!localAudio) return;
+            
+            const currentTime = localAudio.currentTime;
+            let activeIndex = -1;
+            
+            for (let i = 0; i < lyricsData.length; i++) {
+                if (currentTime >= lyricsData[i].time) {
+                    activeIndex = i;
+                } else {
+                    break;
+                }
+            }
+
+            if (activeIndex !== currentLyricIndex && activeIndex !== -1) {
+                currentLyricIndex = activeIndex;
+                clearTimeout(lyricTimeout);
+                
+                lyricsDisplay.classList.remove('show');
+                lyricsDisplay.classList.add('hide');
+                
+                lyricTimeout = setTimeout(() => {
+                    lyricsDisplay.innerHTML = lyricsData[activeIndex].text;
+                    lyricsDisplay.style.transition = 'none';
+                    lyricsDisplay.classList.remove('hide');
+                    lyricsDisplay.style.transform = 'translate3d(0, 15px, 0)';
+                    
+                    void lyricsDisplay.offsetWidth; 
+                    
+                    lyricsDisplay.style.transition = '';
+                    lyricsDisplay.classList.add('show');
+                }, 400); 
+            }
+        }
+    </script>
+</body>
+</html>
