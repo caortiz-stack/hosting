@@ -364,7 +364,7 @@
 
             <!-- LETRA COMPLETA -->
             <div class="mb-6">
-                <label class="block text-xs text-neutral-500 uppercase tracking-widest mb-1 font-sans">Letra de la Canción (Deja líneas en blanco para pausas)</label>
+                <label class="block text-xs text-neutral-500 uppercase tracking-widest mb-1 font-sans">Letra de la Canción (Pega el texto continuo)</label>
                 <textarea id="lyrics-input" rows="6" class="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-3 text-neutral-300 focus:outline-none focus:border-[#d4af37] font-sans text-sm leading-relaxed resize-y">Era de noche, me miró y la miré
 Una sonrisa pudo más y la acompañé
 Aquel amigo que esperaba no llegó
@@ -389,9 +389,7 @@ No me dejes esta noche
 Que no te voy a engañar
 Para que mentir cariño
 Si no eres una más...
-
 (Solo Musical)
-
 No me dejes esta noche
 Aunque todo terminó
 Déjame decir tu nombre
@@ -537,18 +535,17 @@ No me dejes esta noche...</textarea>
         let isCountingDown = false;
         let countIntervalId;
         let animationFrameId;
-        let currentLyricIndex = -1;
         let lyricTimeout;
         
-        // Variables para la lógica de las letras
-        let rawLyrics = []; // Contendrá solo líneas de texto válidas (incluyendo un string vacío al final)
-        let rawLyricsWithBlanks = []; // Contendrá las líneas originales, marcando dónde había espacios
-        let lyricsData = []; // Los tiempos sincronizados
+        // Letras y Tiempos
+        let rawLyrics = []; 
+        let lyricsData = []; 
         let isSyncing = false;
         let syncIndex = 0;
         let customLyricsData = [];
         let isAlbum = false;
         let hasCustomSync = false;
+        let currentDisplayedText = null;
 
         // --- LÓGICA DEL TOGGLE SENCILLO/ÁLBUM ---
         btnSencillo.addEventListener('click', () => {
@@ -624,32 +621,11 @@ No me dejes esta noche...</textarea>
             }
         }
 
-        // LÓGICA MEJORADA DE LECTURA DE LETRAS (Detecta pausas y fin automáticamente sin requerir TAP extra)
+        // LÓGICA SIN ESPACIOS: Filtramos TODO lo que no sea letra real.
         function parseLyrics() {
             const text = lyricsInput.value;
-            const lines = text.split('\n').map(l => l.trim());
-            
-            rawLyrics = [];
-            rawLyricsWithBlanks = [];
-
-            let consecutiveBlanks = 0;
-
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i] !== "") {
-                    rawLyrics.push(lines[i]);
-                    // Guardamos la línea y un flag que indica si la línea anterior era un espacio en blanco
-                    rawLyricsWithBlanks.push({ text: lines[i], isAfterBlank: consecutiveBlanks > 0 });
-                    consecutiveBlanks = 0;
-                } else {
-                    consecutiveBlanks++;
-                }
-            }
-
-            // Añadir un elemento final vacío a rawLyrics para manejar el ocultamiento de la última frase
-            if (rawLyrics.length > 0) {
-                rawLyrics.push("");
-                rawLyricsWithBlanks.push({ text: "", isAfterBlank: false }); // Fin de canción
-            }
+            // Quitamos líneas en blanco, el usuario NUNCA tap-eará para un espacio.
+            rawLyrics = text.split('\n').map(l => l.trim()).filter(l => l !== "");
         }
 
         function updateDisplayTexts() {
@@ -664,21 +640,7 @@ No me dejes esta noche...</textarea>
             }
         }
 
-        function updateTapButtonUI(index) {
-            if (index < rawLyrics.length) {
-                if (rawLyrics[index] === "") {
-                    tapBtn.innerHTML = "TAP (Espacio) - Finalizar Canción";
-                    tapBtn.classList.remove('bg-[#d4af37]', 'bg-green-500');
-                    tapBtn.classList.add('bg-red-600', 'text-white');
-                } else {
-                    tapBtn.innerText = "TAP (Espacio) - Siguiente Frase";
-                    tapBtn.classList.remove('bg-red-600', 'text-white', 'bg-green-500');
-                    tapBtn.classList.add('bg-[#d4af37]', 'text-black');
-                }
-            }
-        }
-
-        // --- ESTUDIO DE SINCRONIZACIÓN CON PROTECCIÓN ---
+        // --- ESTUDIO DE SINCRONIZACIÓN ---
         openSyncBtn.addEventListener('click', () => {
             parseLyrics();
             if(rawLyrics.length <= 1) {
@@ -708,21 +670,21 @@ No me dejes esta noche...</textarea>
             setTimeout(() => { 
                 setupOverlay.style.display = 'none'; 
                 syncStudio.style.display = 'flex';
-                
                 document.body.focus();
                 syncStudio.focus();
             }, 500);
             
             isSyncing = true;
             syncIndex = 0;
-            // Inicializar con la primera entrada para asegurar que el inicio no falle
             customLyricsData = [];
             
             syncCurrentText.innerHTML = "... (Esperando inicio)";
             syncNextText.innerHTML = rawLyrics[0];
             
             tapBtn.disabled = false;
-            updateTapButtonUI(0);
+            tapBtn.innerText = "TAP (Espacio) - Siguiente Frase";
+            tapBtn.classList.remove('bg-green-500');
+            tapBtn.classList.add('bg-[#d4af37]', 'text-black');
 
             localAudio.currentTime = 0;
             localAudio.play();
@@ -732,26 +694,6 @@ No me dejes esta noche...</textarea>
             if (!isSyncing || syncIndex >= rawLyrics.length) return;
 
             const currentTime = localAudio.currentTime;
-            
-            // Lógica automática de limpieza de pantalla:
-            // Si la frase actual viene después de una línea en blanco (un descanso),
-            // inyectamos automáticamente una instrucción de "ocultar" unos milisegundos antes
-            // del tiempo actual, para que la pantalla se limpie sola durante el instrumental.
-            if (syncIndex > 0 && rawLyricsWithBlanks[syncIndex].isAfterBlank) {
-                 // Calcula un punto intermedio entre la frase anterior y la actual para ocultar la letra.
-                 // Si eso falla o es muy justo, simplemente oculta la letra 0.5s después de que se presionó la anterior
-                 let hideTime = customLyricsData[customLyricsData.length - 1].time + 0.5;
-                 
-                 // Si hay espacio suficiente, oculta la letra a la mitad de la pausa
-                 if (currentTime - customLyricsData[customLyricsData.length - 1].time > 3) {
-                     hideTime = customLyricsData[customLyricsData.length - 1].time + 2;
-                 }
-                 
-                 customLyricsData.push({
-                     time: hideTime,
-                     text: "" // Esto limpiará la pantalla durante la pausa
-                 });
-            }
 
             // Guardar la frase actual
             customLyricsData.push({
@@ -759,16 +701,15 @@ No me dejes esta noche...</textarea>
                 text: rawLyrics[syncIndex]
             });
 
-            syncCurrentText.innerHTML = rawLyrics[syncIndex] !== "" ? rawLyrics[syncIndex] : "<span class='text-neutral-500 italic text-3xl'>(Fin)</span>";
+            syncCurrentText.innerHTML = rawLyrics[syncIndex];
             syncIndex++;
             
             if (syncIndex < rawLyrics.length) {
-                syncNextText.innerHTML = rawLyrics[syncIndex] !== "" ? rawLyrics[syncIndex] : "Finalizar (Ocultará la letra)";
-                updateTapButtonUI(syncIndex);
+                syncNextText.innerHTML = rawLyrics[syncIndex];
             } else {
                 syncNextText.innerHTML = "¡Sincronización Terminada!";
                 tapBtn.innerText = "Guardando... ✓";
-                tapBtn.classList.remove('bg-[#d4af37]', 'bg-red-600', 'text-white');
+                tapBtn.classList.remove('bg-[#d4af37]');
                 tapBtn.classList.add('bg-green-500', 'text-black');
                 tapBtn.disabled = true;
                 
@@ -791,14 +732,7 @@ No me dejes esta noche...</textarea>
         function undoSync() {
             if (!isSyncing || syncIndex === 0) return;
 
-            // Al deshacer, debemos tener cuidado si habíamos inyectado un "clear" automático
-            customLyricsData.pop(); // Quita la frase actual
-            
-            // Si antes había una pausa automática (texto vacío inyectado), también quítala
-            if (customLyricsData.length > 0 && customLyricsData[customLyricsData.length - 1].text === "") {
-                customLyricsData.pop();
-            }
-            
+            customLyricsData.pop(); 
             syncIndex--;
 
             let rewindTime = 0;
@@ -806,6 +740,7 @@ No me dejes esta noche...</textarea>
                 rewindTime = customLyricsData[customLyricsData.length - 1].time;
             }
             
+            // Rebobinar 2 segundos antes para estar listo
             localAudio.currentTime = Math.max(0, rewindTime - 2);
 
             if (syncIndex === 0) {
@@ -814,10 +749,12 @@ No me dejes esta noche...</textarea>
                 syncCurrentText.innerHTML = rawLyrics[syncIndex - 1];
             }
             
-            syncNextText.innerHTML = rawLyrics[syncIndex] !== "" ? rawLyrics[syncIndex] : "Finalizar (Ocultará la letra)";
+            syncNextText.innerHTML = rawLyrics[syncIndex];
 
             tapBtn.disabled = false;
-            updateTapButtonUI(syncIndex);
+            tapBtn.innerText = "TAP (Espacio) - Siguiente Frase";
+            tapBtn.classList.remove('bg-green-500', 'text-black');
+            tapBtn.classList.add('bg-[#d4af37]', 'text-black');
         }
 
         tapBtn.addEventListener('click', registerTap);
@@ -836,18 +773,13 @@ No me dejes esta noche...</textarea>
             }
         });
 
+        // --- REPRODUCCIÓN ---
         playOnlyBtn.addEventListener('click', () => {
             parseLyrics();
             updateDisplayTexts();
             
             if (!hasCustomSync) {
-                // Generar tiempos por defecto básicos si no se usó el sync
-                lyricsData = [];
-                let t = 2;
-                for(let i=0; i < rawLyrics.length; i++){
-                    lyricsData.push({time: t, text: rawLyrics[i]});
-                    t += 4;
-                }
+                lyricsData = rawLyrics.map((text, i) => ({ time: i * 4, text: text }));
             }
 
             initAudioVisualizer();
@@ -909,6 +841,8 @@ No me dejes esta noche...</textarea>
                 vinylWrapper.classList.remove('playing');
                 vinyl.classList.remove('spin');
                 cancelAnimationFrame(animationFrameId);
+                
+                currentDisplayedText = null;
                 lyricsDisplay.classList.remove('show');
                 lyricsDisplay.classList.add('hide');
                 
@@ -927,7 +861,7 @@ No me dejes esta noche...</textarea>
             localAudio.currentTime = 0;
             localAudio.play();
             isPlaying = true;
-            currentLyricIndex = -1; 
+            currentDisplayedText = null; 
             lyricsDisplay.innerHTML = "";
             
             vinylWrapper.classList.add('playing');
@@ -1023,6 +957,7 @@ No me dejes esta noche...</textarea>
             }
         }
 
+        // LÓGICA DE AUTO-OCULTAR LETRAS 
         function syncTextDisplay() {
             if (!localAudio) return;
             
@@ -1037,15 +972,29 @@ No me dejes esta noche...</textarea>
                 }
             }
 
-            if (activeIndex !== currentLyricIndex && activeIndex !== -1) {
-                currentLyricIndex = activeIndex;
+            let textToDisplay = "";
+
+            if (activeIndex !== -1) {
+                const timePassed = currentTime - lyricsData[activeIndex].time;
+                // Si han pasado más de 4.0 segundos en la misma frase y no ha llegado la siguiente,
+                // la frase actual se oculta automáticamente.
+                if (timePassed > 4.0) {
+                    textToDisplay = "";
+                } else {
+                    textToDisplay = lyricsData[activeIndex].text;
+                }
+            }
+
+            // Transición suave al cambiar de texto o al ocultarse
+            if (textToDisplay !== currentDisplayedText) {
+                currentDisplayedText = textToDisplay;
                 clearTimeout(lyricTimeout);
                 
                 lyricsDisplay.classList.remove('show');
                 lyricsDisplay.classList.add('hide');
                 
                 lyricTimeout = setTimeout(() => {
-                    lyricsDisplay.innerHTML = lyricsData[activeIndex].text;
+                    lyricsDisplay.innerHTML = textToDisplay;
                     lyricsDisplay.style.transition = 'none';
                     lyricsDisplay.classList.remove('hide');
                     lyricsDisplay.style.transform = 'translate3d(0, 15px, 0)';
@@ -1053,7 +1002,9 @@ No me dejes esta noche...</textarea>
                     void lyricsDisplay.offsetWidth; 
                     
                     lyricsDisplay.style.transition = '';
-                    lyricsDisplay.classList.add('show');
+                    if (textToDisplay !== "") {
+                        lyricsDisplay.classList.add('show');
+                    }
                 }, 400); 
             }
         }
