@@ -138,22 +138,33 @@
             pointer-events: none;
         }
 
-        /* ----- Letras ----- */
+        /* ----- Letras (MODIFICADO PARA EFECTO ESCALERA Y FADE RÁPIDO) ----- */
         .lyric-transition {
-            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
             opacity: 0;
-            transform: translate3d(0, 15px, 0);
+            transform: translate3d(0, 10px, 0); /* Menos movimiento vertical para verse más elegante */
         }
 
         .lyric-transition.show {
             opacity: 1;
             transform: translate3d(0, 0, 0);
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.4), 0 4px 10px rgba(0,0,0,1);
+            /* Eliminamos el text-shadow global de aquí, para aplicarlo solo a la línea actual en JS y evitar pesadez */
         }
 
         .lyric-transition.hide {
+            /* FADE OUT RÁPIDO Y ELEGANTE DE BALADISTA */
+            transition: opacity 0.2s ease-in, transform 0.2s ease-in; 
             opacity: 0;
-            transform: translate3d(0, -15px, 0);
+            transform: translate3d(0, -10px, 0);
+        }
+
+        /* Animación suave para la entrada de CADA línea individual de la escalera */
+        @keyframes lyricIn {
+            0% { opacity: 0; transform: translateX(-15px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+        .animate-lyric-in {
+            animation: lyricIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
         }
 
         /* ----- CINEMATOGRAFÍA 70S: Light Leaks y Polvo ----- */
@@ -364,7 +375,7 @@
 
             <!-- LETRA COMPLETA -->
             <div class="mb-6">
-                <label class="block text-xs text-neutral-500 uppercase tracking-widest mb-1 font-sans">Letra de la Canción (Pega el texto continuo)</label>
+                <label class="block text-xs text-neutral-500 uppercase tracking-widest mb-1 font-sans">Letra de la Canción</label>
                 <textarea id="lyrics-input" rows="6" class="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-3 text-neutral-300 focus:outline-none focus:border-[#d4af37] font-sans text-sm leading-relaxed resize-y">Era de noche, me miró y la miré
 Una sonrisa pudo más y la acompañé
 Aquel amigo que esperaba no llegó
@@ -389,7 +400,6 @@ No me dejes esta noche
 Que no te voy a engañar
 Para que mentir cariño
 Si no eres una más...
-(Solo Musical)
 No me dejes esta noche
 Aunque todo terminó
 Déjame decir tu nombre
@@ -469,10 +479,12 @@ No me dejes esta noche...</textarea>
                 <h2 id="display-artist" class="text-base lg:text-xl text-[#d4af37] font-medium tracking-[0.1em] uppercase drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] mt-1" style="font-family: 'Inter', sans-serif;">Christian Ortiz</h2>
             </div>
 
-            <div class="relative min-h-[80px] lg:min-h-[120px] flex items-center justify-center lg:justify-start w-full">
-                <p id="lyrics-display" class="lyric-transition absolute w-full text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#f5eedc] leading-relaxed italic">
-                    <!-- La letra inyectada -->
-                </p>
+            <!-- Altura aumentada ligeramente para albergar las 3 líneas de la escalera sin cambiar tamaño general -->
+            <div class="relative min-h-[150px] lg:min-h-[220px] flex items-center justify-center lg:justify-start w-full">
+                <!-- Se quitaron los estilos globales gruesos para gestionarlos finamente línea por línea -->
+                <div id="lyrics-display" class="lyric-transition absolute w-full italic flex flex-col justify-center tracking-wide">
+                    <!-- Los bloques en escalera se inyectan aquí -->
+                </div>
             </div>
         </div>
     </div>
@@ -545,7 +557,10 @@ No me dejes esta noche...</textarea>
         let customLyricsData = [];
         let isAlbum = false;
         let hasCustomSync = false;
-        let currentDisplayedText = null;
+        
+        // Estado del renderizado de la escalera
+        let currentActiveBlockId = -2; 
+        let currentLyricIndex = -1;
 
         // --- LÓGICA DEL TOGGLE SENCILLO/ÁLBUM ---
         btnSencillo.addEventListener('click', () => {
@@ -621,10 +636,9 @@ No me dejes esta noche...</textarea>
             }
         }
 
-        // LÓGICA SIN ESPACIOS: Filtramos TODO lo que no sea letra real.
+        // LÓGICA SIN ESPACIOS PARA EL TAP SYNC: Solo leemos líneas reales.
         function parseLyrics() {
             const text = lyricsInput.value;
-            // Quitamos líneas en blanco, el usuario NUNCA tap-eará para un espacio.
             rawLyrics = text.split('\n').map(l => l.trim()).filter(l => l !== "");
         }
 
@@ -637,6 +651,28 @@ No me dejes esta noche...</textarea>
                 displayAlbum.classList.remove('hidden');
             } else {
                 displayAlbum.classList.add('hidden');
+            }
+        }
+
+        // --- CÁLCULO DE BLOQUES DE LA ESCALERA ---
+        // Agrupa las letras de 2 en 2, o las separa si detecta un salto de tiempo > 4s
+        function processLyricsBlocks() {
+            let currentBlock = 0;
+            let linesInBlock = 0;
+            for (let i = 0; i < lyricsData.length; i++) {
+                // Si pasaron más de 4 segundos, forzar un nuevo bloque para que reinicie arriba
+                if (i > 0 && (lyricsData[i].time - lyricsData[i-1].time > 4.0)) {
+                    currentBlock++;
+                    linesInBlock = 0;
+                }
+                // Grupos de 2 (Escalera de 2 líneas - Minimalista y elegante)
+                if (linesInBlock >= 2) {
+                    currentBlock++;
+                    linesInBlock = 0;
+                }
+                lyricsData[i].blockId = currentBlock;
+                lyricsData[i].lineInBlock = linesInBlock; // 0=Top, 1=Bottom
+                linesInBlock++;
             }
         }
 
@@ -695,7 +731,6 @@ No me dejes esta noche...</textarea>
 
             const currentTime = localAudio.currentTime;
 
-            // Guardar la frase actual
             customLyricsData.push({
                 time: currentTime,
                 text: rawLyrics[syncIndex]
@@ -740,7 +775,6 @@ No me dejes esta noche...</textarea>
                 rewindTime = customLyricsData[customLyricsData.length - 1].time;
             }
             
-            // Rebobinar 2 segundos antes para estar listo
             localAudio.currentTime = Math.max(0, rewindTime - 2);
 
             if (syncIndex === 0) {
@@ -781,6 +815,8 @@ No me dejes esta noche...</textarea>
             if (!hasCustomSync) {
                 lyricsData = rawLyrics.map((text, i) => ({ time: i * 4, text: text }));
             }
+            
+            processLyricsBlocks(); // Asigna el ID de bloque para la escalera
 
             initAudioVisualizer();
             localAudio.play().then(() => {
@@ -842,7 +878,8 @@ No me dejes esta noche...</textarea>
                 vinyl.classList.remove('spin');
                 cancelAnimationFrame(animationFrameId);
                 
-                currentDisplayedText = null;
+                currentActiveBlockId = -2;
+                currentLyricIndex = -1; 
                 lyricsDisplay.classList.remove('show');
                 lyricsDisplay.classList.add('hide');
                 
@@ -861,7 +898,8 @@ No me dejes esta noche...</textarea>
             localAudio.currentTime = 0;
             localAudio.play();
             isPlaying = true;
-            currentDisplayedText = null; 
+            currentActiveBlockId = -2;
+            currentLyricIndex = -1; 
             lyricsDisplay.innerHTML = "";
             
             vinylWrapper.classList.add('playing');
@@ -957,13 +995,41 @@ No me dejes esta noche...</textarea>
             }
         }
 
-        // LÓGICA DE AUTO-OCULTAR LETRAS 
+        // GENERADOR DE HTML PARA EL BLOQUE ESCALERA (2 líneas con mayor respiro visual)
+        function generateBlockHTML(activeIndex, blockId) {
+            let blockHTML = `<div class="flex flex-col w-full gap-5 sm:gap-8">`; // Mayor separación vertical para más elegancia
+            for (let i = 0; i <= activeIndex; i++) {
+                if (lyricsData[i].blockId === blockId) {
+                    const lineInfo = lyricsData[i];
+                    const isActive = (i === activeIndex);
+                    
+                    // Sangría clara y diagonal para 2 líneas
+                    let indentClass = "ml-0";
+                    if (lineInfo.lineInBlock === 1) indentClass = "ml-8 sm:ml-16 lg:ml-24"; 
+                    
+                    // Estilos dinámicos: La línea activa en primer plano. Las pasadas se hacen PEQUEÑAS (65%) y se desenfocan sutilmente.
+                    let appearanceClass = isActive 
+                        ? "opacity-100 scale-100 blur-none font-semibold text-[#fdfbf7] drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]" 
+                        : "opacity-[0.35] scale-[0.65] blur-[0.8px] font-normal text-[#d4cbb8] drop-shadow-none";
+                    
+                    let animationClass = isActive ? "animate-lyric-in" : "";
+
+                    // origin-left asegura que al encogerse lo haga hacia su propio margen izquierdo, manteniendo la estructura de escalera
+                    blockHTML += `<div class="${indentClass} text-2xl sm:text-3xl lg:text-4xl xl:text-[2.75rem] leading-relaxed ${appearanceClass} ${animationClass} origin-left transition-all duration-[800ms] ease-out transform">${lineInfo.text}</div>`;
+                }
+            }
+            blockHTML += `</div>`;
+            return blockHTML;
+        }
+
+        // LÓGICA MAESTRA: RENDERIZACIÓN DE ESCALERA Y AUTO-OCULTAR 
         function syncTextDisplay() {
             if (!localAudio) return;
             
             const currentTime = localAudio.currentTime;
             let activeIndex = -1;
             
+            // Encontrar la frase actual
             for (let i = 0; i < lyricsData.length; i++) {
                 if (currentTime >= lyricsData[i].time) {
                     activeIndex = i;
@@ -972,41 +1038,52 @@ No me dejes esta noche...</textarea>
                 }
             }
 
-            let textToDisplay = "";
+            let activeBlockId = -1;
 
             if (activeIndex !== -1) {
                 const timePassed = currentTime - lyricsData[activeIndex].time;
-                // Si han pasado más de 4.0 segundos en la misma frase y no ha llegado la siguiente,
-                // la frase actual se oculta automáticamente.
-                if (timePassed > 4.0) {
-                    textToDisplay = "";
-                } else {
-                    textToDisplay = lyricsData[activeIndex].text;
+                // Si han pasado más de 4.0 segundos en la misma frase y no ha llegado la siguiente, oculta
+                if (timePassed <= 4.0) {
+                    activeBlockId = lyricsData[activeIndex].blockId;
                 }
             }
 
-            // Transición suave al cambiar de texto o al ocultarse
-            if (textToDisplay !== currentDisplayedText) {
-                currentDisplayedText = textToDisplay;
+            // ¿Cambió de bloque o el tiempo se agotó? -> FADE OUT RÁPIDO Y ELEGANTE
+            if (activeBlockId !== currentActiveBlockId) {
+                currentActiveBlockId = activeBlockId;
                 clearTimeout(lyricTimeout);
                 
                 lyricsDisplay.classList.remove('show');
-                lyricsDisplay.classList.add('hide');
+                lyricsDisplay.classList.add('hide'); // Llama al fade-out super rápido que definimos en CSS
                 
+                // Esperamos solo 200ms a que termine el fade-out para pintar la pantalla de nuevo
                 lyricTimeout = setTimeout(() => {
-                    lyricsDisplay.innerHTML = textToDisplay;
+                    if (activeBlockId === -1) {
+                        lyricsDisplay.innerHTML = "";
+                    } else {
+                        lyricsDisplay.innerHTML = generateBlockHTML(activeIndex, activeBlockId);
+                    }
+                    
                     lyricsDisplay.style.transition = 'none';
                     lyricsDisplay.classList.remove('hide');
-                    lyricsDisplay.style.transform = 'translate3d(0, 15px, 0)';
+                    lyricsDisplay.style.transform = 'translate3d(0, 10px, 0)';
                     
-                    void lyricsDisplay.offsetWidth; 
+                    void lyricsDisplay.offsetWidth; // Reflow
                     
                     lyricsDisplay.style.transition = '';
-                    if (textToDisplay !== "") {
-                        lyricsDisplay.classList.add('show');
+                    if (activeBlockId !== -1) {
+                        lyricsDisplay.classList.add('show'); // Fade in suave natural
                     }
-                }, 400); 
+                }, 200); 
+            } else {
+                // Si estamos en el mismo bloque pero pasamos a la siguiente línea de la escalera
+                // -> NO hacermos fade del bloque, simplemente inyectamos la línea, la cual entrará con su animación individual
+                if (activeBlockId !== -1 && activeIndex !== currentLyricIndex) {
+                    lyricsDisplay.innerHTML = generateBlockHTML(activeIndex, activeBlockId);
+                }
             }
+            
+            currentLyricIndex = activeIndex;
         }
     </script>
 </body>
