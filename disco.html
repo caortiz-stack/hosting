@@ -140,15 +140,15 @@
 
         /* ----- Letras (MODIFICADO PARA EFECTO ESCALERA Y FADE RÁPIDO) ----- */
         .lyric-transition {
-            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+            /* Transición acelerada a 0.25s para sincronización más precisa */
+            transition: opacity 0.25s ease-out, transform 0.25s ease-out;
             opacity: 0;
-            transform: translate3d(0, 10px, 0); /* Menos movimiento vertical para verse más elegante */
+            transform: translate3d(0, 10px, 0); 
         }
 
         .lyric-transition.show {
             opacity: 1;
             transform: translate3d(0, 0, 0);
-            /* Eliminamos el text-shadow global de aquí, para aplicarlo solo a la línea actual en JS y evitar pesadez */
         }
 
         .lyric-transition.hide {
@@ -164,7 +164,8 @@
             100% { opacity: 1; transform: translateX(0); }
         }
         .animate-lyric-in {
-            animation: lyricIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            /* Acelerado a 0.3s para que el golpe de vista coincida con la voz */
+            animation: lyricIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
         }
 
         /* ----- CINEMATOGRAFÍA 70S: Light Leaks y Polvo ----- */
@@ -729,10 +730,16 @@ No me dejes esta noche...</textarea>
         function registerTap() {
             if (!isSyncing || syncIndex >= rawLyrics.length) return;
 
-            const currentTime = localAudio.currentTime;
+            // COMPENSACIÓN INTELIGENTE (0.35s):
+            // Resta tiempo para contrarrestar el lag del cerebro humano y las animaciones visuales
+            const REACTION_OFFSET = 0.35;
+            let syncTime = localAudio.currentTime - REACTION_OFFSET;
+            
+            // Asegurarse de que el tiempo nunca sea negativo
+            if (syncTime < 0) syncTime = 0;
 
             customLyricsData.push({
-                time: currentTime,
+                time: syncTime,
                 text: rawLyrics[syncIndex]
             });
 
