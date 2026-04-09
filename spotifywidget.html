@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Premium OBS Overlay - Subtle HD Edition</title>
+    <title>Mini Premium OBS Overlay - HD Spaced Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         /* =========================================
@@ -37,11 +37,12 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* CONTENEDOR PRINCIPAL */
+        /* CONTENEDOR PRINCIPAL - Ajustado el espacio (GAP) */
         .main-container {
             display: inline-flex;
             align-items: center;
-            padding: 30px; /* Reducido para mayor precisión en la esquina */
+            padding: 30px; 
+            gap: 35px; /* Incrementado para alejar el separador del logo */
             opacity: 0;
             transform: translateX(-10px);
             transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
@@ -63,7 +64,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            /* RESPLANDOR REDUCIDO: Ahora es más sutil y elegante */
             animation: glow-pulse 5s ease-in-out infinite;
             will-change: filter;
         }
@@ -171,14 +171,14 @@
         }
 
         /* =========================================
-           SECCIÓN INFO (DERECHA - LIMPIA)
+           SECCIÓN INFO (DERECHA)
            ========================================= */
         .info-section {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding-left: 20px;
-            border-left: 1px solid rgba(255,255,255,0.08);
+            padding-left: 20px; /* Espacio después de la línea */
+            border-left: 1px solid rgba(255,255,255,0.08); /* Este es el separador */
             overflow: visible;
         }
 
@@ -206,7 +206,6 @@
             overflow: visible;
             word-wrap: break-word;
             padding-right: 25px; 
-            /* Sombra de texto más ajustada y nítida */
             text-shadow: 
                 0 2px 6px rgba(0, 0, 0, 0.8),
                 0 3px 12px rgba(0, 0, 0, 0.4);
@@ -249,7 +248,7 @@
             width: 18px;
             background: var(--emblem-url) center/contain no-repeat;
             z-index: 5;
-            filter: brightness(0) invert(1);
+            filter: brightness(0) invert(1); 
             pointer-events: none;
         }
 
