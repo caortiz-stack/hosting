@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultra Premium OBS Optimized - Shimmer & Glow Restored</title>
+    <title>Mini Premium OBS Overlay - Subtle HD Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         /* =========================================
@@ -15,6 +15,9 @@
             --progress-width: 0%;
             --logo-url: url('https://raw.githubusercontent.com/caortiz-stack/hosting/d29b243e0d3a48bb7f7343639cd243b408616178/logosvg.png');
             --emblem-url: url('https://raw.githubusercontent.com/caortiz-stack/hosting/refs/heads/gh-pages/emblem3.png');
+            
+            /* TAMAÑO COMPACTO PARA ESQUINA */
+            --widget-scale: 150px; 
         }
 
         * { box-sizing: border-box; }
@@ -29,51 +32,51 @@
             overflow: hidden;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             user-select: none;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* CONTENEDOR DE ESCALADO */
-        .viewport-scaler {
-            display: flex;
+        /* CONTENEDOR PRINCIPAL */
+        .main-container {
+            display: inline-flex;
             align-items: center;
-            width: 95%;
-            height: 85%;
-            max-width: 1500px;
-            gap: 4vw;
+            padding: 30px; /* Reducido para mayor precisión en la esquina */
             opacity: 0;
-            transform: translateX(-20px) translateZ(0);
+            transform: translateX(-10px);
             transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            will-change: transform, opacity;
-            overflow: visible;
         }
 
-        .viewport-scaler.active {
+        .main-container.active {
             opacity: 1;
-            transform: translateX(0) translateZ(0);
+            transform: translateX(0);
         }
 
         /* =========================================
-           SECCIÓN LOGO / PORTADA (SHIMMER & GLOW)
+           SECCIÓN LOGO (RESPLANDOR SUTIL)
            ========================================= */
         .logo-section {
             position: relative;
-            height: 80vh; 
-            aspect-ratio: 1/1;
+            width: var(--widget-scale);
+            height: var(--widget-scale);
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            /* GLOW GLOBAL: Pulsa y resalta las orejas/bordes */
-            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
-            animation: global-glow 5s ease-in-out infinite;
+            /* RESPLANDOR REDUCIDO: Ahora es más sutil y elegante */
+            animation: glow-pulse 5s ease-in-out infinite;
             will-change: filter;
         }
 
-        @keyframes global-glow {
-            0%, 100% { filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4)) drop-shadow(0 0 10px rgba(0, 174, 255, 0.2)); }
-            50% { filter: drop-shadow(0 15px 35px rgba(0,0,0,0.5)) drop-shadow(0 0 25px rgba(0, 174, 255, 0.5)); }
+        @keyframes glow-pulse {
+            0%, 100% { 
+                filter: drop-shadow(0 0 5px rgba(0, 174, 255, 0.2)) 
+                        drop-shadow(0 0 2px rgba(0, 98, 255, 0.1)); 
+            }
+            50% { 
+                filter: drop-shadow(0 0 12px rgba(0, 174, 255, 0.4)) 
+                        drop-shadow(0 0 8px rgba(0, 98, 255, 0.2)); 
+            }
         }
 
         .logo-base {
@@ -82,26 +85,23 @@
             height: 100%;
             background: var(--logo-url) center/contain no-repeat;
             z-index: 1;
+            image-rendering: -webkit-optimize-contrast;
         }
 
-        /* SHIMMER: Barrido de luz que sigue la forma del logo */
         .logo-shimmer {
             position: absolute;
             width: 100%; height: 100%;
             background: var(--logo-url) center/contain no-repeat;
             z-index: 2;
             opacity: 0;
-            /* Usamos brillo y desenfoque suave para evitar el "burn" en OBS */
-            filter: brightness(2.2) blur(1px);
-            animation: border-shimmer-effect 7s ease-in-out infinite;
+            filter: brightness(1.8) blur(0.3px);
+            animation: border-shine 7s ease-in-out infinite;
             pointer-events: none;
-            will-change: opacity, transform;
         }
 
-        @keyframes border-shimmer-effect {
-            0%, 100% { opacity: 0; transform: scale(1); }
-            15% { opacity: 0.8; transform: scale(1.012); }
-            30% { opacity: 0; transform: scale(1.02); }
+        @keyframes border-shine {
+            0%, 100% { opacity: 0; }
+            20%, 35% { opacity: 0.4; }
         }
 
         .cover-circle {
@@ -112,7 +112,7 @@
             overflow: hidden; 
             z-index: 10; 
             background-color: #000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4);
         }
 
         .album-cover {
@@ -140,24 +140,23 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5vw;
-            width: 70%;
-            height: 15%;
+            gap: 2px;
+            width: 75%;
+            height: 12px;
         }
 
         .bar {
-            width: 0.4vw;
+            width: 2px;
             height: 100%;
             background: linear-gradient(to bottom, var(--theme-color-1), var(--theme-color-2));
-            border-radius: 2px;
+            border-radius: 1px;
             transform: scaleY(0.3);
             animation: spectrum-jump 0.8s infinite ease-in-out;
-            will-change: transform;
         }
 
         @keyframes spectrum-jump {
-            0%, 100% { transform: scaleY(0.3); opacity: 0.4; }
-            50% { transform: scaleY(1); opacity: 1; }
+            0%, 100% { transform: scaleY(0.3); opacity: 0.3; }
+            50% { transform: scaleY(1); opacity: 0.8; }
         }
 
         .glass-ring {
@@ -167,74 +166,67 @@
             border-radius: 50%;
             z-index: 15;
             pointer-events: none;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            box-shadow: inset 0 2px 6px rgba(255,255,255,0.2);
+            border: 1.2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 1px 3px rgba(255,255,255,0.15);
         }
 
         /* =========================================
-           SECCIÓN INFO (DERECHA - SOMBRAS SUAVES)
+           SECCIÓN INFO (DERECHA - LIMPIA)
            ========================================= */
         .info-section {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            flex-grow: 1;
-            min-width: 0;
-            padding-left: 3vw;
+            padding-left: 20px;
             border-left: 1px solid rgba(255,255,255,0.08);
-            overflow: visible; 
+            overflow: visible;
         }
 
         .artist-name {
-            font-size: 2.2vh;
+            font-size: 12px;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.3vw;
-            margin-bottom: 0.5vh;
+            letter-spacing: 2px;
+            margin-bottom: 2px;
             background: linear-gradient(90deg, var(--theme-color-1), #ffffff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            white-space: nowrap;
-            filter: drop-shadow(0 0 6px rgba(0, 174, 255, 0.4));
-            padding: 5px 0;
+            filter: drop-shadow(0 0 3px rgba(0, 174, 255, 0.2));
         }
 
         .song-title {
-            font-size: 5.8vh;
+            font-size: 26px;
             font-weight: 900;
-            line-height: 1.15;
-            margin-bottom: 3vh;
+            line-height: 1.1;
+            margin-bottom: 12px;
             color: #ffffff;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
-            overflow: visible; 
+            overflow: visible;
             word-wrap: break-word;
-            padding: 10px 40px 20px 0; 
-            margin-right: -40px;
+            padding-right: 25px; 
+            /* Sombra de texto más ajustada y nítida */
             text-shadow: 
-                0 4px 12px rgba(0, 0, 0, 0.85),
-                0 8px 30px rgba(0, 0, 0, 0.5),
-                0 15px 50px rgba(0, 0, 0, 0.3);
-            transition: font-size 0.3s ease;
-            max-width: 600px;
+                0 2px 6px rgba(0, 0, 0, 0.8),
+                0 3px 12px rgba(0, 0, 0, 0.4);
+            max-width: 320px;
         }
 
-        /* PROGRESO UNIVERSAL */
+        /* BARRA DE PROGRESO COMPACTA */
         .progress-container {
             width: 100%;
             position: relative;
-            margin-top: 1vh;
             overflow: visible;
         }
 
         .progress-bg {
             width: 100%;
-            height: 1.2vh;
+            height: 5px;
             background: rgba(255,255,255,0.06);
-            border-radius: 10px;
+            border-radius: 8px;
             position: relative;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
         }
 
         .progress-fill {
@@ -243,56 +235,53 @@
             height: 100%;
             width: var(--progress-width);
             background: linear-gradient(90deg, var(--theme-color-1), var(--theme-color-2));
-            border-radius: 10px;
-            box-shadow: 0 0 12px rgba(0, 174, 255, 0.6);
+            border-radius: 8px;
+            box-shadow: 0 0 6px rgba(0, 174, 255, 0.4);
             transition: width 1.1s linear;
-            will-change: width;
         }
 
         .emblem-marker {
             position: absolute;
-            right: -1.5vh;
+            right: -9px;
             top: 50%;
             transform: translateY(-50%);
-            height: 3.2vh;
-            width: 3.2vh;
+            height: 18px;
+            width: 18px;
             background: var(--emblem-url) center/contain no-repeat;
             z-index: 5;
-            filter: brightness(0) invert(1); 
+            filter: brightness(0) invert(1);
             pointer-events: none;
         }
 
         .time-row {
             display: flex;
             justify-content: space-between;
-            font-size: 1.6vh;
+            font-size: 10px;
             font-weight: 700;
-            color: rgba(255,255,255,0.45);
-            margin-top: 1.5vh;
-            letter-spacing: 1.5px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            color: rgba(255,255,255,0.35);
+            margin-top: 6px;
+            letter-spacing: 0.5px;
         }
 
-        /* MODAL DE CONFIG */
+        /* CONFIG MODAL */
         .config-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.92);
+            background: rgba(0,0,0,0.9);
             z-index: 9999;
             display: none;
             justify-content: center; align-items: center;
-            backdrop-filter: blur(10px);
         }
         .config-overlay.show { display: flex; }
-        .config-card { background: #111; padding: 25px; border-radius: 20px; width: 320px; color: #fff; border: 1px solid #222; box-shadow: 0 20px 60px rgba(0,0,0,1); }
-        .save-btn { background: var(--theme-color-1); color: white; border: none; padding: 14px; width: 100%; border-radius: 10px; font-weight: 800; cursor: pointer; margin-top: 20px; }
+        .config-card { background: #111; padding: 20px; border-radius: 12px; width: 260px; color: #fff; border: 1px solid #222; }
+        .save-btn { background: var(--theme-color-1); color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: 800; cursor: pointer; margin-top: 15px; }
 
     </style>
 </head>
 <body>
 
-    <div class="viewport-scaler" id="main-widget">
-        <!-- IZQUIERDA: LOGO CON SHIMMER & GLOW RESTAURADO -->
+    <div class="main-container" id="main-widget">
+        <!-- IZQUIERDA -->
         <div class="logo-section">
             <div class="logo-base"></div>
             <div class="logo-shimmer"></div>
@@ -300,11 +289,11 @@
                 <div class="album-cover" id="cover"></div>
                 <div class="cover-overlay"></div>
                 <div class="spectrum-container">
-                    <div class="bar" style="animation-duration: 0.75s; animation-delay: 0.1s"></div>
-                    <div class="bar" style="animation-duration: 0.95s; animation-delay: 0.3s"></div>
-                    <div class="bar" style="animation-duration: 0.65s; animation-delay: 0.5s"></div>
-                    <div class="bar" style="animation-duration: 1.15s; animation-delay: 0.2s"></div>
-                    <div class="bar" style="animation-duration: 0.85s; animation-delay: 0.4s"></div>
+                    <div class="bar" style="animation-delay: 0.1s"></div>
+                    <div class="bar" style="animation-delay: 0.3s"></div>
+                    <div class="bar" style="animation-delay: 0.5s"></div>
+                    <div class="bar" style="animation-delay: 0.2s"></div>
+                    <div class="bar" style="animation-delay: 0.4s"></div>
                 </div>
             </div>
             <div class="glass-ring"></div>
@@ -332,14 +321,14 @@
     <!-- PANEL CONFIG -->
     <div class="config-overlay" id="config-ui">
         <div class="config-card">
-            <h3 style="text-align:center; color: var(--theme-color-1);">ESTILO PREMIUM</h3>
-            <div style="margin-bottom:15px">
-                <label style="font-size:11px;color:#888;text-transform:uppercase;">Color Primario</label>
-                <input type="color" id="c1" value="#00AEFF" style="width:100%;height:38px;border:none;border-radius:6px;cursor:pointer;background:#222;">
+            <h3 style="text-align:center; font-size: 14px; margin-bottom: 15px;">ESTILO SUTIL</h3>
+            <div style="margin-bottom:12px">
+                <label style="font-size:9px;color:#888;text-transform:uppercase;">Color 1</label>
+                <input type="color" id="c1" value="#00AEFF" style="width:100%;height:30px;border:none;border-radius:4px;cursor:pointer;background:#222;">
             </div>
-            <div style="margin-bottom:15px">
-                <label style="font-size:11px;color:#888;text-transform:uppercase;">Color Secundario</label>
-                <input type="color" id="c2" value="#0062FF" style="width:100%;height:38px;border:none;border-radius:6px;cursor:pointer;background:#222;">
+            <div style="margin-bottom:12px">
+                <label style="font-size:9px;color:#888;text-transform:uppercase;">Color 2</label>
+                <input type="color" id="c2" value="#0062FF" style="width:100%;height:30px;border:none;border-radius:4px;cursor:pointer;background:#222;">
             </div>
             <button class="save-btn" id="save-cfg">GUARDAR</button>
         </div>
@@ -403,7 +392,7 @@
         async function getArt(title, artist) {
             return new Promise(res => {
                 const q = encodeURIComponent(`artist:"${artist}" track:"${title}"`);
-                const cb = 'dz_' + Date.now() + Math.floor(Math.random()*1000);
+                const cb = 'dz_' + Date.now() + Math.floor(Math.random()*100);
                 const s = document.createElement('script');
                 window[cb] = (d) => {
                     s.remove();
@@ -413,7 +402,6 @@
                 };
                 s.src = `https://api.deezer.com/search?q=${q}&limit=1&output=jsonp&callback=${cb}`;
                 document.body.appendChild(s);
-                setTimeout(() => { if(window[cb]) { s.remove(); delete window[cb]; res(null); } }, 4000);
             });
         }
 
@@ -443,9 +431,6 @@
                 artistEl.innerText = artist;
                 titleEl.innerText = title;
                 
-                const len = title.length;
-                titleEl.style.fontSize = len > 50 ? "3.8vh" : len > 35 ? "4.8vh" : "5.8vh";
-
                 if (imgUrl) cover.style.backgroundImage = `url('${imgUrl}')`;
                 widget.classList.add('active');
 
