@@ -241,6 +241,7 @@
         .config-overlay.show { display: flex; }
         .config-card { background: #111; padding: 25px; border-radius: 12px; width: 340px; color: #fff; border: 1px solid #333; max-height: 90vh; overflow-y: auto;}
         .config-card h4 { margin: 15px 0 5px 0; font-size: 11px; color: var(--theme-color-1); text-transform: uppercase;}
+        .config-input { width: 100%; height: 35px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; padding: 0 10px; font-family: 'Poppins', sans-serif; margin-bottom: 10px; font-size: 11px; }
         .config-color { width: 100%; height: 35px; border: none; border-radius: 4px; cursor: pointer; background: #222; margin-bottom: 10px;}
         .btn-spotify { background: #1DB954; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: 800; cursor: pointer; margin-bottom: 15px; transition: 0.2s; }
         .btn-spotify:hover { filter: brightness(1.1); }
@@ -302,6 +303,10 @@
                 <input type="color" id="c2" class="config-color" value="#0062FF">
             </div>
 
+            <h4>CREDENCIALES DE SPOTIFY</h4>
+            <input type="text" id="spotify-client-id" class="config-input" placeholder="Tu Client ID">
+            <input type="password" id="spotify-client-secret" class="config-input" placeholder="Tu Client Secret">
+
             <h4>MONITOR DE SPOTIFY</h4>
             <div id="spotify-status-box">
                 <div id="spotify-status-text">Esperando conexión...</div>
@@ -319,9 +324,6 @@
         // CORE CONSTANTS
         const REFRESH_RATE = 2000;
         const REDIRECT_URI = "https://caortiz-stack.github.io/hosting/spotifyobs.html";
-        
-        // SOLO SE USA EL CLIENT ID PARA EL FLUJO PKCE (Evita error CORS en navegador)
-        const SPOTIFY_CLIENT_ID = "5389f873bde54395a1fe2c4bd15bac0e";
 
         // UI ELEMENTS
         const widget = document.getElementById('main-widget');
@@ -351,12 +353,16 @@
             const root = document.documentElement.style;
             const savedC1 = localStorage.getItem('p_c1') || '#00AEFF';
             const savedC2 = localStorage.getItem('p_c2') || '#0062FF';
+            const savedClientId = localStorage.getItem('spotify_client_id') || '';
+            const savedClientSecret = localStorage.getItem('spotify_client_secret') || '';
             const spotifyAcc = localStorage.getItem('spotify_access');
 
             root.setProperty('--theme-color-1', savedC1);
             root.setProperty('--theme-color-2', savedC2);
             document.getElementById('c1').value = savedC1;
             document.getElementById('c2').value = savedC2;
+            document.getElementById('spotify-client-id').value = savedClientId;
+            document.getElementById('spotify-client-secret').value = savedClientSecret;
 
             if (spotifyAcc) {
                 document.getElementById('btn-spotify').style.display = 'none';
@@ -373,8 +379,13 @@
         document.getElementById('save-cfg').onclick = () => {
             const c1 = document.getElementById('c1').value;
             const c2 = document.getElementById('c2').value;
+            const clientId = document.getElementById('spotify-client-id').value.trim();
+            const clientSecret = document.getElementById('spotify-client-secret').value.trim();
+            
             localStorage.setItem('p_c1', c1);
             localStorage.setItem('p_c2', c2);
+            localStorage.setItem('spotify_client_id', clientId);
+            localStorage.setItem('spotify_client_secret', clientSecret);
             
             document.documentElement.style.setProperty('--theme-color-1', c1);
             document.documentElement.style.setProperty('--theme-color-2', c2);
@@ -407,6 +418,18 @@
 
         document.getElementById('btn-spotify').onclick = async () => {
             const btn = document.getElementById('btn-spotify');
+            
+            const clientId = document.getElementById('spotify-client-id').value.trim();
+            const clientSecret = document.getElementById('spotify-client-secret').value.trim();
+            
+            if (!clientId || !clientSecret) {
+                debugLog.innerText = "❌ Ingresa tu Client ID y Client Secret.";
+                return;
+            }
+            
+            localStorage.setItem('spotify_client_id', clientId);
+            localStorage.setItem('spotify_client_secret', clientSecret);
+            
             btn.innerText = "⏳ REDIRIGIENDO...";
             
             const verifier = generateRandomString(128);
@@ -414,7 +437,7 @@
             const challenge = await generateCodeChallenge(verifier);
 
             const url = new URL("https://accounts.spotify.com/authorize");
-            url.searchParams.append("client_id", SPOTIFY_CLIENT_ID);
+            url.searchParams.append("client_id", clientId);
             url.searchParams.append("response_type", "code");
             url.searchParams.append("redirect_uri", REDIRECT_URI);
             url.searchParams.append("code_challenge_method", "S256");
@@ -442,13 +465,14 @@
                 debugLog.innerText = "⏳ Intercambiando código con Spotify...";
 
                 const verifier = localStorage.getItem('spotify_verifier');
+                const clientId = localStorage.getItem('spotify_client_id');
+                const clientSecret = localStorage.getItem('spotify_client_secret');
                 
-                // NO USA AUTH BASIC. ES PURO PKCE PARA EVITAR BLOQUEO DEL NAVEGADOR
                 const body = new URLSearchParams({
                     grant_type: 'authorization_code', 
                     code: code,
                     redirect_uri: REDIRECT_URI,
-                    client_id: SPOTIFY_CLIENT_ID,
+                    client_id: clientId,
                     code_verifier: verifier
                 });
 
@@ -456,7 +480,8 @@
                     const res = await fetch('https://accounts.spotify.com/api/token', {
                         method: 'POST', 
                         headers: { 
-                            'Content-Type': 'application/x-www-form-urlencoded'
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret)
                         }, 
                         body: body.toString()
                     });
@@ -491,18 +516,22 @@
 
         async function refreshSpotifyToken() {
             const refresh = localStorage.getItem('spotify_refresh');
-            if (!refresh) return false;
+            const clientId = localStorage.getItem('spotify_client_id');
+            const clientSecret = localStorage.getItem('spotify_client_secret');
+            
+            if (!refresh || !clientId || !clientSecret) return false;
 
             const body = new URLSearchParams({ 
                 grant_type: 'refresh_token', 
                 refresh_token: refresh,
-                client_id: SPOTIFY_CLIENT_ID
+                client_id: clientId
             });
             try {
                 const res = await fetch('https://accounts.spotify.com/api/token', {
                     method: 'POST', 
                     headers: { 
-                        'Content-Type': 'application/x-www-form-urlencoded'
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret)
                     }, 
                     body: body.toString()
                 });
