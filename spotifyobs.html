@@ -244,8 +244,9 @@
         .btn-spotify { background: #1DB954; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: 800; cursor: pointer; margin-bottom: 15px; transition: 0.2s; }
         .btn-spotify:hover { filter: brightness(1.1); }
         .save-btn { background: linear-gradient(90deg, var(--theme-color-1), var(--theme-color-2)); color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: 800; cursor: pointer; margin-top: 5px; }
-        .redirect-box { background: #000; padding: 8px; font-size: 9px; word-break: break-all; color: #1DB954; border-radius: 4px; margin-bottom: 15px; }
         
+        #spotify-status-box { background: #222; border-radius: 6px; padding: 10px; margin-bottom: 15px; border-left: 3px solid #1DB954; }
+        #spotify-status-text { font-size: 11px; color: #ccc; word-wrap: break-word; }
         #debug-log { font-size: 11px; font-weight: 600; color: #ff5555; margin-top: 10px; text-align: center; }
     </style>
 </head>
@@ -273,7 +274,7 @@
         <!-- DERECHA -->
         <div class="info-section">
             <div class="artist-name" id="artist-text">SISTEMA</div>
-            <div class="song-title" id="title-text">Haz doble clic aquí para configurar</div>
+            <div class="song-title" id="title-text">Iniciando...</div>
             
             <div class="progress-container">
                 <div class="progress-bg">
@@ -300,9 +301,10 @@
                 <input type="color" id="c2" class="config-color" value="#0062FF">
             </div>
 
-            <h4>SPOTIFY DIRECTO (0 Delay)</h4>
-            <p style="font-size: 10px; color: #aaa; margin: 0 0 5px 0;">Asegúrate que esta URL esté en Spotify Developer > Redirect URIs:</p>
-            <div class="redirect-box" id="redirect-display"></div>
+            <h4>MONITOR DE SPOTIFY</h4>
+            <div id="spotify-status-box">
+                <div id="spotify-status-text">Esperando conexión...</div>
+            </div>
             
             <button class="btn-spotify" id="btn-spotify">VINCULAR SPOTIFY</button>
             <button class="btn-spotify" id="btn-spotify-logout" style="background:#cc0000; display:none;">DESCONECTAR SPOTIFY</button>
@@ -317,8 +319,9 @@
         const REFRESH_RATE = 2000;
         const REDIRECT_URI = "https://caortiz-stack.github.io/hosting/spotifyobs.html";
         
-        // CRENCIALES DE SPOTIFY
+        // CREDENCIALES DE SPOTIFY (AMBAS APLICADAS PARA MAXIMA ESTABILIDAD)
         const SPOTIFY_CLIENT_ID = "5389f873bde54395a1fe2c4bd15bac0e";
+        const SPOTIFY_CLIENT_SECRET = "a2ae89e9e59842f3942cd81bd016cec7";
 
         // UI ELEMENTS
         const widget = document.getElementById('main-widget');
@@ -328,13 +331,12 @@
         const timeStartEl = document.getElementById('time-start');
         const timeEndEl = document.getElementById('time-end');
         const debugLog = document.getElementById('debug-log');
+        const statusText = document.getElementById('spotify-status-text');
 
         let currentId = "";
         let progressInterval = null;
         let currentMs = 0;
-        let forceShowMessage = false; // Mantiene el overlay visible al conectarse
-
-        document.getElementById('redirect-display').innerText = REDIRECT_URI;
+        let forceShowMessage = false;
 
         function fmt(ms) {
             if (!ms || isNaN(ms)) return "00:00";
@@ -362,9 +364,9 @@
             } else {
                 document.getElementById('btn-spotify').style.display = 'block';
                 document.getElementById('btn-spotify-logout').style.display = 'none';
-                // Auto-mostrar menú si no está conectado
                 document.getElementById('config-ui').classList.add('show');
-                widget.classList.add('active'); // Mostrar fondo para que no se vea blanco
+                statusText.innerText = "No conectado. Dale a Vincular.";
+                widget.classList.add('active'); 
             }
         }
 
@@ -385,51 +387,24 @@
             window.location.reload();
         };
 
-        // Mostrar ajustes al hacer doble clic
         document.body.ondblclick = () => document.getElementById('config-ui').classList.add('show');
-        
-        // Inicializar configuración al cargar la página
         initCfg();
 
         // =========================================
-        // SPOTIFY AUTH FLOW (PKCE METHOD)
+        // SPOTIFY AUTH FLOW (AUTHORIZATION CODE)
         // =========================================
-        function generateRandomString(length) {
-            let text = '';
-            let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            for (let i = 0; i < length; i++) text += possible.charAt(Math.floor(Math.random() * possible.length));
-            return text;
-        }
+        document.getElementById('btn-spotify').onclick = () => {
+            const btn = document.getElementById('btn-spotify');
+            btn.innerText = "⏳ REDIRIGIENDO...";
+            
+            const url = new URL("https://accounts.spotify.com/authorize");
+            url.searchParams.append("client_id", SPOTIFY_CLIENT_ID);
+            url.searchParams.append("response_type", "code");
+            url.searchParams.append("redirect_uri", REDIRECT_URI);
+            // Ampliamos permisos para detectar podcasts y estados del reproductor
+            url.searchParams.append("scope", "user-read-currently-playing user-read-playback-state");
 
-        async function generateCodeChallenge(codeVerifier) {
-            const digest = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier));
-            return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        }
-
-        document.getElementById('btn-spotify').onclick = async () => {
-            try {
-                const btn = document.getElementById('btn-spotify');
-                btn.innerText = "⏳ REDIRIGIENDO...";
-                btn.style.background = "#aaaaaa";
-
-                const verifier = generateRandomString(128);
-                localStorage.setItem('spotify_verifier', verifier);
-                const challenge = await generateCodeChallenge(verifier);
-
-                const url = new URL("https://accounts.spotify.com/authorize");
-                url.searchParams.append("client_id", SPOTIFY_CLIENT_ID);
-                url.searchParams.append("response_type", "code");
-                url.searchParams.append("redirect_uri", REDIRECT_URI);
-                url.searchParams.append("code_challenge_method", "S256");
-                url.searchParams.append("code_challenge", challenge);
-                url.searchParams.append("scope", "user-read-currently-playing");
-
-                // Redirección forzada
-                window.location.assign(url.toString());
-            } catch (err) {
-                debugLog.innerText = "Error: " + err.message;
-                document.getElementById('btn-spotify').innerText = "REINTENTAR";
-            }
+            window.location.assign(url.toString());
         };
 
         async function checkSpotifyCallback() {
@@ -439,7 +414,7 @@
 
             if (error) {
                 document.getElementById('config-ui').classList.add('show');
-                debugLog.innerText = "Error de Spotify: " + error;
+                debugLog.innerText = "Error: " + error;
                 window.history.replaceState({}, document.title, window.location.pathname);
                 return;
             }
@@ -449,19 +424,19 @@
                 debugLog.style.color = "#1DB954";
                 debugLog.innerText = "⏳ Verificando código...";
 
-                const verifier = localStorage.getItem('spotify_verifier');
                 const body = new URLSearchParams({
                     grant_type: 'authorization_code', 
                     code: code,
-                    redirect_uri: REDIRECT_URI,
-                    client_id: SPOTIFY_CLIENT_ID,
-                    code_verifier: verifier
+                    redirect_uri: REDIRECT_URI
                 });
 
                 try {
                     const res = await fetch('https://accounts.spotify.com/api/token', {
                         method: 'POST', 
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+                        headers: { 
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'Authorization': 'Basic ' + btoa(SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET)
+                        }, 
                         body: body.toString()
                     });
                     const data = await res.json();
@@ -472,29 +447,25 @@
                         window.history.replaceState({}, document.title, window.location.pathname);
                         initCfg(); 
                         
-                        // EL MENSAJE DE ÉXITO VISIBLE EN PANTALLA EN LUGAR DE ALERT
                         document.getElementById('config-ui').classList.remove('show');
                         forceShowMessage = true;
                         artistEl.innerText = "¡SISTEMA CONECTADO!";
                         titleEl.innerText = "Cuenta vinculada. Ponle play a una canción en Spotify.";
-                        titleEl.style.fontSize = "26px";
+                        titleEl.style.fontSize = "22px";
                         widget.classList.add('active');
                         
-                        // Después de 15 segundos, si no hay música, se oculta
                         setTimeout(() => { forceShowMessage = false; }, 15000);
-
                     } else {
                         debugLog.style.color = "#ff5555";
                         debugLog.innerText = "❌ Fallo al obtener el token.";
                     }
                 } catch(e) { 
                     debugLog.style.color = "#ff5555";
-                    debugLog.innerText = "❌ Error de conexión: " + e.message;
+                    debugLog.innerText = "❌ Error: " + e.message;
                 }
             }
         }
         
-        // Ejecutar inmediatamente al abrir la página
         checkSpotifyCallback();
 
         async function refreshSpotifyToken() {
@@ -503,13 +474,15 @@
 
             const body = new URLSearchParams({ 
                 grant_type: 'refresh_token', 
-                refresh_token: refresh,
-                client_id: SPOTIFY_CLIENT_ID
+                refresh_token: refresh
             });
             try {
                 const res = await fetch('https://accounts.spotify.com/api/token', {
                     method: 'POST', 
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+                    headers: { 
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': 'Basic ' + btoa(SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET)
+                    }, 
                     body: body.toString()
                 });
                 const data = await res.json();
@@ -538,7 +511,7 @@
         }
 
         function syncTrackUI(title, artist, imgUrl, durMs, progMs) {
-            forceShowMessage = false; // Quitamos el mensaje de éxito si ya hay música
+            forceShowMessage = false; 
             
             const safeTitle = String(title || "Sin título");
             const safeArtist = String(artist || "Desconocido");
@@ -587,29 +560,41 @@
                 });
 
                 if (res.status === 401) {
+                    statusText.innerText = "Token caducado, renovando...";
                     const refreshed = await refreshSpotifyToken();
                     return refreshed ? pollSpotify() : false;
                 }
 
+                if (res.status === 204) {
+                    statusText.innerText = "🔇 Reproductor pausado o inactivo.";
+                    hideWidget();
+                    return true;
+                }
+
                 if (res.status === 200) {
                     const data = await res.json();
-                    // Solo mostramos si is_playing es true. Si está pausado, lo ocultamos.
+                    
                     if (data && data.is_playing && data.item) {
                         const track = data.item;
-                        syncTrackUI(
-                            track.name, 
-                            track.artists.map(a => a.name).join(', '), 
-                            track.album.images[0]?.url, 
-                            track.duration_ms, 
-                            data.progress_ms
-                        );
+                        const tName = track.name || "Desconocido";
+                        
+                        // Soporte para podcasts y canciones
+                        const tArtist = track.artists ? track.artists.map(a => a.name).join(', ') : (track.show ? track.show.name : "Varios");
+                        const tImg = track.album ? track.album.images[0]?.url : (track.images ? track.images[0]?.url : "");
+                        
+                        statusText.innerText = `🎵 Sonando: ${tName} - ${tArtist}`;
+                        syncTrackUI(tName, tArtist, tImg, track.duration_ms, data.progress_ms);
+                        return true;
+                    } else {
+                        statusText.innerText = "⏸️ Música en pausa.";
+                        hideWidget();
                         return true;
                     }
                 }
-                
-                hideWidget(); 
-                return true; 
-            } catch (e) { return false; }
+            } catch (e) { 
+                statusText.innerText = "Desconectado de internet.";
+                return false; 
+            }
         }
 
         async function mainLoop() {
