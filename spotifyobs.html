@@ -241,9 +241,12 @@
         .config-card { background: #111; padding: 25px; border-radius: 12px; width: 340px; color: #fff; border: 1px solid #333; max-height: 90vh; overflow-y: auto;}
         .config-card h4 { margin: 15px 0 5px 0; font-size: 11px; color: var(--theme-color-1); text-transform: uppercase;}
         .config-color { width: 100%; height: 35px; border: none; border-radius: 4px; cursor: pointer; background: #222; margin-bottom: 10px;}
-        .btn-spotify { background: #1DB954; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: 800; cursor: pointer; margin-bottom: 15px; }
+        .btn-spotify { background: #1DB954; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: 800; cursor: pointer; margin-bottom: 15px; transition: 0.2s; }
+        .btn-spotify:hover { filter: brightness(1.1); }
         .save-btn { background: linear-gradient(90deg, var(--theme-color-1), var(--theme-color-2)); color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: 800; cursor: pointer; margin-top: 5px; }
         .redirect-box { background: #000; padding: 8px; font-size: 9px; word-break: break-all; color: #1DB954; border-radius: 4px; margin-bottom: 15px; }
+        
+        #debug-log { font-size: 9px; color: #ff5555; margin-top: 10px; text-align: center; }
     </style>
 </head>
 <body>
@@ -270,7 +273,7 @@
         <!-- DERECHA -->
         <div class="info-section">
             <div class="artist-name" id="artist-text">...</div>
-            <div class="song-title" id="title-text">Cargando...</div>
+            <div class="song-title" id="title-text">Esperando a Spotify...</div>
             
             <div class="progress-container">
                 <div class="progress-bg">
@@ -298,13 +301,14 @@
             </div>
 
             <h4>SPOTIFY DIRECTO (0 Delay)</h4>
-            <p style="font-size: 10px; color: #aaa; margin: 0 0 5px 0;">Asegúrate que esta URL esté en Spotify Developer > Redirect URIs:</p>
+            <p style="font-size: 10px; color: #aaa; margin: 0 0 5px 0;">Debe coincidir en Spotify Developer > Redirect URIs:</p>
             <div class="redirect-box" id="redirect-display"></div>
             
             <button class="btn-spotify" id="btn-spotify">VINCULAR SPOTIFY</button>
             <button class="btn-spotify" id="btn-spotify-logout" style="background:#cc0000; display:none;">DESCONECTAR SPOTIFY</button>
 
             <button class="save-btn" id="save-cfg">CERRAR Y GUARDAR</button>
+            <div id="debug-log"></div>
         </div>
     </div>
 
@@ -323,6 +327,7 @@
         const titleEl = document.getElementById('title-text');
         const timeStartEl = document.getElementById('time-start');
         const timeEndEl = document.getElementById('time-end');
+        const debugLog = document.getElementById('debug-log');
 
         let currentId = "";
         let progressInterval = null;
@@ -353,6 +358,9 @@
             if (spotifyAcc) {
                 document.getElementById('btn-spotify').style.display = 'none';
                 document.getElementById('btn-spotify-logout').style.display = 'block';
+            } else {
+                document.getElementById('btn-spotify').style.display = 'block';
+                document.getElementById('btn-spotify-logout').style.display = 'none';
             }
         }
 
@@ -373,6 +381,7 @@
             window.location.reload();
         };
 
+        // Mostrar ajustes al hacer doble clic
         document.body.ondblclick = () => document.getElementById('config-ui').classList.add('show');
         initCfg();
 
@@ -393,6 +402,10 @@
 
         document.getElementById('btn-spotify').onclick = async () => {
             try {
+                const btn = document.getElementById('btn-spotify');
+                btn.innerText = "⏳ REDIRIGIENDO...";
+                btn.style.background = "#aaaaaa";
+
                 const verifier = generateRandomString(128);
                 localStorage.setItem('spotify_verifier', verifier);
                 const challenge = await generateCodeChallenge(verifier);
@@ -405,9 +418,11 @@
                 url.searchParams.append("code_challenge", challenge);
                 url.searchParams.append("scope", "user-read-currently-playing");
 
-                window.location.href = url.toString();
+                // Redirección forzada
+                window.location.assign(url.toString());
             } catch (err) {
-                alert("Error al iniciar vinculación: " + err.message);
+                debugLog.innerText = "Error: " + err.message;
+                document.getElementById('btn-spotify').innerText = "REINTENTAR";
             }
         };
 
@@ -416,14 +431,18 @@
             const code = params.get('code');
             const error = params.get('error');
 
-            // ALERTA DE ERROR DE SPOTIFY
             if (error) {
-                alert("⚠️ Error de Spotify: " + error + "\n\nSi dice 'server_error' o 'access_denied', asegúrate de haber añadido tu correo a la lista de 'Users and Access' en tu Dashboard de Spotify Developer.");
+                document.getElementById('config-ui').classList.add('show');
+                debugLog.innerText = "Error de Spotify: " + error + ". Revisa los Redirect URIs en tu Dashboard.";
                 window.history.replaceState({}, document.title, window.location.pathname);
                 return;
             }
 
             if (code) {
+                document.getElementById('config-ui').classList.add('show');
+                debugLog.style.color = "#1DB954";
+                debugLog.innerText = "⏳ Verificando código con Spotify...";
+
                 const verifier = localStorage.getItem('spotify_verifier');
                 const body = new URLSearchParams({
                     grant_type: 'authorization_code', 
@@ -447,14 +466,20 @@
                         window.history.replaceState({}, document.title, window.location.pathname);
                         initCfg(); 
                         
-                        // ALERTA DE ÉXITO DEFINITIVA
-                        alert("✅ ¡Cuenta de Spotify Vinculada con Éxito!\n\nEl overlay funciona ocultándose automáticamente cuando hay pausa. Para verlo en pantalla, ponle PLAY a cualquier canción en tu Spotify.");
+                        debugLog.innerText = "✅ ¡Vinculación Exitosa! Pon una canción.";
+                        setTimeout(() => { document.getElementById('config-ui').classList.remove('show'); }, 3000);
                     } else {
-                        alert("Error al obtener token de Spotify.");
+                        debugLog.style.color = "#ff5555";
+                        debugLog.innerText = "❌ Fallo al obtener el token.";
                     }
-                } catch(e) { console.error("Auth error", e); }
+                } catch(e) { 
+                    debugLog.style.color = "#ff5555";
+                    debugLog.innerText = "❌ Error de conexión: " + e.message;
+                }
             }
         }
+        
+        // Ejecutar inmediatamente al abrir la página
         checkSpotifyCallback();
 
         async function refreshSpotifyToken() {
@@ -480,7 +505,6 @@
                 }
             } catch(e) {}
             
-            // Si el refresh falla drásticamente, deslogueamos para evitar cuelgues
             localStorage.removeItem('spotify_access');
             localStorage.removeItem('spotify_refresh');
             initCfg();
@@ -565,7 +589,6 @@
                     }
                 }
                 
-                // Si la música está pausada o no hay contenido, escondemos el widget
                 hideWidget(); 
                 return true; 
             } catch (e) { return false; }
