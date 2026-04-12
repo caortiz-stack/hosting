@@ -246,7 +246,7 @@
         .save-btn { background: linear-gradient(90deg, var(--theme-color-1), var(--theme-color-2)); color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: 800; cursor: pointer; margin-top: 5px; }
         .redirect-box { background: #000; padding: 8px; font-size: 9px; word-break: break-all; color: #1DB954; border-radius: 4px; margin-bottom: 15px; }
         
-        #debug-log { font-size: 9px; color: #ff5555; margin-top: 10px; text-align: center; }
+        #debug-log { font-size: 11px; font-weight: 600; color: #ff5555; margin-top: 10px; text-align: center; }
     </style>
 </head>
 <body>
@@ -272,8 +272,8 @@
 
         <!-- DERECHA -->
         <div class="info-section">
-            <div class="artist-name" id="artist-text">...</div>
-            <div class="song-title" id="title-text">Esperando a Spotify...</div>
+            <div class="artist-name" id="artist-text">SISTEMA</div>
+            <div class="song-title" id="title-text">Haz doble clic aquí para configurar</div>
             
             <div class="progress-container">
                 <div class="progress-bg">
@@ -301,7 +301,7 @@
             </div>
 
             <h4>SPOTIFY DIRECTO (0 Delay)</h4>
-            <p style="font-size: 10px; color: #aaa; margin: 0 0 5px 0;">Debe coincidir en Spotify Developer > Redirect URIs:</p>
+            <p style="font-size: 10px; color: #aaa; margin: 0 0 5px 0;">Asegúrate que esta URL esté en Spotify Developer > Redirect URIs:</p>
             <div class="redirect-box" id="redirect-display"></div>
             
             <button class="btn-spotify" id="btn-spotify">VINCULAR SPOTIFY</button>
@@ -332,6 +332,7 @@
         let currentId = "";
         let progressInterval = null;
         let currentMs = 0;
+        let forceShowMessage = false; // Mantiene el overlay visible al conectarse
 
         document.getElementById('redirect-display').innerText = REDIRECT_URI;
 
@@ -361,6 +362,9 @@
             } else {
                 document.getElementById('btn-spotify').style.display = 'block';
                 document.getElementById('btn-spotify-logout').style.display = 'none';
+                // Auto-mostrar menú si no está conectado
+                document.getElementById('config-ui').classList.add('show');
+                widget.classList.add('active'); // Mostrar fondo para que no se vea blanco
             }
         }
 
@@ -383,6 +387,8 @@
 
         // Mostrar ajustes al hacer doble clic
         document.body.ondblclick = () => document.getElementById('config-ui').classList.add('show');
+        
+        // Inicializar configuración al cargar la página
         initCfg();
 
         // =========================================
@@ -433,7 +439,7 @@
 
             if (error) {
                 document.getElementById('config-ui').classList.add('show');
-                debugLog.innerText = "Error de Spotify: " + error + ". Revisa los Redirect URIs en tu Dashboard.";
+                debugLog.innerText = "Error de Spotify: " + error;
                 window.history.replaceState({}, document.title, window.location.pathname);
                 return;
             }
@@ -441,7 +447,7 @@
             if (code) {
                 document.getElementById('config-ui').classList.add('show');
                 debugLog.style.color = "#1DB954";
-                debugLog.innerText = "⏳ Verificando código con Spotify...";
+                debugLog.innerText = "⏳ Verificando código...";
 
                 const verifier = localStorage.getItem('spotify_verifier');
                 const body = new URLSearchParams({
@@ -466,8 +472,17 @@
                         window.history.replaceState({}, document.title, window.location.pathname);
                         initCfg(); 
                         
-                        debugLog.innerText = "✅ ¡Vinculación Exitosa! Pon una canción.";
-                        setTimeout(() => { document.getElementById('config-ui').classList.remove('show'); }, 3000);
+                        // EL MENSAJE DE ÉXITO VISIBLE EN PANTALLA EN LUGAR DE ALERT
+                        document.getElementById('config-ui').classList.remove('show');
+                        forceShowMessage = true;
+                        artistEl.innerText = "¡SISTEMA CONECTADO!";
+                        titleEl.innerText = "Cuenta vinculada. Ponle play a una canción en Spotify.";
+                        titleEl.style.fontSize = "26px";
+                        widget.classList.add('active');
+                        
+                        // Después de 15 segundos, si no hay música, se oculta
+                        setTimeout(() => { forceShowMessage = false; }, 15000);
+
                     } else {
                         debugLog.style.color = "#ff5555";
                         debugLog.innerText = "❌ Fallo al obtener el token.";
@@ -515,7 +530,7 @@
         // PLAYER LOGIC (TRACK SYNC & UI)
         // =========================================
         function hideWidget() {
-            if (widget.classList.contains('active')) {
+            if (widget.classList.contains('active') && !forceShowMessage) {
                 widget.classList.remove('active');
                 clearInterval(progressInterval);
                 currentId = "";
@@ -523,6 +538,8 @@
         }
 
         function syncTrackUI(title, artist, imgUrl, durMs, progMs) {
+            forceShowMessage = false; // Quitamos el mensaje de éxito si ya hay música
+            
             const safeTitle = String(title || "Sin título");
             const safeArtist = String(artist || "Desconocido");
             const newId = (safeTitle + safeArtist).toLowerCase();
@@ -576,6 +593,7 @@
 
                 if (res.status === 200) {
                     const data = await res.json();
+                    // Solo mostramos si is_playing es true. Si está pausado, lo ocultamos.
                     if (data && data.is_playing && data.item) {
                         const track = data.item;
                         syncTrackUI(
