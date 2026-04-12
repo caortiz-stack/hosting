@@ -166,7 +166,6 @@
             justify-content: center;
             padding-left: 20px; 
             border-left: 1px solid rgba(255,255,255,0.08); 
-            /* Se permite sombra global suave */
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
         }
 
@@ -189,13 +188,12 @@
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
-            overflow: hidden; /* Necesario para que funcione el límite de 2 líneas */
+            overflow: hidden; 
             word-wrap: break-word;
             padding-right: 5px; 
-            padding-bottom: 5px; /* EVITA QUE SE CORTEN LETRAS COMO LA 'g' o 'j' */
+            padding-bottom: 5px; 
             margin-bottom: 7px;
-            /* Sombra simplificada para arreglar el bug de caja gris en OBS */
-            text-shadow: 1px 2px 3px rgba(0, 0, 0, 0.9);
+            filter: drop-shadow(1px 2px 3px rgba(0, 0, 0, 0.9));
             max-width: 320px;
             transition: font-size 0.3s ease;
         }
@@ -241,14 +239,14 @@
         .config-overlay.show { display: flex; }
         .config-card { background: #111; padding: 25px; border-radius: 12px; width: 340px; color: #fff; border: 1px solid #333; max-height: 90vh; overflow-y: auto;}
         .config-card h4 { margin: 15px 0 5px 0; font-size: 11px; color: var(--theme-color-1); text-transform: uppercase;}
-        .config-input { width: 100%; height: 35px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; padding: 0 10px; font-family: 'Poppins', sans-serif; margin-bottom: 10px; font-size: 11px; }
+        .config-input { width: 100%; height: 35px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; padding: 0 10px; font-family: 'Poppins', sans-serif; margin-bottom: 10px; font-size: 11px; outline: none; }
+        .config-input:focus { border-color: var(--theme-color-1); }
         .config-color { width: 100%; height: 35px; border: none; border-radius: 4px; cursor: pointer; background: #222; margin-bottom: 10px;}
         .btn-spotify { background: #1DB954; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: 800; cursor: pointer; margin-bottom: 15px; transition: 0.2s; }
         .btn-spotify:hover { filter: brightness(1.1); }
         .save-btn { background: linear-gradient(90deg, var(--theme-color-1), var(--theme-color-2)); color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: 800; cursor: pointer; margin-top: 5px; }
         
-        #spotify-status-box { background: #222; border-radius: 6px; padding: 10px; margin-bottom: 15px; border-left: 3px solid #1DB954; }
-        #spotify-status-text { font-size: 11px; color: #ccc; word-wrap: break-word; }
+        #spotify-status-box { background: #222; border-radius: 6px; padding: 12px; margin-bottom: 15px; border-left: 3px solid #1DB954; }
         #debug-log { font-size: 11px; font-weight: 600; color: #ff5555; margin-top: 10px; text-align: center; }
     </style>
 </head>
@@ -276,7 +274,7 @@
         <!-- DERECHA -->
         <div class="info-section">
             <div class="artist-name" id="artist-text">SISTEMA</div>
-            <div class="song-title" id="title-text">Iniciando...</div>
+            <div class="song-title" id="title-text">Cargando...</div>
             
             <div class="progress-container">
                 <div class="progress-bg">
@@ -303,17 +301,16 @@
                 <input type="color" id="c2" class="config-color" value="#0062FF">
             </div>
 
-            <h4>CREDENCIALES DE SPOTIFY</h4>
-            <input type="text" id="spotify-client-id" class="config-input" placeholder="Tu Client ID">
-            <input type="password" id="spotify-client-secret" class="config-input" placeholder="Tu Client Secret">
+            <h4>1. TU CLIENT ID DE SPOTIFY</h4>
+            <input type="text" id="spotify-client-id" class="config-input" placeholder="Pega aquí tu Client ID">
 
-            <h4>MONITOR DE SPOTIFY</h4>
+            <h4>2. ESTADO DE CONEXIÓN</h4>
             <div id="spotify-status-box">
-                <div id="spotify-status-text">Esperando conexión...</div>
+                <div style="font-size: 11px; color: #ccc;">Esperando vinculación...</div>
             </div>
             
             <button class="btn-spotify" id="btn-spotify">VINCULAR SPOTIFY</button>
-            <button class="btn-spotify" id="btn-spotify-logout" style="background:#cc0000; display:none;">DESCONECTAR SPOTIFY</button>
+            <button class="btn-spotify" id="btn-spotify-logout" style="background:#cc0000; display:none;">DESCONECTAR</button>
 
             <button class="save-btn" id="save-cfg">CERRAR Y GUARDAR</button>
             <div id="debug-log"></div>
@@ -325,6 +322,23 @@
         const REFRESH_RATE = 2000;
         const REDIRECT_URI = "https://caortiz-stack.github.io/hosting/spotifyobs.html";
 
+        // =========================================
+        // MOTOR ESPECIAL DE OBS (EXTRACCIÓN DE TOKEN POR URL)
+        // Esto permite pasar la sesión de Chrome a OBS
+        // =========================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlRefreshToken = urlParams.get('refresh_token');
+        const urlClientId = urlParams.get('client_id');
+
+        if (urlRefreshToken && urlClientId) {
+            // Guardar datos silenciosamente en OBS
+            localStorage.setItem('spotify_refresh', urlRefreshToken);
+            localStorage.setItem('spotify_client_id', urlClientId);
+            
+            // Limpiar la URL para que no quede estorbando visualmente
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
         // UI ELEMENTS
         const widget = document.getElementById('main-widget');
         const cover = document.getElementById('cover');
@@ -333,7 +347,7 @@
         const timeStartEl = document.getElementById('time-start');
         const timeEndEl = document.getElementById('time-end');
         const debugLog = document.getElementById('debug-log');
-        const statusText = document.getElementById('spotify-status-text');
+        const statusBox = document.getElementById('spotify-status-box');
 
         let currentId = "";
         let progressInterval = null;
@@ -349,43 +363,56 @@
         // =========================================
         // UI & CONFIG MANAGEMENT
         // =========================================
+        function updateUIStatus() {
+            const hasRefresh = !!localStorage.getItem('spotify_refresh');
+            const savedClientId = localStorage.getItem('spotify_client_id');
+            
+            if (hasRefresh && savedClientId) {
+                document.getElementById('btn-spotify').style.display = 'none';
+                document.getElementById('btn-spotify-logout').style.display = 'block';
+                
+                // Generamos el enlace mágico para OBS
+                const obsLink = `${REDIRECT_URI}?refresh_token=${localStorage.getItem('spotify_refresh')}&client_id=${savedClientId}`;
+                
+                statusBox.innerHTML = `
+                    <div style="color:#1DB954; font-weight:bold; margin-bottom:5px;">✅ ¡AUTORIZADO!</div>
+                    <div style="font-size:10px; color:#fff; margin-bottom:5px; line-height: 1.3;">Copia este enlace exacto y pégalo como URL en tu Fuente de Navegador en OBS:</div>
+                    <input type="text" value="${obsLink}" style="width:100%; padding:8px; font-size:9px; background:#000; color:#1DB954; border:1px solid #1DB954; border-radius:4px; font-family: monospace; outline: none; cursor: text;" onclick="this.select(); document.execCommand('copy'); alert('¡Enlace copiado para OBS!');" readonly>
+                    <div style="font-size:9px; color:#aaa; margin-top:5px; text-align: center;">(Haz clic en el enlace para copiarlo)</div>
+                `;
+            } else {
+                document.getElementById('btn-spotify').style.display = 'block';
+                document.getElementById('btn-spotify-logout').style.display = 'none';
+                statusBox.innerHTML = `<div style="font-size: 11px; color: #ccc;">No conectado. Dale a Vincular.</div>`;
+                document.getElementById('config-ui').classList.add('show');
+            }
+        }
+
         function initCfg() {
             const root = document.documentElement.style;
             const savedC1 = localStorage.getItem('p_c1') || '#00AEFF';
             const savedC2 = localStorage.getItem('p_c2') || '#0062FF';
-            const savedClientId = localStorage.getItem('spotify_client_id') || '';
-            const savedClientSecret = localStorage.getItem('spotify_client_secret') || '';
-            const spotifyAcc = localStorage.getItem('spotify_access');
+            const savedClientId = localStorage.getItem('spotify_client_id') || '5389f873bde54395a1fe2c4bd15bac0e'; // Default id
 
             root.setProperty('--theme-color-1', savedC1);
             root.setProperty('--theme-color-2', savedC2);
             document.getElementById('c1').value = savedC1;
             document.getElementById('c2').value = savedC2;
             document.getElementById('spotify-client-id').value = savedClientId;
-            document.getElementById('spotify-client-secret').value = savedClientSecret;
 
-            if (spotifyAcc) {
-                document.getElementById('btn-spotify').style.display = 'none';
-                document.getElementById('btn-spotify-logout').style.display = 'block';
-            } else {
-                document.getElementById('btn-spotify').style.display = 'block';
-                document.getElementById('btn-spotify-logout').style.display = 'none';
-                document.getElementById('config-ui').classList.add('show');
-                statusText.innerText = "No conectado. Dale a Vincular.";
-                widget.classList.add('active'); 
-            }
+            updateUIStatus();
         }
 
         document.getElementById('save-cfg').onclick = () => {
             const c1 = document.getElementById('c1').value;
             const c2 = document.getElementById('c2').value;
-            const clientId = document.getElementById('spotify-client-id').value.trim();
-            const clientSecret = document.getElementById('spotify-client-secret').value.trim();
             
             localStorage.setItem('p_c1', c1);
             localStorage.setItem('p_c2', c2);
-            localStorage.setItem('spotify_client_id', clientId);
-            localStorage.setItem('spotify_client_secret', clientSecret);
+            
+            // Solo guardamos el Client ID si el usuario escribió algo
+            const inputId = document.getElementById('spotify-client-id').value.trim();
+            if(inputId) localStorage.setItem('spotify_client_id', inputId);
             
             document.documentElement.style.setProperty('--theme-color-1', c1);
             document.documentElement.style.setProperty('--theme-color-2', c2);
@@ -402,7 +429,7 @@
         initCfg();
 
         // =========================================
-        // SPOTIFY PKCE AUTH FLOW (EVITA ERRORES CORS)
+        // SPOTIFY PKCE AUTH FLOW (REDRECCIÓN DIRECTA)
         // =========================================
         function generateRandomString(length) {
             let text = '';
@@ -418,19 +445,14 @@
 
         document.getElementById('btn-spotify').onclick = async () => {
             const btn = document.getElementById('btn-spotify');
-            
             const clientId = document.getElementById('spotify-client-id').value.trim();
-            const clientSecret = document.getElementById('spotify-client-secret').value.trim();
             
-            if (!clientId || !clientSecret) {
-                debugLog.innerText = "❌ Ingresa tu Client ID y Client Secret.";
+            if (!clientId) {
+                debugLog.innerText = "❌ Ingresa tu Client ID primero.";
                 return;
             }
             
             localStorage.setItem('spotify_client_id', clientId);
-            localStorage.setItem('spotify_client_secret', clientSecret);
-            
-            btn.innerText = "⏳ REDIRIGIENDO...";
             
             const verifier = generateRandomString(128);
             localStorage.setItem('spotify_verifier', verifier);
@@ -442,11 +464,17 @@
             url.searchParams.append("redirect_uri", REDIRECT_URI);
             url.searchParams.append("code_challenge_method", "S256");
             url.searchParams.append("code_challenge", challenge);
-            url.searchParams.append("scope", "user-read-currently-playing user-read-playback-state");
+            // Scopes exactos solicitados
+            url.searchParams.append("scope", "user-read-email user-read-private user-modify-playback-state user-read-currently-playing user-read-playback-state");
+            url.searchParams.append("state", generateRandomString(16));
 
-            window.location.assign(url.toString());
+            btn.innerText = "⏳ REDIRIGIENDO...";
+            
+            // Navegamos directamente a Spotify en la misma ventana
+            window.location.href = url.toString();
         };
 
+        // Procesar el código OAuth cuando Spotify nos redirige de vuelta
         async function checkSpotifyCallback() {
             const params = new URLSearchParams(window.location.search);
             const code = params.get('code');
@@ -462,11 +490,10 @@
             if (code) {
                 document.getElementById('config-ui').classList.add('show');
                 debugLog.style.color = "#1DB954";
-                debugLog.innerText = "⏳ Intercambiando código con Spotify...";
+                debugLog.innerText = "⏳ Validando credenciales con Spotify...";
 
                 const verifier = localStorage.getItem('spotify_verifier');
                 const clientId = localStorage.getItem('spotify_client_id');
-                const clientSecret = localStorage.getItem('spotify_client_secret');
                 
                 const body = new URLSearchParams({
                     grant_type: 'authorization_code', 
@@ -480,8 +507,7 @@
                     const res = await fetch('https://accounts.spotify.com/api/token', {
                         method: 'POST', 
                         headers: { 
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret)
+                            'Content-Type': 'application/x-www-form-urlencoded' 
                         }, 
                         body: body.toString()
                     });
@@ -490,24 +516,20 @@
                     if (data.access_token) {
                         localStorage.setItem('spotify_access', data.access_token);
                         localStorage.setItem('spotify_refresh', data.refresh_token);
+                        
+                        // Limpiamos la URL de retorno
                         window.history.replaceState({}, document.title, window.location.pathname);
-                        initCfg(); 
                         
-                        document.getElementById('config-ui').classList.remove('show');
-                        forceShowMessage = true;
-                        artistEl.innerText = "¡CONECTADO!";
-                        titleEl.innerText = "Cuenta vinculada. Pon play en Spotify.";
-                        titleEl.style.fontSize = "22px";
-                        widget.classList.add('active');
+                        debugLog.innerText = "";
+                        updateUIStatus(); // Mostrará el enlace mágico para OBS
                         
-                        setTimeout(() => { forceShowMessage = false; }, 10000);
                     } else {
                         debugLog.style.color = "#ff5555";
-                        debugLog.innerText = "❌ Fallo al obtener el token.";
+                        debugLog.innerText = "❌ Error: Verifica que la URL del navegador sea exactamente igual a la registrada en Spotify Developer.";
                     }
                 } catch(e) { 
                     debugLog.style.color = "#ff5555";
-                    debugLog.innerText = "❌ Error de conexión: " + e.message;
+                    debugLog.innerText = "❌ Error de red: " + e.message;
                 }
             }
         }
@@ -517,25 +539,25 @@
         async function refreshSpotifyToken() {
             const refresh = localStorage.getItem('spotify_refresh');
             const clientId = localStorage.getItem('spotify_client_id');
-            const clientSecret = localStorage.getItem('spotify_client_secret');
             
-            if (!refresh || !clientId || !clientSecret) return false;
+            if (!refresh || !clientId) return false;
 
             const body = new URLSearchParams({ 
                 grant_type: 'refresh_token', 
                 refresh_token: refresh,
                 client_id: clientId
             });
+            
             try {
                 const res = await fetch('https://accounts.spotify.com/api/token', {
                     method: 'POST', 
                     headers: { 
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret)
+                        'Content-Type': 'application/x-www-form-urlencoded'
                     }, 
                     body: body.toString()
                 });
                 const data = await res.json();
+                
                 if (data.access_token) {
                     localStorage.setItem('spotify_access', data.access_token);
                     if (data.refresh_token) localStorage.setItem('spotify_refresh', data.refresh_token);
@@ -543,9 +565,6 @@
                 }
             } catch(e) {}
             
-            localStorage.removeItem('spotify_access');
-            localStorage.removeItem('spotify_refresh');
-            initCfg();
             return false;
         }
 
@@ -577,8 +596,11 @@
                 currentId = newId;
                 artistEl.innerText = safeArtist;
                 titleEl.innerText = safeTitle;
+                
+                // Ajuste de texto adaptable
                 const len = safeTitle.length;
                 titleEl.style.fontSize = len > 50 ? "3.8vh" : len > 35 ? "4.8vh" : "5.8vh";
+                
                 if (imgUrl) cover.style.backgroundImage = `url('${imgUrl}')`;
                 widget.classList.add('active');
             }
@@ -610,13 +632,11 @@
                 });
 
                 if (res.status === 401) {
-                    statusText.innerText = "Renovando conexión...";
                     const refreshed = await refreshSpotifyToken();
                     return refreshed ? pollSpotify() : false;
                 }
 
                 if (res.status === 204) {
-                    statusText.innerText = "🔇 Reproductor pausado o inactivo.";
                     hideWidget();
                     return true;
                 }
@@ -627,35 +647,37 @@
                     if (data && data.is_playing && data.item) {
                         const track = data.item;
                         const tName = track.name || "Desconocido";
-                        
-                        // Soporte para podcasts y canciones
                         const tArtist = track.artists ? track.artists.map(a => a.name).join(', ') : (track.show ? track.show.name : "Varios");
                         const tImg = track.album ? track.album.images[0]?.url : (track.images ? track.images[0]?.url : "");
                         
-                        statusText.innerText = `🎵 Sonando: ${tName} - ${tArtist}`;
                         syncTrackUI(tName, tArtist, tImg, track.duration_ms, data.progress_ms);
                         return true;
                     } else {
-                        statusText.innerText = "⏸️ Música en pausa.";
                         hideWidget();
                         return true;
                     }
                 }
-            } catch (e) { 
-                statusText.innerText = "Reconectando...";
-                return false; 
-            }
+            } catch (e) { return false; }
         }
 
         async function mainLoop() {
-            const hasSpotify = !!localStorage.getItem('spotify_access');
-            if (hasSpotify) {
+            // Lógica para auto-refrescar si detectamos token de OBS nuevo
+            let token = localStorage.getItem('spotify_access');
+            const refresh = localStorage.getItem('spotify_refresh');
+            
+            if (!token && refresh) {
+                await refreshSpotifyToken();
+                token = localStorage.getItem('spotify_access');
+            }
+
+            if (token) {
                 await pollSpotify();
             } else {
                 hideWidget();
             }
         }
 
+        // Ejecución principal
         mainLoop();
         setInterval(mainLoop, REFRESH_RATE);
     </script>
