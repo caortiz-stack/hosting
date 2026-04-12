@@ -166,7 +166,8 @@
             justify-content: center;
             padding-left: 20px; 
             border-left: 1px solid rgba(255,255,255,0.08); 
-            overflow: visible;
+            /* Se permite sombra global suave */
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
         }
 
         .artist-name {
@@ -178,22 +179,23 @@
             background: linear-gradient(90deg, var(--theme-color-1), #ffffff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 3px rgba(0, 174, 255, 0.2));
         }
 
         .song-title {
             font-size: 26px;
             font-weight: 900;
-            line-height: 1.1;
-            margin-bottom: 12px;
+            line-height: 1.2;
             color: #ffffff;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
-            overflow: visible;
+            overflow: hidden; /* Necesario para que funcione el límite de 2 líneas */
             word-wrap: break-word;
-            padding-right: 25px; 
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8), 0 3px 12px rgba(0, 0, 0, 0.4);
+            padding-right: 5px; 
+            padding-bottom: 5px; /* EVITA QUE SE CORTEN LETRAS COMO LA 'g' o 'j' */
+            margin-bottom: 7px;
+            /* Sombra simplificada para arreglar el bug de caja gris en OBS */
+            text-shadow: 1px 2px 3px rgba(0, 0, 0, 0.9);
             max-width: 320px;
             transition: font-size 0.3s ease;
         }
@@ -206,7 +208,6 @@
         .progress-bg {
             width: 100%; height: 5px; background: rgba(255,255,255,0.06);
             border-radius: 8px; position: relative;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
         }
 
         .progress-fill {
@@ -227,7 +228,7 @@
 
         .time-row {
             display: flex; justify-content: space-between; font-size: 10px;
-            font-weight: 700; color: rgba(255,255,255,0.35); margin-top: 6px;
+            font-weight: 700; color: rgba(255,255,255,0.4); margin-top: 6px;
             letter-spacing: 0.5px;
         }
 
@@ -319,9 +320,8 @@
         const REFRESH_RATE = 2000;
         const REDIRECT_URI = "https://caortiz-stack.github.io/hosting/spotifyobs.html";
         
-        // CREDENCIALES DE SPOTIFY (AMBAS APLICADAS PARA MAXIMA ESTABILIDAD)
+        // SOLO SE USA EL CLIENT ID PARA EL FLUJO PKCE (Evita error CORS en navegador)
         const SPOTIFY_CLIENT_ID = "5389f873bde54395a1fe2c4bd15bac0e";
-        const SPOTIFY_CLIENT_SECRET = "a2ae89e9e59842f3942cd81bd016cec7";
 
         // UI ELEMENTS
         const widget = document.getElementById('main-widget');
@@ -391,17 +391,34 @@
         initCfg();
 
         // =========================================
-        // SPOTIFY AUTH FLOW (AUTHORIZATION CODE)
+        // SPOTIFY PKCE AUTH FLOW (EVITA ERRORES CORS)
         // =========================================
-        document.getElementById('btn-spotify').onclick = () => {
+        function generateRandomString(length) {
+            let text = '';
+            let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            for (let i = 0; i < length; i++) text += possible.charAt(Math.floor(Math.random() * possible.length));
+            return text;
+        }
+
+        async function generateCodeChallenge(codeVerifier) {
+            const digest = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier));
+            return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        }
+
+        document.getElementById('btn-spotify').onclick = async () => {
             const btn = document.getElementById('btn-spotify');
             btn.innerText = "⏳ REDIRIGIENDO...";
             
+            const verifier = generateRandomString(128);
+            localStorage.setItem('spotify_verifier', verifier);
+            const challenge = await generateCodeChallenge(verifier);
+
             const url = new URL("https://accounts.spotify.com/authorize");
             url.searchParams.append("client_id", SPOTIFY_CLIENT_ID);
             url.searchParams.append("response_type", "code");
             url.searchParams.append("redirect_uri", REDIRECT_URI);
-            // Ampliamos permisos para detectar podcasts y estados del reproductor
+            url.searchParams.append("code_challenge_method", "S256");
+            url.searchParams.append("code_challenge", challenge);
             url.searchParams.append("scope", "user-read-currently-playing user-read-playback-state");
 
             window.location.assign(url.toString());
@@ -422,20 +439,24 @@
             if (code) {
                 document.getElementById('config-ui').classList.add('show');
                 debugLog.style.color = "#1DB954";
-                debugLog.innerText = "⏳ Verificando código...";
+                debugLog.innerText = "⏳ Intercambiando código con Spotify...";
 
+                const verifier = localStorage.getItem('spotify_verifier');
+                
+                // NO USA AUTH BASIC. ES PURO PKCE PARA EVITAR BLOQUEO DEL NAVEGADOR
                 const body = new URLSearchParams({
                     grant_type: 'authorization_code', 
                     code: code,
-                    redirect_uri: REDIRECT_URI
+                    redirect_uri: REDIRECT_URI,
+                    client_id: SPOTIFY_CLIENT_ID,
+                    code_verifier: verifier
                 });
 
                 try {
                     const res = await fetch('https://accounts.spotify.com/api/token', {
                         method: 'POST', 
                         headers: { 
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'Authorization': 'Basic ' + btoa(SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET)
+                            'Content-Type': 'application/x-www-form-urlencoded'
                         }, 
                         body: body.toString()
                     });
@@ -449,19 +470,19 @@
                         
                         document.getElementById('config-ui').classList.remove('show');
                         forceShowMessage = true;
-                        artistEl.innerText = "¡SISTEMA CONECTADO!";
-                        titleEl.innerText = "Cuenta vinculada. Ponle play a una canción en Spotify.";
+                        artistEl.innerText = "¡CONECTADO!";
+                        titleEl.innerText = "Cuenta vinculada. Pon play en Spotify.";
                         titleEl.style.fontSize = "22px";
                         widget.classList.add('active');
                         
-                        setTimeout(() => { forceShowMessage = false; }, 15000);
+                        setTimeout(() => { forceShowMessage = false; }, 10000);
                     } else {
                         debugLog.style.color = "#ff5555";
                         debugLog.innerText = "❌ Fallo al obtener el token.";
                     }
                 } catch(e) { 
                     debugLog.style.color = "#ff5555";
-                    debugLog.innerText = "❌ Error: " + e.message;
+                    debugLog.innerText = "❌ Error de conexión: " + e.message;
                 }
             }
         }
@@ -474,14 +495,14 @@
 
             const body = new URLSearchParams({ 
                 grant_type: 'refresh_token', 
-                refresh_token: refresh
+                refresh_token: refresh,
+                client_id: SPOTIFY_CLIENT_ID
             });
             try {
                 const res = await fetch('https://accounts.spotify.com/api/token', {
                     method: 'POST', 
                     headers: { 
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Authorization': 'Basic ' + btoa(SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET)
+                        'Content-Type': 'application/x-www-form-urlencoded'
                     }, 
                     body: body.toString()
                 });
@@ -560,7 +581,7 @@
                 });
 
                 if (res.status === 401) {
-                    statusText.innerText = "Token caducado, renovando...";
+                    statusText.innerText = "Renovando conexión...";
                     const refreshed = await refreshSpotifyToken();
                     return refreshed ? pollSpotify() : false;
                 }
@@ -592,7 +613,7 @@
                     }
                 }
             } catch (e) { 
-                statusText.innerText = "Desconectado de internet.";
+                statusText.innerText = "Reconectando...";
                 return false; 
             }
         }
