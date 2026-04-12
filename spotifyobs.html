@@ -270,7 +270,7 @@
         <!-- DERECHA -->
         <div class="info-section">
             <div class="artist-name" id="artist-text">...</div>
-            <div class="song-title" id="title-text">Esperando a Spotify...</div>
+            <div class="song-title" id="title-text">Cargando...</div>
             
             <div class="progress-container">
                 <div class="progress-bg">
@@ -298,7 +298,7 @@
             </div>
 
             <h4>SPOTIFY DIRECTO (0 Delay)</h4>
-            <p style="font-size: 10px; color: #aaa; margin: 0 0 5px 0;">URL configurada (verifica que esté en Spotify Developer):</p>
+            <p style="font-size: 10px; color: #aaa; margin: 0 0 5px 0;">Asegúrate que esta URL esté en Spotify Developer > Redirect URIs:</p>
             <div class="redirect-box" id="redirect-display"></div>
             
             <button class="btn-spotify" id="btn-spotify">VINCULAR SPOTIFY</button>
@@ -313,7 +313,7 @@
         const REFRESH_RATE = 2000;
         const REDIRECT_URI = "https://caortiz-stack.github.io/hosting/spotifyobs.html";
         
-        // CRENCIALES DE SPOTIFY (Hardcoded de forma segura para Frontend)
+        // CRENCIALES DE SPOTIFY
         const SPOTIFY_CLIENT_ID = "5389f873bde54395a1fe2c4bd15bac0e";
 
         // UI ELEMENTS
@@ -330,7 +330,6 @@
 
         document.getElementById('redirect-display').innerText = REDIRECT_URI;
 
-        // FORMATTING
         function fmt(ms) {
             if (!ms || isNaN(ms)) return "00:00";
             const s = Math.floor(ms / 1000);
@@ -378,7 +377,7 @@
         initCfg();
 
         // =========================================
-        // SPOTIFY AUTH FLOW (PKCE METHOD - NO CORS ERRORS)
+        // SPOTIFY AUTH FLOW (PKCE METHOD)
         // =========================================
         function generateRandomString(length) {
             let text = '';
@@ -393,24 +392,37 @@
         }
 
         document.getElementById('btn-spotify').onclick = async () => {
-            const verifier = generateRandomString(128);
-            localStorage.setItem('spotify_verifier', verifier);
-            const challenge = await generateCodeChallenge(verifier);
+            try {
+                const verifier = generateRandomString(128);
+                localStorage.setItem('spotify_verifier', verifier);
+                const challenge = await generateCodeChallenge(verifier);
 
-            const url = new URL("https://accounts.spotify.com/authorize");
-            url.searchParams.append("client_id", SPOTIFY_CLIENT_ID);
-            url.searchParams.append("response_type", "code");
-            url.searchParams.append("redirect_uri", REDIRECT_URI);
-            url.searchParams.append("code_challenge_method", "S256");
-            url.searchParams.append("code_challenge", challenge);
-            url.searchParams.append("scope", "user-read-currently-playing");
+                const url = new URL("https://accounts.spotify.com/authorize");
+                url.searchParams.append("client_id", SPOTIFY_CLIENT_ID);
+                url.searchParams.append("response_type", "code");
+                url.searchParams.append("redirect_uri", REDIRECT_URI);
+                url.searchParams.append("code_challenge_method", "S256");
+                url.searchParams.append("code_challenge", challenge);
+                url.searchParams.append("scope", "user-read-currently-playing");
 
-            window.location.href = url.toString();
+                window.location.href = url.toString();
+            } catch (err) {
+                alert("Error al iniciar vinculación: " + err.message);
+            }
         };
 
         async function checkSpotifyCallback() {
             const params = new URLSearchParams(window.location.search);
             const code = params.get('code');
+            const error = params.get('error');
+
+            // ALERTA DE ERROR DE SPOTIFY
+            if (error) {
+                alert("⚠️ Error de Spotify: " + error + "\n\nSi dice 'server_error' o 'access_denied', asegúrate de haber añadido tu correo a la lista de 'Users and Access' en tu Dashboard de Spotify Developer.");
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return;
+            }
+
             if (code) {
                 const verifier = localStorage.getItem('spotify_verifier');
                 const body = new URLSearchParams({
@@ -425,14 +437,20 @@
                     const res = await fetch('https://accounts.spotify.com/api/token', {
                         method: 'POST', 
                         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
-                        body: body
+                        body: body.toString()
                     });
                     const data = await res.json();
+                    
                     if (data.access_token) {
                         localStorage.setItem('spotify_access', data.access_token);
                         localStorage.setItem('spotify_refresh', data.refresh_token);
                         window.history.replaceState({}, document.title, window.location.pathname);
                         initCfg(); 
+                        
+                        // ALERTA DE ÉXITO DEFINITIVA
+                        alert("✅ ¡Cuenta de Spotify Vinculada con Éxito!\n\nEl overlay funciona ocultándose automáticamente cuando hay pausa. Para verlo en pantalla, ponle PLAY a cualquier canción en tu Spotify.");
+                    } else {
+                        alert("Error al obtener token de Spotify.");
                     }
                 } catch(e) { console.error("Auth error", e); }
             }
@@ -452,7 +470,7 @@
                 const res = await fetch('https://accounts.spotify.com/api/token', {
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
-                    body: body
+                    body: body.toString()
                 });
                 const data = await res.json();
                 if (data.access_token) {
@@ -461,6 +479,11 @@
                     return true;
                 }
             } catch(e) {}
+            
+            // Si el refresh falla drásticamente, deslogueamos para evitar cuelgues
+            localStorage.removeItem('spotify_access');
+            localStorage.removeItem('spotify_refresh');
+            initCfg();
             return false;
         }
 
@@ -541,6 +564,8 @@
                         return true;
                     }
                 }
+                
+                // Si la música está pausada o no hay contenido, escondemos el widget
                 hideWidget(); 
                 return true; 
             } catch (e) { return false; }
