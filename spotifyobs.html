@@ -239,8 +239,6 @@
         .config-overlay.show { display: flex; }
         .config-card { background: #111; padding: 25px; border-radius: 12px; width: 340px; color: #fff; border: 1px solid #333; max-height: 90vh; overflow-y: auto;}
         .config-card h4 { margin: 15px 0 5px 0; font-size: 11px; color: var(--theme-color-1); text-transform: uppercase;}
-        .config-input { width: 100%; height: 35px; border: 1px solid #333; border-radius: 4px; background: #222; color: #fff; padding: 0 10px; font-family: 'Poppins', sans-serif; margin-bottom: 10px; font-size: 11px; outline: none; }
-        .config-input:focus { border-color: var(--theme-color-1); }
         .config-color { width: 100%; height: 35px; border: none; border-radius: 4px; cursor: pointer; background: #222; margin-bottom: 10px;}
         .btn-spotify { background: #1DB954; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: 800; cursor: pointer; margin-bottom: 15px; transition: 0.2s; }
         .btn-spotify:hover { filter: brightness(1.1); }
@@ -251,6 +249,22 @@
     </style>
 </head>
 <body>
+
+    <script>
+        // =========================================
+        // ATENCIÓN DE VENTANA EMERGENTE (POPUP CALLBACK)
+        // Cierra la ventana emergente automáticamente cuando recibe el código de Spotify
+        // =========================================
+        const initParams = new URLSearchParams(window.location.search);
+        const initCode = initParams.get('code');
+        const initError = initParams.get('error');
+
+        if (window.opener && (initCode || initError)) {
+            if (initCode) localStorage.setItem('spotify_popup_code', initCode);
+            if (initError) localStorage.setItem('spotify_popup_error', initError);
+            window.close();
+        }
+    </script>
 
     <div class="main-container" id="main-widget">
         <!-- IZQUIERDA -->
@@ -301,10 +315,7 @@
                 <input type="color" id="c2" class="config-color" value="#0062FF">
             </div>
 
-            <h4>1. TU CLIENT ID DE SPOTIFY</h4>
-            <input type="text" id="spotify-client-id" class="config-input" placeholder="Pega aquí tu Client ID">
-
-            <h4>2. ESTADO DE CONEXIÓN</h4>
+            <h4>1. ESTADO DE CONEXIÓN</h4>
             <div id="spotify-status-box">
                 <div style="font-size: 11px; color: #ccc;">Esperando vinculación...</div>
             </div>
@@ -318,24 +329,20 @@
     </div>
 
     <script>
-        // CORE CONSTANTS
+        // CORE CONSTANTS (Hardcoded según requerimientos para máxima facilidad)
         const REFRESH_RATE = 2000;
         const REDIRECT_URI = "https://caortiz-stack.github.io/hosting/spotifyobs.html";
+        const SPOTIFY_CLIENT_ID = "5389f873bde54395a1fe2c4bd15bac0e";
+        const SPOTIFY_CLIENT_SECRET = "a2ae89e9e59842f3942cd81bd016cec7";
 
         // =========================================
         // MOTOR ESPECIAL DE OBS (EXTRACCIÓN DE TOKEN POR URL)
-        // Esto permite pasar la sesión de Chrome a OBS
         // =========================================
         const urlParams = new URLSearchParams(window.location.search);
         const urlRefreshToken = urlParams.get('refresh_token');
-        const urlClientId = urlParams.get('client_id');
 
-        if (urlRefreshToken && urlClientId) {
-            // Guardar datos silenciosamente en OBS
+        if (urlRefreshToken) {
             localStorage.setItem('spotify_refresh', urlRefreshToken);
-            localStorage.setItem('spotify_client_id', urlClientId);
-            
-            // Limpiar la URL para que no quede estorbando visualmente
             window.history.replaceState({}, document.title, window.location.pathname);
         }
 
@@ -365,14 +372,13 @@
         // =========================================
         function updateUIStatus() {
             const hasRefresh = !!localStorage.getItem('spotify_refresh');
-            const savedClientId = localStorage.getItem('spotify_client_id');
             
-            if (hasRefresh && savedClientId) {
+            if (hasRefresh) {
                 document.getElementById('btn-spotify').style.display = 'none';
                 document.getElementById('btn-spotify-logout').style.display = 'block';
                 
-                // Generamos el enlace mágico para OBS
-                const obsLink = `${REDIRECT_URI}?refresh_token=${localStorage.getItem('spotify_refresh')}&client_id=${savedClientId}`;
+                // Enlace mágico para OBS (solo necesita el refresh token)
+                const obsLink = `${REDIRECT_URI}?refresh_token=${localStorage.getItem('spotify_refresh')}`;
                 
                 statusBox.innerHTML = `
                     <div style="color:#1DB954; font-weight:bold; margin-bottom:5px;">✅ ¡AUTORIZADO!</div>
@@ -392,13 +398,11 @@
             const root = document.documentElement.style;
             const savedC1 = localStorage.getItem('p_c1') || '#00AEFF';
             const savedC2 = localStorage.getItem('p_c2') || '#0062FF';
-            const savedClientId = localStorage.getItem('spotify_client_id') || '5389f873bde54395a1fe2c4bd15bac0e'; // Default id
 
             root.setProperty('--theme-color-1', savedC1);
             root.setProperty('--theme-color-2', savedC2);
             document.getElementById('c1').value = savedC1;
             document.getElementById('c2').value = savedC2;
-            document.getElementById('spotify-client-id').value = savedClientId;
 
             updateUIStatus();
         }
@@ -409,10 +413,6 @@
             
             localStorage.setItem('p_c1', c1);
             localStorage.setItem('p_c2', c2);
-            
-            // Solo guardamos el Client ID si el usuario escribió algo
-            const inputId = document.getElementById('spotify-client-id').value.trim();
-            if(inputId) localStorage.setItem('spotify_client_id', inputId);
             
             document.documentElement.style.setProperty('--theme-color-1', c1);
             document.documentElement.style.setProperty('--theme-color-2', c2);
@@ -429,130 +429,86 @@
         initCfg();
 
         // =========================================
-        // SPOTIFY PKCE AUTH FLOW (REDRECCIÓN DIRECTA)
+        // SPOTIFY AUTH FLOW (TRADICIONAL CON POPUP Y CLIENT SECRET)
         // =========================================
-        function generateRandomString(length) {
-            let text = '';
-            let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            for (let i = 0; i < length; i++) text += possible.charAt(Math.floor(Math.random() * possible.length));
-            return text;
-        }
-
-        async function generateCodeChallenge(codeVerifier) {
-            const digest = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier));
-            return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        }
-
-        document.getElementById('btn-spotify').onclick = async () => {
+        document.getElementById('btn-spotify').onclick = () => {
             const btn = document.getElementById('btn-spotify');
-            const clientId = document.getElementById('spotify-client-id').value.trim();
-            
-            if (!clientId) {
-                debugLog.innerText = "❌ Ingresa tu Client ID primero.";
-                return;
-            }
-            
-            localStorage.setItem('spotify_client_id', clientId);
-            
-            const verifier = generateRandomString(128);
-            localStorage.setItem('spotify_verifier', verifier);
-            const challenge = await generateCodeChallenge(verifier);
-
-            const url = new URL("https://accounts.spotify.com/authorize");
-            url.searchParams.append("client_id", clientId);
-            url.searchParams.append("response_type", "code");
-            url.searchParams.append("redirect_uri", REDIRECT_URI);
-            url.searchParams.append("code_challenge_method", "S256");
-            url.searchParams.append("code_challenge", challenge);
-            // Scopes exactos solicitados
-            url.searchParams.append("scope", "user-read-email user-read-private user-modify-playback-state user-read-currently-playing user-read-playback-state");
-            url.searchParams.append("state", generateRandomString(16));
-
             btn.innerText = "⏳ REDIRIGIENDO...";
             
-            // Navegamos directamente a Spotify en la misma ventana
-            window.location.href = url.toString();
+            // URL EXACTA proporcionada:
+            const url = "https://accounts.spotify.com/authorize?client_id=5389f873bde54395a1fe2c4bd15bac0e&response_type=code&redirect_uri=https%3A%2F%2Fcaortiz-stack.github.io%2Fhosting%2Fspotifyobs.html&scope=user-read-email+user-read-private+user-modify-playback-state+user-read-currently-playing+user-read-playback-state&state=1af7c97f8926251e3f2269d8d0b6d8c1";
+
+            // Redirección directa en la misma ventana, sin abrir paneles adicionales
+            window.location.href = url;
         };
 
-        // Procesar el código OAuth cuando Spotify nos redirige de vuelta
-        async function checkSpotifyCallback() {
-            const params = new URLSearchParams(window.location.search);
-            const code = params.get('code');
-            const error = params.get('error');
+        // Intercambiar Code por Token usando el Client Secret
+        async function processAuthCode(code) {
+            document.getElementById('config-ui').classList.add('show');
+            debugLog.style.color = "#1DB954";
+            debugLog.innerText = "⏳ Intercambiando código con Spotify...";
+            
+            const body = new URLSearchParams({
+                grant_type: 'authorization_code', 
+                code: code,
+                redirect_uri: REDIRECT_URI
+            });
 
-            if (error) {
-                document.getElementById('config-ui').classList.add('show');
-                debugLog.innerText = "Error: " + error;
-                window.history.replaceState({}, document.title, window.location.pathname);
-                return;
-            }
-
-            if (code) {
-                document.getElementById('config-ui').classList.add('show');
-                debugLog.style.color = "#1DB954";
-                debugLog.innerText = "⏳ Validando credenciales con Spotify...";
-
-                const verifier = localStorage.getItem('spotify_verifier');
-                const clientId = localStorage.getItem('spotify_client_id');
-                
-                const body = new URLSearchParams({
-                    grant_type: 'authorization_code', 
-                    code: code,
-                    redirect_uri: REDIRECT_URI,
-                    client_id: clientId,
-                    code_verifier: verifier
+            try {
+                const res = await fetch('https://accounts.spotify.com/api/token', {
+                    method: 'POST', 
+                    headers: { 
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': 'Basic ' + btoa(SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET)
+                    }, 
+                    body: body.toString()
                 });
-
-                try {
-                    const res = await fetch('https://accounts.spotify.com/api/token', {
-                        method: 'POST', 
-                        headers: { 
-                            'Content-Type': 'application/x-www-form-urlencoded' 
-                        }, 
-                        body: body.toString()
-                    });
-                    const data = await res.json();
+                const data = await res.json();
+                
+                if (data.access_token) {
+                    localStorage.setItem('spotify_access', data.access_token);
+                    localStorage.setItem('spotify_refresh', data.refresh_token);
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    initCfg(); 
                     
-                    if (data.access_token) {
-                        localStorage.setItem('spotify_access', data.access_token);
-                        localStorage.setItem('spotify_refresh', data.refresh_token);
-                        
-                        // Limpiamos la URL de retorno
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                        
-                        debugLog.innerText = "";
-                        updateUIStatus(); // Mostrará el enlace mágico para OBS
-                        
-                    } else {
-                        debugLog.style.color = "#ff5555";
-                        debugLog.innerText = "❌ Error: Verifica que la URL del navegador sea exactamente igual a la registrada en Spotify Developer.";
-                    }
-                } catch(e) { 
+                    document.getElementById('config-ui').classList.remove('show');
+                    forceShowMessage = true;
+                    artistEl.innerText = "¡CONECTADO!";
+                    titleEl.innerText = "Cuenta vinculada. Pon play en Spotify.";
+                    titleEl.style.fontSize = "22px";
+                    widget.classList.add('active');
+                    
+                    setTimeout(() => { forceShowMessage = false; }, 10000);
+                } else {
                     debugLog.style.color = "#ff5555";
-                    debugLog.innerText = "❌ Error de red: " + e.message;
+                    debugLog.innerText = "❌ Fallo al obtener el token: " + (data.error_description || data.error);
                 }
+            } catch(e) { 
+                debugLog.style.color = "#ff5555";
+                debugLog.innerText = "❌ Error de red: " + e.message;
             }
         }
-        
-        checkSpotifyCallback();
+
+        if (!window.opener && window.location.search.includes('code=')) {
+            const params = new URLSearchParams(window.location.search);
+            processAuthCode(params.get('code'));
+        }
 
         async function refreshSpotifyToken() {
             const refresh = localStorage.getItem('spotify_refresh');
-            const clientId = localStorage.getItem('spotify_client_id');
-            
-            if (!refresh || !clientId) return false;
+            if (!refresh) return false;
 
             const body = new URLSearchParams({ 
                 grant_type: 'refresh_token', 
-                refresh_token: refresh,
-                client_id: clientId
+                refresh_token: refresh
             });
             
             try {
                 const res = await fetch('https://accounts.spotify.com/api/token', {
                     method: 'POST', 
                     headers: { 
-                        'Content-Type': 'application/x-www-form-urlencoded'
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': 'Basic ' + btoa(SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET)
                     }, 
                     body: body.toString()
                 });
@@ -597,7 +553,6 @@
                 artistEl.innerText = safeArtist;
                 titleEl.innerText = safeTitle;
                 
-                // Ajuste de texto adaptable
                 const len = safeTitle.length;
                 titleEl.style.fontSize = len > 50 ? "3.8vh" : len > 35 ? "4.8vh" : "5.8vh";
                 
@@ -661,7 +616,6 @@
         }
 
         async function mainLoop() {
-            // Lógica para auto-refrescar si detectamos token de OBS nuevo
             let token = localStorage.getItem('spotify_access');
             const refresh = localStorage.getItem('spotify_refresh');
             
@@ -677,7 +631,6 @@
             }
         }
 
-        // Ejecución principal
         mainLoop();
         setInterval(mainLoop, REFRESH_RATE);
     </script>
