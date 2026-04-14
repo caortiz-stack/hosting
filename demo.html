@@ -2,11 +2,12 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <!-- FORZAR MODO ESCRITORIO: Fijamos el ancho a 1280px en lugar de device-width -->
+    <meta name="viewport" content="width=1280, initial-scale=1">
     <title>SISTEMA DE SEGURIDAD - VISTA CONFIDENCIAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Bloqueo de selección y arrastre, pero PERMITIENDO SCROLL */
+        /* Bloqueo de selección pero permitiendo scroll */
         * {
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -14,7 +15,7 @@
             user-select: none;
             -webkit-user-drag: none;
             -webkit-tap-highlight-color: transparent;
-            /* Permitimos scroll vertical y horizontal para ver el plano */
+            /* Permitimos scroll en ambos ejes para el modo escritorio */
             touch-action: pan-x pan-y; 
             cursor: default;
         }
@@ -22,14 +23,13 @@
         body, html {
             margin: 0;
             padding: 0;
-            width: 100%;
+            width: 1280px; /* Ancho fijo de escritorio */
             height: 100%;
             background-color: #000;
-            /* Quitamos fixed para permitir el scroll natural del contenedor */
             overflow: hidden; 
         }
 
-        /* Capa superior: Bloquea clics derechos/largos pero deja pasar el scroll */
+        /* Capa superior: Bloquea menús pero deja pasar el scroll */
         .touch-shield {
             position: fixed;
             top: 0;
@@ -38,7 +38,6 @@
             height: 100%;
             z-index: 250;
             background: rgba(0,0,0,0);
-            /* Importante: permite que el scroll llegue al PDF pero bloquea interacciones de menú */
             pointer-events: none; 
         }
 
@@ -52,36 +51,35 @@
             pointer-events: none;
             z-index: 100;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(8, 1fr);
-            opacity: 0.12;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            opacity: 0.1;
         }
 
         .watermark-item {
             transform: rotate(-30deg);
             color: white;
-            font-size: 0.6rem;
+            font-size: 0.7rem;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
             text-transform: uppercase;
-            text-align: center;
         }
 
+        /* Contenedor principal con scroll habilitado */
         #pdf-wrapper {
-            width: 100%;
-            height: 100%;
+            width: 1280px;
+            height: 100vh;
             background: #000;
             z-index: 50;
-            overflow: auto; /* Habilita el scroll en el contenedor */
+            overflow: auto; 
             -webkit-overflow-scrolling: touch;
         }
 
         #secure-viewer {
             width: 100%;
-            height: 100%;
-            min-height: 100vh;
+            height: 2000px; /* Altura extendida para forzar scroll de escritorio */
             border: none;
             background: #000;
             display: block;
@@ -91,17 +89,17 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background: #000;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 300;
-            color: #666;
+            color: #555;
             font-family: monospace;
-            font-size: 10px;
+            font-size: 12px;
             letter-spacing: 2px;
             transition: opacity 0.5s ease;
         }
@@ -113,26 +111,24 @@
 </head>
 <body ondragstart="return false;" ondrop="return false;">
 
-    <div id="loader">CARGANDO MODO ESCRITORIO SEGURO...</div>
+    <div id="loader">FORZANDO MODO ESCRITORIO...</div>
 
-    <!-- Escudo pasivo para bloquear menús contextuales -->
-    <div class="touch-shield" id="shield"></div>
+    <div class="touch-shield"></div>
 
     <div class="watermark-layer" id="watermark-container"></div>
 
-    <div id="pdf-wrapper"></div>
+    <div id="pdf-wrapper">
+        <!-- El visor se inyectará aquí -->
+    </div>
 
     <script>
-        /**
-         * 1. CONFIGURACIÓN DE RUTA (2plano.pdf)
-         */
         const _0x1a2b = ["MnBsYW5v", "LnBkZg=="]; 
         const _target = atob(_0x1a2b[0]) + atob(_0x1a2b[1]);
 
         async function initProtectedViewer() {
             try {
                 const response = await fetch(_target);
-                if (!response.ok) throw new Error('Network error');
+                if (!response.ok) throw new Error('Error');
                 
                 const buffer = await response.arrayBuffer();
                 const blob = new Blob([buffer], { type: 'application/pdf' });
@@ -140,12 +136,12 @@
                 
                 const wrapper = document.getElementById('pdf-wrapper');
                 
-                // Usamos 'embed' para forzar comportamiento de escritorio
-                const viewer = document.createElement('embed');
+                // Usamos iframe con sandbox para evitar que el móvil "sepa" que es un PDF descargable
+                const viewer = document.createElement('iframe');
                 viewer.id = 'secure-viewer';
-                // Añadimos parámetros para forzar la vista de escritorio y deshabilitar UI de descarga
-                viewer.src = `${blobUrl}#toolbar=0&navpanes=0&pagemode=none&view=FitH`;
-                viewer.type = 'application/pdf';
+                viewer.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+                // Parámetros de escritorio: forzamos zoom al 100% y ocultamos barras laterales
+                viewer.src = `${blobUrl}#toolbar=0&navpanes=0&pagemode=none&view=FitH,0&zoom=100`;
                 
                 wrapper.innerHTML = ''; 
                 wrapper.appendChild(viewer);
@@ -154,63 +150,33 @@
                     const loader = document.getElementById('loader');
                     loader.style.opacity = '0';
                     setTimeout(() => loader.style.display = 'none', 500);
-                }, 1200);
+                }, 1500);
 
             } catch (err) {
-                document.getElementById('loader').innerText = "ERROR DE CONEXIÓN";
-                document.getElementById('loader').style.color = "#ff4444";
+                document.getElementById('loader').innerText = "ERROR DE CARGA";
             }
         }
 
-        /**
-         * 2. GESTIÓN DE INTERACCIÓN
-         */
-        // Permitimos gestos de scroll pero bloqueamos el menú contextual (pulsación larga)
+        // Bloqueo de menús contextuales
         window.oncontextmenu = function(e) {
             e.preventDefault();
-            e.stopPropagation();
             return false;
         };
 
-        // Bloqueo de teclas de guardado/impresión
+        // Bloqueo de teclado
         document.addEventListener('keydown', e => {
             const keys = ['s', 'p', 'u', 'i', 'j', 'c', 'k', 'a'];
-            if (
-                (e.ctrlKey || e.metaKey) && keys.includes(e.key.toLowerCase()) ||
-                e.key === 'F12' || e.key === 'PrintScreen' ||
-                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C'))
-            ) {
-                e.preventDefault();
-                return false;
-            }
+            if ((e.ctrlKey || e.metaKey) && keys.includes(e.key.toLowerCase())) e.preventDefault();
         });
 
-        /**
-         * 3. MARCAS DE AGUA
-         */
+        // Marcas de agua
         const wContainer = document.getElementById('watermark-container');
-        for (let i = 0; i < 24; i++) {
+        for (let i = 0; i < 40; i++) {
             const item = document.createElement('div');
             item.className = 'watermark-item';
-            item.innerText = "ACCESO RESTRINGIDO\nRIO GRANDE";
+            item.innerText = "SITIO ESCRITORIO\nRIO GRANDE";
             wContainer.appendChild(item);
         }
-
-        /**
-         * 4. ANTI-DEBUGGER
-         */
-        (function() {
-            const noop = () => {};
-            ['log', 'info', 'warn', 'error'].forEach(m => console[m] = noop);
-            
-            setInterval(() => {
-                const now = performance.now();
-                debugger;
-                if (performance.now() - now > 50) {
-                    location.reload();
-                }
-            }, 1500);
-        })();
 
         window.onload = initProtectedViewer;
     </script>
