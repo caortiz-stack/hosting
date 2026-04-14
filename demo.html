@@ -22,10 +22,10 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #111;
+            background-color: #000;
         }
 
-        /* Capa de Marcas de Agua sutiles */
+        /* Capa de Marcas de Agua sutiles pero presentes */
         .watermark-layer {
             position: fixed;
             top: 0;
@@ -37,13 +37,13 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(5, 1fr);
-            opacity: 0.05;
+            opacity: 0.08;
         }
 
         .watermark-item {
             transform: rotate(-30deg);
             color: white;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -51,13 +51,29 @@
             text-transform: uppercase;
         }
 
-        /* Visor a pantalla completa sin márgenes */
-        #pdf-viewport {
+        /* Contenedor del Visor Nativo */
+        .pdf-container {
             width: 100%;
             height: 100%;
             border: none;
-            background: #111;
-            display: block;
+            background: #000;
+        }
+
+        /* Estilo para el objeto PDF */
+        #pdf-object {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Mensaje de error si el archivo no existe */
+        .fallback-msg {
+            color: #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 20px;
         }
     </style>
 </head>
@@ -66,13 +82,18 @@
     <!-- Capa de Marcas de Agua -->
     <div class="watermark-layer" id="watermark-container"></div>
 
-    <!-- Visor de PDF.js configurado para carga local en GitHub Pages -->
-    <!-- El archivo debe estar en la misma carpeta que demo.html y llamarse planos.pdf -->
-    <iframe 
-        id="pdf-viewport"
-        src="https://raw.githack.com/mozilla/pdf.js/master/web/viewer.html?file=planos.pdf#toolbar=0&navpanes=0&pagemode=none&view=FitW"
-        allow="none">
-    </iframe>
+    <!-- Visor de PDF Nativo (Elimina problemas de CORS) -->
+    <div class="pdf-container">
+        <!-- El archivo debe llamarse 'planos.pdf' y estar en el mismo nivel que demo.html -->
+        <object 
+            id="pdf-object"
+            data="planos.pdf#toolbar=0&navpanes=0&pagemode=none&view=FitW" 
+            type="application/pdf">
+            <div class="fallback-msg">
+                <p>Cargando planos...<br><span style="font-size: 10px;">Si el archivo no aparece, asegúrate de que 'planos.pdf' esté en el repositorio.</span></p>
+            </div>
+        </object>
+    </div>
 
     <script>
         /**
@@ -82,7 +103,7 @@
         // Bloqueo de clic derecho
         document.addEventListener('contextmenu', e => e.preventDefault());
         
-        // Bloqueo de teclas de guardado e inspección
+        // Bloqueo de teclas de guardado, impresión e inspección
         document.addEventListener('keydown', e => {
             const forbiddenKeys = ['s', 'p', 'u', 'i', 'j', 'c', 'k', 'a'];
             if (
@@ -100,7 +121,7 @@
          * 2. GENERACIÓN DE MARCAS DE AGUA
          */
         const container = document.getElementById('watermark-container');
-        const text = "RIO GRANDE - VISTA PREVIA";
+        const text = "RIO GRANDE - CONFIDENCIAL";
         for (let i = 0; i < 20; i++) {
             const div = document.createElement('div');
             div.className = 'watermark-item';
@@ -122,6 +143,13 @@
                 console.clear();
             }, 1000);
         })();
+
+        /**
+         * 4. AUTO-AJUSTE PARA MÓVILES
+         */
+        window.addEventListener('resize', () => {
+            // El objeto se ajusta automáticamente mediante CSS
+        });
 
     </script>
 </body>
