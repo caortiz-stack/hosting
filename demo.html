@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SISTEMA DE SEGURIDAD - VISTA CONFIDENCIAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -13,6 +13,8 @@
             -ms-user-select: none;
             user-select: none;
             -webkit-user-drag: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none; 
             cursor: default;
         }
 
@@ -23,6 +25,20 @@
             height: 100%;
             overflow: hidden;
             background-color: #000;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
+
+        /* Escudo táctico invisible: Captura todos los gestos antes que el navegador */
+        .touch-shield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 200;
+            background: rgba(0,0,0,0);
         }
 
         /* Marcas de agua */
@@ -36,30 +52,38 @@
             z-index: 100;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(5, 1fr);
-            opacity: 0.08;
+            grid-template-rows: repeat(6, 1fr);
+            opacity: 0.12;
         }
 
         .watermark-item {
             transform: rotate(-30deg);
             color: white;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
             text-transform: uppercase;
+            text-align: center;
         }
 
-        #pdf-container {
+        #pdf-wrapper {
             width: 100%;
             height: 100%;
             background: #000;
+            z-index: 50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        #pdf-object {
+        /* Iframe con sandbox para prevenir acciones nativas */
+        #secure-frame {
             width: 100%;
             height: 100%;
+            border: none;
+            overflow: hidden;
         }
 
         #loader {
@@ -73,74 +97,99 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 200;
-            color: #333;
+            z-index: 300;
+            color: #444;
             font-family: sans-serif;
-            font-size: 11px;
-            letter-spacing: 3px;
+            font-size: 10px;
+            letter-spacing: 2px;
             font-weight: bold;
+        }
+
+        @media print {
+            body { display: none !important; }
         }
     </style>
 </head>
-<body ondragstart="return false;" ondrop="return false;">
+<body>
 
-    <div id="loader">INICIALIZANDO PROTOCOLO DE SEGURIDAD...</div>
+    <div id="loader">ESTABLECIENDO CONEXIÓN CIFRADA...</div>
+
+    <!-- El escudo ahora tiene prioridad absoluta sobre cualquier gesto -->
+    <div class="touch-shield" id="main-shield"></div>
 
     <div class="watermark-layer" id="watermark-container"></div>
 
-    <div id="pdf-container"></div>
+    <div id="pdf-wrapper">
+        <!-- Contenedor dinámico -->
+    </div>
 
     <script>
         /**
-         * 1. RECONSTRUCCIÓN DINÁMICA DE RUTA (Ofuscación de String)
-         * Se actualiza el nombre del archivo a "2plano.pdf" usando Base64.
+         * 1. OFUSCACIÓN Y CARGA DE SEGURIDAD
          */
-        const _0x4a21 = ["MnBsYW5v", "LnBkZg=="]; // "2plano" y ".pdf" en base64
+        const _0x4a21 = ["MnBsYW5v", "LnBkZg=="]; 
         const _p = atob(_0x4a21[0]) + atob(_0x4a21[1]);
 
         async function initSecureStream() {
             try {
-                // Descarga el archivo como datos binarios puros (buffer)
                 const response = await fetch(_p);
                 if (!response.ok) throw new Error();
                 
                 const dataBuffer = await response.arrayBuffer();
-                
-                // Conversión de Buffer a Blob de tipo aplicación/pdf
+                // Creamos un Blob sin nombre de archivo para despistar al SO móvil
                 const blob = new Blob([dataBuffer], { type: 'application/pdf' });
                 const secureUrl = URL.createObjectURL(blob);
                 
-                const container = document.getElementById('pdf-container');
-                const viewer = document.createElement('object');
+                const wrapper = document.getElementById('pdf-wrapper');
                 
-                viewer.id = 'pdf-object';
-                // Parámetros de visualización forzados para ocultar herramientas nativas
-                viewer.data = `${secureUrl}#toolbar=0&navpanes=0&pagemode=none&view=FitW`;
-                viewer.type = 'application/pdf';
+                // Usamos un iframe con sandbox estricto
+                // 'allow-scripts' es necesario para el renderizado, pero omitimos 'allow-downloads'
+                const frame = document.createElement('iframe');
+                frame.id = 'secure-frame';
+                frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+                frame.src = `${secureUrl}#toolbar=0&navpanes=0&pagemode=none&view=FitW`;
                 
-                container.appendChild(viewer);
-                document.getElementById('loader').style.display = 'none';
+                wrapper.appendChild(frame);
+                
+                setTimeout(() => {
+                    document.getElementById('loader').style.display = 'none';
+                }, 1500);
 
-                // Revocación de URL para evitar extracción posterior
+                // Revocación inmediata tras carga
                 setTimeout(() => {
                     URL.revokeObjectURL(secureUrl);
-                }, 5000);
+                }, 4000);
                 
             } catch (e) {
-                document.getElementById('loader').innerText = "ERROR DE ACCESO: RECURSO NO ENCONTRADO";
-                document.getElementById('loader').style.color = "#500";
+                document.getElementById('loader').innerText = "ERROR: ACCESO NO AUTORIZADO";
+                document.getElementById('loader').style.color = "#800";
             }
         }
 
         /**
-         * 2. BLOQUEO DE INTERACCIÓN PERIMETRAL
+         * 2. BLOQUEO AGRESIVO DE GESTOS MÓVILES
          */
-        document.addEventListener('contextmenu', e => e.preventDefault());
+        const shield = document.getElementById('main-shield');
+        
+        // Bloquea scroll y gestos de "tirar para recargar" o menús de sistema
+        document.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+        document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+        
+        // Bloqueo de menú contextual (pulsación larga)
+        window.oncontextmenu = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        };
+
+        /**
+         * 3. BLOQUEO DE TECLADO E INSPECCIÓN
+         */
         document.addEventListener('keydown', e => {
             const forbidden = ['s', 'p', 'u', 'i', 'j', 'c', 'k', 'a'];
             if (
                 (e.ctrlKey || e.metaKey) && forbidden.includes(e.key.toLowerCase()) ||
-                e.key === 'F12' || 
+                e.key === 'F12' || e.key === 'PrintScreen' ||
                 (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C'))
             ) {
                 e.preventDefault();
@@ -149,18 +198,18 @@
         });
 
         /**
-         * 3. MARCAS DE AGUA DINÁMICAS
+         * 4. GENERACIÓN DE MARCAS DE AGUA
          */
         const wContainer = document.getElementById('watermark-container');
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 24; i++) {
             const d = document.createElement('div');
             d.className = 'watermark-item';
-            d.innerText = "CONFIDENCIAL - PROYECTO RIO GRANDE";
+            d.innerText = "PROPIEDAD PRIVADA\nRIO GRANDE";
             wContainer.appendChild(d);
         }
 
         /**
-         * 4. ANTI-DEBUGGING AVANZADO
+         * 5. PROTECCIÓN DE CONSOLA
          */
         (function() {
             const n = () => {};
@@ -170,10 +219,10 @@
                 const start = performance.now();
                 debugger;
                 if (performance.now() - start > 50) {
-                    // Acción si se detecta consola abierta
+                    document.body.innerHTML = ""; // Destruye el contenido si detecta inspección
+                    location.reload();
                 }
-                console.clear();
-            }, 500);
+            }, 1000);
         })();
 
         window.onload = initSecureStream;
