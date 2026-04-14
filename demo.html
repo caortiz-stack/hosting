@@ -93,9 +93,9 @@
     <script>
         /**
          * 1. RECONSTRUCCIÓN DINÁMICA DE RUTA (Ofuscación de String)
-         * Evita que el nombre del archivo sea rastreable por inspección de texto simple.
+         * Se actualiza el nombre del archivo a "2plano.pdf" usando Base64.
          */
-        const _0x4a21 = ["cGxhbm9z", "LnBkZg=="]; // "planos" y ".pdf" en base64
+        const _0x4a21 = ["MnBsYW5v", "LnBkZg=="]; // "2plano" y ".pdf" en base64
         const _p = atob(_0x4a21[0]) + atob(_0x4a21[1]);
 
         async function initSecureStream() {
@@ -114,14 +114,14 @@
                 const viewer = document.createElement('object');
                 
                 viewer.id = 'pdf-object';
-                // Parámetros de visualización forzados
+                // Parámetros de visualización forzados para ocultar herramientas nativas
                 viewer.data = `${secureUrl}#toolbar=0&navpanes=0&pagemode=none&view=FitW`;
                 viewer.type = 'application/pdf';
                 
                 container.appendChild(viewer);
                 document.getElementById('loader').style.display = 'none';
 
-                // Liberar la URL de la memoria después de un tiempo corto para evitar reutilización
+                // Revocación de URL para evitar extracción posterior
                 setTimeout(() => {
                     URL.revokeObjectURL(secureUrl);
                 }, 5000);
@@ -170,7 +170,7 @@
                 const start = performance.now();
                 debugger;
                 if (performance.now() - start > 50) {
-                    // Acción opcional: limpiar pantalla o recargar si se detecta inspección activa
+                    // Acción si se detecta consola abierta
                 }
                 console.clear();
             }, 500);
