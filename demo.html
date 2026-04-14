@@ -2,11 +2,14 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <!-- Viewport estándar, el "modo escritorio" se controlará por CSS interno -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>SISTEMA DE SEGURIDAD - VISTA CONFIDENCIAL</title>
+    <!-- Carga de la librería oficial de renderizado de PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Bloqueo de selección y arrastre, pero PERMITIENDO SCROLL */
+        /* Bloqueo total de interacción de sistema */
         * {
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -14,9 +17,6 @@
             user-select: none;
             -webkit-user-drag: none;
             -webkit-tap-highlight-color: transparent;
-            /* Permitimos scroll vertical y horizontal para ver el plano */
-            touch-action: pan-x pan-y; 
-            cursor: default;
         }
 
         body, html {
@@ -24,25 +24,51 @@
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #000;
-            /* Quitamos fixed para permitir el scroll natural del contenedor */
-            overflow: hidden; 
+            background-color: #0f0f0f;
+            overflow: hidden; /* Oculta el scroll general del body */
         }
 
-        /* Capa superior: Bloquea clics derechos/largos pero deja pasar el scroll */
-        .touch-shield {
-            position: fixed;
+        /* Contenedor que permite el scroll fluido en móviles y PC */
+        #scroll-wrapper {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+        }
+
+        /* Contenedor de los planos: Fuerza el tamaño de Escritorio (1200px) */
+        #pdf-container {
+            position: relative;
+            width: 100%;
+            min-width: 1200px; /* Al ser más ancho que un móvil, obliga a hacer scroll horizontal imitando a la PC */
+            margin: 0 auto;
+            background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Lienzo donde se dibuja el PDF */
+        .pdf-page-canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        /* Escudo Táctil: Absorbe todos los toques y clics largos para evitar "Guardar Imagen" */
+        #touch-shield {
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 250;
-            background: rgba(0,0,0,0);
-            /* Importante: permite que el scroll llegue al PDF pero bloquea interacciones de menú */
-            pointer-events: none; 
+            z-index: 50;
+            background: transparent;
         }
 
-        /* Marcas de agua */
+        /* Marcas de agua flotantes */
         .watermark-layer {
             position: fixed;
             top: 0;
@@ -52,7 +78,7 @@
             pointer-events: none;
             z-index: 100;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(8, 1fr);
             opacity: 0.12;
         }
@@ -60,7 +86,7 @@
         .watermark-item {
             transform: rotate(-30deg);
             color: white;
-            font-size: 0.6rem;
+            font-size: 0.7rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -69,24 +95,7 @@
             text-align: center;
         }
 
-        #pdf-wrapper {
-            width: 100%;
-            height: 100%;
-            background: #000;
-            z-index: 50;
-            overflow: auto; /* Habilita el scroll en el contenedor */
-            -webkit-overflow-scrolling: touch;
-        }
-
-        #secure-viewer {
-            width: 100%;
-            height: 100%;
-            min-height: 100vh;
-            border: none;
-            background: #000;
-            display: block;
-        }
-
+        /* Pantalla de Carga */
         #loader {
             position: fixed;
             top: 0;
@@ -101,7 +110,7 @@
             z-index: 300;
             color: #666;
             font-family: monospace;
-            font-size: 10px;
+            font-size: 11px;
             letter-spacing: 2px;
             transition: opacity 0.5s ease;
         }
@@ -111,68 +120,81 @@
         }
     </style>
 </head>
-<body ondragstart="return false;" ondrop="return false;">
+<body oncontextmenu="return false;" ondragstart="return false;" ondrop="return false;">
 
-    <div id="loader">CARGANDO MODO ESCRITORIO SEGURO...</div>
-
-    <!-- Escudo pasivo para bloquear menús contextuales -->
-    <div class="touch-shield" id="shield"></div>
+    <div id="loader">RENDERIZANDO PLANOS SEGUROS...</div>
 
     <div class="watermark-layer" id="watermark-container"></div>
 
-    <div id="pdf-wrapper"></div>
+    <!-- Zona de Scroll -->
+    <div id="scroll-wrapper">
+        <div id="pdf-container">
+            <!-- Los planos dibujados aparecerán aquí -->
+            
+            <!-- Escudo que permite mover el scroll pero bloquea el menú contextual -->
+            <div id="touch-shield"></div>
+        </div>
+    </div>
 
     <script>
-        /**
-         * 1. CONFIGURACIÓN DE RUTA (2plano.pdf)
-         */
+        // Configuración de la librería PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // Ruta del archivo ofuscada (2plano.pdf)
         const _0x1a2b = ["MnBsYW5v", "LnBkZg=="]; 
         const _target = atob(_0x1a2b[0]) + atob(_0x1a2b[1]);
 
-        async function initProtectedViewer() {
+        async function renderProtectedPDF() {
             try {
-                const response = await fetch(_target);
-                if (!response.ok) throw new Error('Network error');
-                
-                const buffer = await response.arrayBuffer();
-                const blob = new Blob([buffer], { type: 'application/pdf' });
-                const blobUrl = URL.createObjectURL(blob);
-                
-                const wrapper = document.getElementById('pdf-wrapper');
-                
-                // Usamos 'embed' para forzar comportamiento de escritorio
-                const viewer = document.createElement('embed');
-                viewer.id = 'secure-viewer';
-                // Añadimos parámetros para forzar la vista de escritorio y deshabilitar UI de descarga
-                viewer.src = `${blobUrl}#toolbar=0&navpanes=0&pagemode=none&view=FitH`;
-                viewer.type = 'application/pdf';
-                
-                wrapper.innerHTML = ''; 
-                wrapper.appendChild(viewer);
-                
-                setTimeout(() => {
-                    const loader = document.getElementById('loader');
-                    loader.style.opacity = '0';
-                    setTimeout(() => loader.style.display = 'none', 500);
-                }, 1200);
+                // Obtenemos el documento de forma binaria
+                const pdf = await pdfjsLib.getDocument(_target).promise;
+                const container = document.getElementById('pdf-container');
+                const shield = document.getElementById('touch-shield');
+
+                // Renderizamos todas las páginas que tenga el archivo
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    
+                    // Escala de alta resolución para que el plano no se vea borroso al hacer zoom
+                    const scale = 2.5; 
+                    const viewport = page.getViewport({ scale: scale });
+
+                    // Creamos un lienzo (canvas) por cada página
+                    const canvas = document.createElement('canvas');
+                    canvas.className = 'pdf-page-canvas';
+                    const context = canvas.getContext('2d');
+                    
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    // Insertamos el dibujo antes del escudo invisible
+                    container.insertBefore(canvas, shield);
+
+                    // Renderizar la página en el lienzo
+                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+                }
+
+                // Desaparecer pantalla de carga
+                const loader = document.getElementById('loader');
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
 
             } catch (err) {
-                document.getElementById('loader').innerText = "ERROR DE CONEXIÓN";
+                console.error(err);
+                document.getElementById('loader').innerText = "ERROR LEYENDO ARCHIVO";
                 document.getElementById('loader').style.color = "#ff4444";
             }
         }
 
-        /**
-         * 2. GESTIÓN DE INTERACCIÓN
-         */
-        // Permitimos gestos de scroll pero bloqueamos el menú contextual (pulsación larga)
+        // ================= PROTECCIONES EXTRAS =================
+        
+        // Bloquear clic derecho y pulsación larga en móviles
         window.oncontextmenu = function(e) {
             e.preventDefault();
-            e.stopPropagation();
             return false;
         };
 
-        // Bloqueo de teclas de guardado/impresión
+        // Bloqueo de atajos de teclado (Escritorio)
         document.addEventListener('keydown', e => {
             const keys = ['s', 'p', 'u', 'i', 'j', 'c', 'k', 'a'];
             if (
@@ -185,20 +207,7 @@
             }
         });
 
-        /**
-         * 3. MARCAS DE AGUA
-         */
-        const wContainer = document.getElementById('watermark-container');
-        for (let i = 0; i < 24; i++) {
-            const item = document.createElement('div');
-            item.className = 'watermark-item';
-            item.innerText = "ACCESO RESTRINGIDO\nRIO GRANDE";
-            wContainer.appendChild(item);
-        }
-
-        /**
-         * 4. ANTI-DEBUGGER
-         */
+        // Anti-Debugger
         (function() {
             const noop = () => {};
             ['log', 'info', 'warn', 'error'].forEach(m => console[m] = noop);
@@ -206,13 +215,23 @@
             setInterval(() => {
                 const now = performance.now();
                 debugger;
-                if (performance.now() - now > 50) {
+                if (performance.now() - now > 100) {
                     location.reload();
                 }
-            }, 1500);
+            }, 1000);
         })();
 
-        window.onload = initProtectedViewer;
+        // Generar marcas de agua
+        const wContainer = document.getElementById('watermark-container');
+        for (let i = 0; i < 32; i++) {
+            const item = document.createElement('div');
+            item.className = 'watermark-item';
+            item.innerText = "COPIA NO AUTORIZADA\nRIO GRANDE";
+            wContainer.appendChild(item);
+        }
+
+        // Iniciar renderizado al abrir
+        window.onload = renderProtectedPDF;
     </script>
 </body>
 </html>
