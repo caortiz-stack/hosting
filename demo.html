@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vista Previa de Planos - Confidencial</title>
+    <title>SISTEMA DE SEGURIDAD - VISTA CONFIDENCIAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Bloqueo total de interacción y selección */
@@ -25,7 +25,7 @@
             background-color: #000;
         }
 
-        /* Capa de Marcas de Agua */
+        /* Marcas de agua */
         .watermark-layer {
             position: fixed;
             top: 0;
@@ -51,11 +51,9 @@
             text-transform: uppercase;
         }
 
-        /* Contenedor del Visor */
-        .pdf-container {
+        #pdf-container {
             width: 100%;
             height: 100%;
-            border: none;
             background: #000;
         }
 
@@ -64,7 +62,6 @@
             height: 100%;
         }
 
-        /* Estado de carga */
         #loader {
             position: fixed;
             top: 0;
@@ -77,65 +74,74 @@
             align-items: center;
             justify-content: center;
             z-index: 200;
-            color: #444;
-            font-family: monospace;
-            font-size: 10px;
-            letter-spacing: 2px;
+            color: #333;
+            font-family: sans-serif;
+            font-size: 11px;
+            letter-spacing: 3px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body ondragstart="return false;" ondrop="return false;">
 
-    <div id="loader">CARGANDO PLANOS SEGURIZADOS...</div>
+    <div id="loader">INICIALIZANDO PROTOCOLO DE SEGURIDAD...</div>
 
     <div class="watermark-layer" id="watermark-container"></div>
 
-    <div class="pdf-container" id="container">
-        <!-- El contenido se inyectará dinámicamente mediante JavaScript -->
-    </div>
+    <div id="pdf-container"></div>
 
     <script>
         /**
-         * 1. CARGA SEGURA MEDIANTE BLOB (OCULTA URL REAL)
+         * 1. RECONSTRUCCIÓN DINÁMICA DE RUTA (Ofuscación de String)
+         * Evita que el nombre del archivo sea rastreable por inspección de texto simple.
          */
-        async function loadProtectedPDF() {
-            // Nombre real del archivo (solo existe en esta variable de JS)
-            const secretPath = 'planos.pdf'; 
-            
+        const _0x4a21 = ["cGxhbm9z", "LnBkZg=="]; // "planos" y ".pdf" en base64
+        const _p = atob(_0x4a21[0]) + atob(_0x4a21[1]);
+
+        async function initSecureStream() {
             try {
-                const response = await fetch(secretPath);
-                if (!response.ok) throw new Error('Archivo no encontrado');
+                // Descarga el archivo como datos binarios puros (buffer)
+                const response = await fetch(_p);
+                if (!response.ok) throw new Error();
                 
-                const blob = await response.blob();
-                // Creamos una URL temporal que no revela la ruta real
-                const blobUrl = URL.createObjectURL(blob);
+                const dataBuffer = await response.arrayBuffer();
                 
-                const container = document.getElementById('container');
-                const obj = document.createElement('object');
-                obj.id = 'pdf-object';
-                // Añadimos parámetros para ocultar herramientas
-                obj.data = `${blobUrl}#toolbar=0&navpanes=0&pagemode=none&view=FitW`;
-                obj.type = 'application/pdf';
+                // Conversión de Buffer a Blob de tipo aplicación/pdf
+                const blob = new Blob([dataBuffer], { type: 'application/pdf' });
+                const secureUrl = URL.createObjectURL(blob);
                 
-                container.appendChild(obj);
+                const container = document.getElementById('pdf-container');
+                const viewer = document.createElement('object');
+                
+                viewer.id = 'pdf-object';
+                // Parámetros de visualización forzados
+                viewer.data = `${secureUrl}#toolbar=0&navpanes=0&pagemode=none&view=FitW`;
+                viewer.type = 'application/pdf';
+                
+                container.appendChild(viewer);
                 document.getElementById('loader').style.display = 'none';
+
+                // Liberar la URL de la memoria después de un tiempo corto para evitar reutilización
+                setTimeout(() => {
+                    URL.revokeObjectURL(secureUrl);
+                }, 5000);
                 
-            } catch (err) {
-                document.getElementById('loader').innerText = 'ERROR DE CARGA: VERIFIQUE ARCHIVO';
+            } catch (e) {
+                document.getElementById('loader').innerText = "ERROR DE ACCESO: RECURSO NO ENCONTRADO";
+                document.getElementById('loader').style.color = "#500";
             }
         }
 
         /**
-         * 2. PROTECCIÓN DE INTERACCIÓN
+         * 2. BLOQUEO DE INTERACCIÓN PERIMETRAL
          */
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('keydown', e => {
-            const forbiddenKeys = ['s', 'p', 'u', 'i', 'j', 'c', 'k', 'a'];
+            const forbidden = ['s', 'p', 'u', 'i', 'j', 'c', 'k', 'a'];
             if (
-                (e.ctrlKey || e.metaKey) && forbiddenKeys.includes(e.key.toLowerCase()) ||
+                (e.ctrlKey || e.metaKey) && forbidden.includes(e.key.toLowerCase()) ||
                 e.key === 'F12' || 
-                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-                e.key === 'PrintScreen'
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C'))
             ) {
                 e.preventDefault();
                 return false;
@@ -143,33 +149,34 @@
         });
 
         /**
-         * 3. MARCAS DE AGUA
+         * 3. MARCAS DE AGUA DINÁMICAS
          */
-        const watermarkContainer = document.getElementById('watermark-container');
+        const wContainer = document.getElementById('watermark-container');
         for (let i = 0; i < 20; i++) {
-            const div = document.createElement('div');
-            div.className = 'watermark-item';
-            div.innerText = "RIO GRANDE - CONFIDENCIAL";
-            watermarkContainer.appendChild(div);
+            const d = document.createElement('div');
+            d.className = 'watermark-item';
+            d.innerText = "CONFIDENCIAL - PROYECTO RIO GRANDE";
+            wContainer.appendChild(d);
         }
 
         /**
-         * 4. ANTI-DEBUGGER Y LIMPIEZA
+         * 4. ANTI-DEBUGGING AVANZADO
          */
         (function() {
-            const empty = () => {};
-            ['log', 'info', 'warn', 'error', 'dir', 'clear', 'table'].forEach(m => console[m] = empty);
+            const n = () => {};
+            ['log', 'info', 'warn', 'error', 'table'].forEach(m => console[m] = n);
             
             setInterval(() => {
                 const start = performance.now();
                 debugger;
-                if (performance.now() - start > 100) { /* Consola abierta */ }
+                if (performance.now() - start > 50) {
+                    // Acción opcional: limpiar pantalla o recargar si se detecta inspección activa
+                }
                 console.clear();
-            }, 1000);
+            }, 500);
         })();
 
-        // Iniciar carga al cargar la ventana
-        window.onload = loadProtectedPDF;
+        window.onload = initSecureStream;
     </script>
 </body>
 </html>
