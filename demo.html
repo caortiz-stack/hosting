@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Política de Seguridad de Contenido (CSP) optimizada para Dropbox y PDF.js -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.tailwindcss.com https://raw.githack.com https://*.dropboxusercontent.com https://www.dropbox.com; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; img-src 'self' data:; frame-src https://raw.githack.com https://*.dropboxusercontent.com https://www.dropbox.com;">
-    <title>SISTEMA DE SEGURIDAD - PLANOS RIO GRANDE</title>
+    <title>Vista Previa de Planos - Confidencial</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Deshabilitar selección y comportamientos táctiles a nivel global */
+        /* Bloqueo total de interacción y selección */
         * {
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -18,14 +16,16 @@
             cursor: default;
         }
 
-        body {
-            overflow: hidden;
-            background-color: #050505;
+        body, html {
             margin: 0;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #111;
         }
 
-        /* Marcas de agua de alta densidad para disuadir fotografía externa */
+        /* Capa de Marcas de Agua sutiles */
         .watermark-layer {
             position: fixed;
             top: 0;
@@ -35,168 +35,54 @@
             pointer-events: none;
             z-index: 100;
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            grid-template-rows: repeat(8, 1fr);
-            opacity: 0.08;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            opacity: 0.05;
         }
 
         .watermark-item {
-            transform: rotate(-25deg);
-            color: #ff0000;
-            font-size: 0.65rem;
+            transform: rotate(-30deg);
+            color: white;
+            font-size: 0.8rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 900;
-            white-space: nowrap;
+            font-weight: bold;
             text-transform: uppercase;
         }
 
-        /* Estado de bloqueo: desenfoque agresivo y oscurecimiento */
-        .security-lockdown {
-            filter: blur(80px) brightness(0) !important;
-            pointer-events: none !important;
-            opacity: 0 !important;
-        }
-
+        /* Visor a pantalla completa sin márgenes */
         #pdf-viewport {
-            width: 100vw;
-            height: calc(100vh - 40px);
-            border: none;
-            margin-top: 40px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Interfaz de Bloqueo Crítico */
-        #shield-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at center, #1a0000 0%, #000000 100%);
-            color: white;
-            z-index: 1000;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            backdrop-filter: blur(20px);
-        }
-
-        .alert-box {
-            background: rgba(20, 20, 20, 0.8);
-            border: 1px solid rgba(255, 0, 0, 0.2);
-            padding: 3.5rem;
-            border-radius: 24px;
-            box-shadow: 0 0 80px rgba(255, 0, 0, 0.15);
-            max-width: 90%;
-        }
-
-        /* Animación para el estado activo */
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background-color: #22c55e;
-            box-shadow: 0 0 8px #22c55e;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.4; }
-            100% { opacity: 1; }
+            border: none;
+            background: #111;
+            display: block;
         }
     </style>
 </head>
 <body ondragstart="return false;" ondrop="return false;">
 
-    <!-- Pantalla de Bloqueo por Infracción de Seguridad -->
-    <div id="shield-overlay">
-        <div class="alert-box">
-            <div class="mb-8 inline-block p-5 rounded-3xl bg-red-600/10 border border-red-600/20">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0v2m0-2h2m-2 0l-2-2m2 2l2 2M12 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-            </div>
-            <h2 class="text-4xl font-black mb-4 text-red-500 uppercase tracking-tighter italic">Acceso Suspendido</h2>
-            <p class="text-gray-400 mb-10 text-lg max-w-md mx-auto font-light leading-relaxed">Se ha detectado una actividad inusual que compromete la seguridad del archivo. La extracción de recursos está prohibida.</p>
-            <button onclick="unlock()" class="px-12 py-4 bg-white text-black hover:bg-gray-200 transition-all rounded-xl font-black tracking-widest uppercase text-xs">
-                Restablecer Sesión
-            </button>
-        </div>
-    </div>
-
-    <!-- Red de Marcas de Agua Dinámicas -->
+    <!-- Capa de Marcas de Agua -->
     <div class="watermark-layer" id="watermark-container"></div>
 
-    <!-- Barra de Estado de Seguridad -->
-    <div class="fixed top-0 left-0 w-full h-10 bg-zinc-950 text-white px-6 z-50 flex justify-between items-center border-b border-white/5 shadow-2xl">
-        <div class="flex items-center gap-5">
-            <div class="flex items-center gap-2.5">
-                <div class="status-dot"></div>
-                <span class="text-[9px] font-black tracking-[0.3em] text-zinc-500 uppercase">Secure Tunnel Active</span>
-            </div>
-            <div class="w-[1px] h-3 bg-zinc-800"></div>
-            <h1 class="text-[10px] font-bold text-zinc-300 tracking-wide uppercase">Planos CCTV - Proyecto Urb. Rio Grande</h1>
-        </div>
-        <div class="flex items-center gap-4 text-[9px] font-mono text-zinc-600">
-            <span class="hidden md:inline">CIPHER: AES-256-GCM</span>
-            <span class="bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">NOD_ID: DROPBOX_SEC</span>
-        </div>
-    </div>
-
-    <!-- Visor de PDF con integración de Dropbox -->
-    <!-- El enlace utiliza dl=1 para asegurar que el visor PDF.js reciba el flujo de datos directamente -->
+    <!-- Visor de PDF.js configurado para carga local -->
+    <!-- IMPORTANTE: El archivo PDF debe llamarse 'planos.pdf' y estar en la misma carpeta que este index.html -->
     <iframe 
         id="pdf-viewport"
-        src="https://raw.githack.com/mozilla/pdf.js/master/web/viewer.html?file=https://www.dropbox.com/scl/fi/8vnm35w1agi6n3kwc5kcx/PLANOS-CCTV-URB-RIO-GRANDE.pdf?rlkey=jvuynd0gvon9honaljwj0clx8%26st=89yndszf%26dl=1#toolbar=0&navpanes=0&pagemode=none&view=FitW"
+        src="https://raw.githack.com/mozilla/pdf.js/master/web/viewer.html?file=planos.pdf#toolbar=0&navpanes=0&pagemode=none&view=FitW"
         allow="none">
     </iframe>
 
     <script>
         /**
-         * 1. PROTECCIÓN DE CONSOLA Y ANTI-DEBBUGING NIVEL 3
+         * 1. PROTECCIÓN DE INTERACCIÓN SILENCIOSA
          */
-        (function() {
-            // Ofuscación del flujo de ejecución para evitar depuración
-            setInterval(function() {
-                const startTime = performance.now();
-                debugger;
-                const endTime = performance.now();
-                if (endTime - startTime > 100) {
-                    lockView();
-                }
-            }, 500);
-
-            // Anular funciones de inspección de consola
-            const blackhole = () => {};
-            ['log', 'info', 'warn', 'error', 'dir', 'clear', 'table', 'debug'].forEach(m => {
-                console[m] = blackhole;
-            });
-            
-            // Limpieza agresiva de memoria de consola
-            setInterval(console.clear, 50);
-        })();
-
-        /**
-         * 2. GENERACIÓN DE CAPA PROTECTORA (Marcas de agua)
-         */
-        const container = document.getElementById('watermark-container');
-        for (let i = 0; i < 48; i++) {
-            const el = document.createElement('div');
-            el.className = 'watermark-item';
-            el.innerText = "PROPIEDAD PRIVADA - RIO GRANDE";
-            container.appendChild(el);
-        }
-
-        /**
-         * 3. BLOQUEO DE INTERACCIONES Y TECLADO
-         */
+        
+        // Bloqueo de clic derecho
         document.addEventListener('contextmenu', e => e.preventDefault());
         
+        // Bloqueo de teclas de guardado e inspección
         document.addEventListener('keydown', e => {
             const forbiddenKeys = ['s', 'p', 'u', 'i', 'j', 'c', 'k', 'a'];
             if (
@@ -206,46 +92,36 @@
                 e.key === 'PrintScreen'
             ) {
                 e.preventDefault();
-                lockView();
+                return false;
             }
         });
 
         /**
-         * 4. GESTIÓN DE SEGURIDAD DINÁMICA
+         * 2. GENERACIÓN DE MARCAS DE AGUA
          */
-        const viewport = document.getElementById('pdf-viewport');
-        const shield = document.getElementById('shield-overlay');
-
-        function lockView() {
-            shield.style.display = 'flex';
-            viewport.classList.add('security-lockdown');
+        const container = document.getElementById('watermark-container');
+        const text = "RIO GRANDE - VISTA PREVIA";
+        for (let i = 0; i < 20; i++) {
+            const div = document.createElement('div');
+            div.className = 'watermark-item';
+            div.innerText = text;
+            container.appendChild(div);
         }
-
-        function unlock() {
-            shield.style.display = 'none';
-            viewport.classList.remove('security-lockdown');
-        }
-
-        // Detección de pérdida de foco (Captura de pantalla o cambio de aplicación)
-        window.addEventListener('blur', () => {
-            lockView();
-        });
-
-        // Detección de herramientas de desarrollo acopladas (cambio de tamaño)
-        window.addEventListener('resize', () => {
-            const devtoolsThreshold = 160;
-            if (window.outerWidth - window.innerWidth > devtoolsThreshold || 
-                window.outerHeight - window.innerHeight > devtoolsThreshold) {
-                lockView();
-            }
-        });
 
         /**
-         * 5. BLOQUEO DE EXTRACCIÓN DE RECURSOS (Drag and Drop)
+         * 3. ANTI-DEBUGGER SILENCIOSO
          */
-        window.ondragstart = () => false;
-        window.addEventListener('dragover', e => e.preventDefault());
-        window.addEventListener('drop', e => e.preventDefault());
+        (function() {
+            const empty = () => {};
+            const methods = ['log', 'info', 'warn', 'error', 'dir', 'clear', 'table', 'debug'];
+            methods.forEach(m => console[m] = empty);
+
+            setInterval(function() {
+                const startTime = performance.now();
+                debugger;
+                console.clear();
+            }, 1000);
+        })();
 
     </script>
 </body>
