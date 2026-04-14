@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <!-- Viewport estándar, el "modo escritorio" se controlará por CSS interno -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>SISTEMA DE SEGURIDAD - VISTA CONFIDENCIAL</title>
+    <!-- Carga de la librería oficial de renderizado de PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Bloqueo total de interacción de sistema */
+        * {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0f0f0f;
+            overflow: hidden; /* Oculta el scroll general del body */
+        }
+
+        /* Contenedor que permite el scroll fluido en móviles y PC */
+        #scroll-wrapper {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+        }
+
+        /* Contenedor de los planos: Fuerza el tamaño de Escritorio (1200px) */
+        #pdf-container {
+            position: relative;
+            width: 100%;
+            min-width: 1200px; /* Al ser más ancho que un móvil, obliga a hacer scroll horizontal imitando a la PC */
+            margin: 0 auto;
+            background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Lienzo donde se dibuja el PDF */
+        .pdf-page-canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        /* Escudo Táctil: Absorbe todos los toques y clics largos para evitar "Guardar Imagen" */
+        #touch-shield {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            background: transparent;
+        }
+
+        /* Marcas de agua flotantes */
+        .watermark-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            opacity: 0.12;
+        }
+
+        .watermark-item {
+            transform: rotate(-30deg);
+            color: white;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        /* Pantalla de Carga */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+            color: #666;
+            font-family: monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            transition: opacity 0.5s ease;
+        }
+
+        @media print {
+            body { display: none !important; }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;" ondragstart="return false;" ondrop="return false;">
+
+    <div id="loader">RENDERIZANDO PLANOS SEGUROS...</div>
+
+    <div class="watermark-layer" id="watermark-container"></div>
+
+    <!-- Zona de Scroll -->
+    <div id="scroll-wrapper">
+        <div id="pdf-container">
+            <!-- Los planos dibujados aparecerán aquí -->
+            
+            <!-- Escudo que permite mover el scroll pero bloquea el menú contextual -->
+            <div id="touch-shield"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de la librería PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // Ruta del archivo ofuscada (2plano.pdf)
+        const _0x1a2b = ["MnBsYW5v", "LnBkZg=="]; 
+        const _target = atob(_0x1a2b[0]) + atob(_0x1a2b[1]);
+
+        async function renderProtectedPDF() {
+            try {
+                // Obtenemos el documento de forma binaria
+                const pdf = await pdfjsLib.getDocument(_target).promise;
+                const container = document.getElementById('pdf-container');
+                const shield = document.getElementById('touch-shield');
+
+                // Renderizamos todas las páginas que tenga el archivo
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    
+                    // Escala de alta resolución para que el plano no se vea borroso al hacer zoom
+                    const scale = 2.5; 
+                    const viewport = page.getViewport({ scale: scale });
+
+                    // Creamos un lienzo (canvas) por cada página
+                    const canvas = document.createElement('canvas');
+                    canvas.className = 'pdf-page-canvas';
+                    const context = canvas.getContext('2d');
+                    
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    // Insertamos el dibujo antes del escudo invisible
+                    container.insertBefore(canvas, shield);
+
+                    // Renderizar la página en el lienzo
+                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+                }
+
+                // Desaparecer pantalla de carga
+                const loader = document.getElementById('loader');
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loader').innerText = "ERROR LEYENDO ARCHIVO";
+                document.getElementById('loader').style.color = "#ff4444";
+            }
+        }
+
+        // ================= PROTECCIONES EXTRAS =================
+        
+        // Bloquear clic derecho y pulsación larga en móviles
+        window.oncontextmenu = function(e) {
+            e.preventDefault();
+            return false;
+        };
+
+        // Bloqueo de atajos de teclado (Escritorio)
+        document.addEventListener('keydown', e => {
+            const keys = ['s', 'p', 'u', 'i', 'j', 'c', 'k', 'a'];
+            if (
+                (e.ctrlKey || e.metaKey) && keys.includes(e.key.toLowerCase()) ||
+                e.key === 'F12' || e.key === 'PrintScreen' ||
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C'))
+            ) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Anti-Debugger
+        (function() {
+            const noop = () => {};
+            ['log', 'info', 'warn', 'error'].forEach(m => console[m] = noop);
+            
+            setInterval(() => {
+                const now = performance.now();
+                debugger;
+                if (performance.now() - now > 100) {
+                    location.reload();
+                }
+            }, 1000);
+        })();
+
+        // Generar marcas de agua
+        const wContainer = document.getElementById('watermark-container');
+        for (let i = 0; i < 32; i++) {
+            const item = document.createElement('div');
+            item.className = 'watermark-item';
+            item.innerText = "COPIA NO AUTORIZADA\nRIO GRANDE";
+            wContainer.appendChild(item);
+        }
+
+        // Iniciar renderizado al abrir
+        window.onload = renderProtectedPDF;
+    </script>
+</body>
+</html>
