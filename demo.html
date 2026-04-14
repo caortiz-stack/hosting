@@ -25,7 +25,7 @@
             background-color: #000;
         }
 
-        /* Capa de Marcas de Agua sutiles pero presentes */
+        /* Capa de Marcas de Agua */
         .watermark-layer {
             position: fixed;
             top: 0;
@@ -51,7 +51,7 @@
             text-transform: uppercase;
         }
 
-        /* Contenedor del Visor Nativo */
+        /* Contenedor del Visor */
         .pdf-container {
             width: 100%;
             height: 100%;
@@ -59,51 +59,76 @@
             background: #000;
         }
 
-        /* Estilo para el objeto PDF */
         #pdf-object {
             width: 100%;
             height: 100%;
         }
 
-        /* Mensaje de error si el archivo no existe */
-        .fallback-msg {
-            color: #555;
+        /* Estado de carga */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100%;
-            text-align: center;
-            padding: 20px;
+            z-index: 200;
+            color: #444;
+            font-family: monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
         }
     </style>
 </head>
 <body ondragstart="return false;" ondrop="return false;">
 
-    <!-- Capa de Marcas de Agua -->
+    <div id="loader">CARGANDO PLANOS SEGURIZADOS...</div>
+
     <div class="watermark-layer" id="watermark-container"></div>
 
-    <!-- Visor de PDF Nativo (Elimina problemas de CORS) -->
-    <div class="pdf-container">
-        <!-- El archivo debe llamarse 'planos.pdf' y estar en el mismo nivel que demo.html -->
-        <object 
-            id="pdf-object"
-            data="planos.pdf#toolbar=0&navpanes=0&pagemode=none&view=FitW" 
-            type="application/pdf">
-            <div class="fallback-msg">
-                <p>Cargando planos...<br><span style="font-size: 10px;">Si el archivo no aparece, asegúrate de que 'planos.pdf' esté en el repositorio.</span></p>
-            </div>
-        </object>
+    <div class="pdf-container" id="container">
+        <!-- El contenido se inyectará dinámicamente mediante JavaScript -->
     </div>
 
     <script>
         /**
-         * 1. PROTECCIÓN DE INTERACCIÓN SILENCIOSA
+         * 1. CARGA SEGURA MEDIANTE BLOB (OCULTA URL REAL)
          */
-        
-        // Bloqueo de clic derecho
+        async function loadProtectedPDF() {
+            // Nombre real del archivo (solo existe en esta variable de JS)
+            const secretPath = 'planos.pdf'; 
+            
+            try {
+                const response = await fetch(secretPath);
+                if (!response.ok) throw new Error('Archivo no encontrado');
+                
+                const blob = await response.blob();
+                // Creamos una URL temporal que no revela la ruta real
+                const blobUrl = URL.createObjectURL(blob);
+                
+                const container = document.getElementById('container');
+                const obj = document.createElement('object');
+                obj.id = 'pdf-object';
+                // Añadimos parámetros para ocultar herramientas
+                obj.data = `${blobUrl}#toolbar=0&navpanes=0&pagemode=none&view=FitW`;
+                obj.type = 'application/pdf';
+                
+                container.appendChild(obj);
+                document.getElementById('loader').style.display = 'none';
+                
+            } catch (err) {
+                document.getElementById('loader').innerText = 'ERROR DE CARGA: VERIFIQUE ARCHIVO';
+            }
+        }
+
+        /**
+         * 2. PROTECCIÓN DE INTERACCIÓN
+         */
         document.addEventListener('contextmenu', e => e.preventDefault());
-        
-        // Bloqueo de teclas de guardado, impresión e inspección
         document.addEventListener('keydown', e => {
             const forbiddenKeys = ['s', 'p', 'u', 'i', 'j', 'c', 'k', 'a'];
             if (
@@ -118,39 +143,33 @@
         });
 
         /**
-         * 2. GENERACIÓN DE MARCAS DE AGUA
+         * 3. MARCAS DE AGUA
          */
-        const container = document.getElementById('watermark-container');
-        const text = "RIO GRANDE - CONFIDENCIAL";
+        const watermarkContainer = document.getElementById('watermark-container');
         for (let i = 0; i < 20; i++) {
             const div = document.createElement('div');
             div.className = 'watermark-item';
-            div.innerText = text;
-            container.appendChild(div);
+            div.innerText = "RIO GRANDE - CONFIDENCIAL";
+            watermarkContainer.appendChild(div);
         }
 
         /**
-         * 3. ANTI-DEBUGGER SILENCIOSO
+         * 4. ANTI-DEBUGGER Y LIMPIEZA
          */
         (function() {
             const empty = () => {};
-            const methods = ['log', 'info', 'warn', 'error', 'dir', 'clear', 'table', 'debug'];
-            methods.forEach(m => console[m] = empty);
-
-            setInterval(function() {
-                const startTime = performance.now();
+            ['log', 'info', 'warn', 'error', 'dir', 'clear', 'table'].forEach(m => console[m] = empty);
+            
+            setInterval(() => {
+                const start = performance.now();
                 debugger;
+                if (performance.now() - start > 100) { /* Consola abierta */ }
                 console.clear();
             }, 1000);
         })();
 
-        /**
-         * 4. AUTO-AJUSTE PARA MÓVILES
-         */
-        window.addEventListener('resize', () => {
-            // El objeto se ajusta automáticamente mediante CSS
-        });
-
+        // Iniciar carga al cargar la ventana
+        window.onload = loadProtectedPDF;
     </script>
 </body>
 </html>
