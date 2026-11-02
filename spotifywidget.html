@@ -419,6 +419,41 @@
         /* =======================================================
            UTILIDADES
            ======================================================= */
+        /* Avisa al log como MUCHO una vez por minuto por cada mensaje
+           distinto. Sin esto, una caida de red escribiria una linea cada
+           4 segundos y volveria a inflar el log de OBS. */
+        var lastLog = Object.create(null);
+        function logOnce(msg) {
+            var now = Date.now();
+            if (lastLog[msg] && now - lastLog[msg] < 60000) return;
+            lastLog[msg] = now;
+            console.warn(msg);
+        }
+
+        /* Timeout por carrera, SIN AbortController.
+           En el navegador de OBS hay integraciones que reenvian fetch por
+           postMessage; un AbortSignal no es clonable y pasar {signal}
+           reventaba la peticion entera con
+           "AbortSignal object could not be cloned".
+           Por eso se llama a fetch(url) sin segundo argumento. */
+        function fetchTimeout(url, ms) {
+            return new Promise(function (resolve, reject) {
+                var settled = false;
+                var to = setTimeout(function () {
+                    if (settled) return;
+                    settled = true;
+                    reject(new Error("sin respuesta en " + ms + " ms"));
+                }, ms);
+                function ok(r)  { if (settled) return; settled = true; clearTimeout(to); resolve(r); }
+                function bad(e) { if (settled) return; settled = true; clearTimeout(to); reject(e); }
+                try {
+                    fetch(url).then(ok, bad);
+                } catch (e) {
+                    bad(e);
+                }
+            });
+        }
+
         function fmt(ms) {
             if (!isFinite(ms) || ms < 0) ms = 0;
             var s = Math.floor(ms / 1000);
@@ -426,23 +461,100 @@
             return String(m).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
         }
 
-        /* Normaliza titulos para que Deezer encuentre la pista.
-           "Asi - Remastered 2011 (feat. X)" -> "asi"
-           Esto sube bastante la tasa de acierto de la portada. */
-        function normalize(s) {
+        /* ==== COINCIDENCIA DE PISTA : INICIO ==== */
+
+        /* Palabras que marcan una VERSION distinta de la cancion.
+           Si Deezer trae una que la peticion no pedia (un remix, un
+           directo, una acustica), ese resultado se penaliza: su duracion
+           no es la de la cancion que suena. */
+        var QUALIFIERS = [
+            "remix", "en vivo", "live", "directo", "acustica", "acustico",
+            "acoustic", "instrumental", "karaoke", "demo", "alt take",
+            "bonus", "radio edit", "remaster", "remasterizado", "cover",
+            "noches de salon", "studio session", "session", "piano",
+            "version", "mix", "edit", "unplugged", "vivo"
+        ];
+
+        function deaccent(s) {
             return String(s || "")
                 .toLowerCase()
-                /* Quita tildes y dieresis: Last.fm y Deezer no siempre
-                   coinciden ("Asi" vs "Asi" con tilde) y sin esto la
-                   validacion rechazaba portadas correctas. */
-                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                .replace(/\s*[\(\[][^\)\]]*(remaster|remasterizad|version|versión|edit|mix|live|en vivo|feat|ft|with|bonus|deluxe|mono|stereo)[^\)\]]*[\)\]]/g, "")
-                .replace(/\s*-\s*(remaster|remasterizad|single|radio|album|deluxe|mono|stereo)[^-]*$/g, "")
-                .replace(/\s*(feat\.?|ft\.?|con)\s+.*$/g, "")
-                .replace(/[’`´]/g, "'")
+                /* Last.fm y Deezer no siempre coinciden en tildes
+                   ("Organo" vs "Organo" con tilde, "Tu" vs "Tu" con tilde). */
+                .normalize("NFD").replace(/[̀-ͯ]/g, "")
+                .replace(/[‘’`´]/g, "'");
+        }
+
+        /* Nucleo del titulo: lo que de verdad identifica la cancion.
+           "Danza de Ciudad (Studio Session)" -> "danza de ciudad"
+           "Danza de Ciudad - Studio Session" -> "danza de ciudad"
+           Asi las dos formas que usan Last.fm y Deezer coinciden. */
+        function core(s) {
+            return deaccent(s)
+                .replace(/[\(\[][^\)\]]*[\)\]]/g, " ")   // quita parentesis
+                .replace(/\s+-\s+.*$/, " ")              // quita lo que sigue a " - "
+                .replace(/\s*(feat\.?|ft\.?)\s+.*$/, " ")
+                .replace(/[^a-z0-9\s']/g, " ")           // quita puntuacion
                 .replace(/\s+/g, " ")
                 .trim();
         }
+
+        /* Etiquetas de version presentes en el texto completo. */
+        function quals(s) {
+            var full = deaccent(s).replace(/[^a-z0-9\s']/g, " ").replace(/\s+/g, " ");
+            var found = [];
+            for (var i = 0; i < QUALIFIERS.length; i++) {
+                if (full.indexOf(QUALIFIERS[i]) !== -1) found.push(QUALIFIERS[i]);
+            }
+            return found;
+        }
+
+        function qualPenalty(qQuery, qCand) {
+            var pen = 0, i;
+            for (i = 0; i < qCand.length; i++) {
+                /* Deezer trae una etiqueta que no pedimos: version distinta. */
+                if (qQuery.indexOf(qCand[i]) === -1) pen -= 3;
+            }
+            for (i = 0; i < qQuery.length; i++) {
+                /* Pedimos una etiqueta que Deezer no tiene: menos grave. */
+                if (qCand.indexOf(qQuery[i]) === -1) pen -= 1;
+            }
+            return pen;
+        }
+
+        /* Puntua un resultado de Deezer. Devuelve null si no es la cancion. */
+        function scoreCandidate(cand, title, artist, qQuery) {
+            var cA = core(cand.artist && cand.artist.name), qA = core(artist);
+            var cT = core(cand.title),                      qT = core(title);
+            if (!cA || !cT) return null;
+
+            var sc = 0;
+            if (cA === qA) sc += 3;
+            else if (cA.indexOf(qA) !== -1 || qA.indexOf(cA) !== -1) sc += 1;
+            else return null;                 // artista distinto: descartado
+
+            if (cT === qT) sc += 4;
+            else if (cT.indexOf(qT) !== -1 || qT.indexOf(cT) !== -1) sc += 2;
+            else return null;                 // cancion distinta: descartada
+
+            return sc + qualPenalty(qQuery, quals(cand.title));
+        }
+
+        /* Elige el mejor de los resultados de Deezer, no el primero.
+           Buscando "Y La Esperanza" Deezer devuelve primero un remix de
+           299 s; el original de 222 s viene despues. */
+        function pickBest(list, title, artist) {
+            if (!list || !list.length) return null;
+            var qQuery = quals(title);
+            var best = null, bestScore = -Infinity;
+            for (var i = 0; i < list.length; i++) {
+                var sc = scoreCandidate(list[i], title, artist, qQuery);
+                if (sc === null) continue;
+                if (sc > bestScore) { bestScore = sc; best = list[i]; }
+            }
+            return best;
+        }
+
+        /* ==== COINCIDENCIA DE PISTA : FIN ==== */
 
         function cacheArt(key, val) {
             if (!(key in artCache)) {
@@ -511,7 +623,7 @@
            PORTADA + DURACION (Deezer via JSONP)
            ======================================================= */
         function getArt(title, artist) {
-            var key = normalize(artist) + "|" + normalize(title);
+            var key = core(artist) + "|" + core(title);
             if (key in artCache) return Promise.resolve(artCache[key]);
 
             return new Promise(function (res) {
@@ -535,18 +647,8 @@
                 var timer = setTimeout(function () { finish(null); }, JSONP_TIMEOUT);
 
                 window[cb] = function (d) {
-                    var t = d && d.data && d.data[0];
+                    var t = pickBest(d && d.data, title, artist);
                     if (!t) { finish(null); return; }
-
-                    /* Comprueba que Deezer devolvio DE VERDAD esta cancion.
-                       Sin esta validacion, una busqueda fallida ponia la
-                       portada de otro tema completamente distinto. */
-                    var okArtist = normalize(t.artist && t.artist.name) === normalize(artist);
-                    var nT = normalize(t.title), nQ = normalize(title);
-                    var okTitle = nT === nQ || nT.indexOf(nQ) === 0 || nQ.indexOf(nT) === 0;
-
-                    if (!okArtist || !okTitle) { finish(null); return; }
-
                     finish({
                         url: t.album && (t.album.cover_xl || t.album.cover_big || t.album.cover_medium),
                         dur: t.duration ? t.duration * 1000 : 0
@@ -554,11 +656,40 @@
                 };
 
                 script.onerror = function () { finish(null); };
+                /* BUSQUEDA DE TEXTO LIBRE.
+                   Deezer dejo de admitir la sintaxis avanzada
+                   artist:"X" track:"Y": responde 200 con {"data":[],"total":0}
+                   para TODO. Por eso el widget se quedo sin duracion ni
+                   portada. El texto libre si funciona, y como puede traer
+                   resultados ajenos, pickBest los filtra y puntua. */
                 script.src = "https://api.deezer.com/search?q=" +
-                             encodeURIComponent('artist:"' + artist + '" track:"' + title + '"') +
-                             "&limit=1&output=jsonp&callback=" + cb;
+                             encodeURIComponent(artist + " " + title) +
+                             "&limit=5&output=jsonp&callback=" + cb;
                 document.body.appendChild(script);
             });
+        }
+
+        /* Respaldo de duracion: Last.fm track.getInfo.
+           Cubre los casos en que Deezer no tiene la cancion o solo
+           devuelve versiones ajenas (p.ej. "Tu Ganas" de Serbia). */
+        var durCache = Object.create(null);
+        function getLastfmDuration(title, artist) {
+            var key = core(artist) + "|" + core(title);
+            if (key in durCache) return Promise.resolve(durCache[key]);
+            var url = "https://ws.audioscrobbler.com/2.0/?method=track.getInfo" +
+                      "&api_key=" + encodeURIComponent(LASTFM_API_KEY) +
+                      "&artist="  + encodeURIComponent(artist) +
+                      "&track="   + encodeURIComponent(title) +
+                      "&format=json";
+            return fetchTimeout(url, FETCH_TIMEOUT)
+                .then(function (r) { return r.json(); })
+                .then(function (d) {
+                    var ms = d && d.track && parseInt(d.track.duration, 10);
+                    var val = (ms && ms > 1000) ? ms : 0;
+                    durCache[key] = val;
+                    return val;
+                })
+                .catch(function () { durCache[key] = 0; return 0; });
         }
 
         /* =======================================================
@@ -587,6 +718,17 @@
             }, 1000);
         }
 
+        /* Sin duracion fiable no se puede dibujar la barra, pero si
+           mostrar cuanto lleva sonando: mejor que un 00:00 congelado. */
+        function runElapsedOnly() {
+            stopProgress();
+            trackStartedAt = Date.now();
+            timeEnd.textContent = "--:--";
+            progressTimer = setInterval(function () {
+                timeStart.textContent = fmt(Date.now() - trackStartedAt);
+            }, 1000);
+        }
+
         function resetProgress() {
             stopProgress();
             barFill.classList.add("no-anim");
@@ -612,7 +754,7 @@
            ACTUALIZACION PRINCIPAL
            ======================================================= */
         function show(title, artist, lastfmArt) {
-            var newId = normalize(artist) + "|" + normalize(title);
+            var newId = core(artist) + "|" + core(title);
             if (newId === currentId) return;      // misma cancion, nada que hacer
             currentId = newId;
 
@@ -634,7 +776,15 @@
                 return preload((data && data.url) || lfm || null).then(function (ok) {
                     if (seq !== updateSeq) return;
                     setCover(ok || FALLBACK_ART);
-                    if (data && data.dur) runProgress(data.dur);
+
+                    if (data && data.dur) { runProgress(data.dur); return; }
+
+                    /* Deezer no dio duracion: se prueba con Last.fm y, si
+                       tampoco, al menos se cuenta el tiempo transcurrido. */
+                    return getLastfmDuration(title, artist).then(function (ms) {
+                        if (seq !== updateSeq) return;
+                        if (ms) runProgress(ms); else runElapsedOnly();
+                    });
                 });
             }).catch(function () {
                 if (seq !== updateSeq) return;
@@ -660,15 +810,12 @@
                                        desordenadas. */
             inFlight = true;
 
-            var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
-            var to = setTimeout(function () { if (ctrl) ctrl.abort(); }, FETCH_TIMEOUT);
-
             var url = "https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks" +
                       "&user="    + encodeURIComponent(LASTFM_USER) +
                       "&api_key=" + encodeURIComponent(LASTFM_API_KEY) +
                       "&format=json&limit=1";
 
-            fetch(url, ctrl ? { signal: ctrl.signal } : undefined)
+            fetchTimeout(url, FETCH_TIMEOUT)
                 .then(function (r) {
                     if (!r.ok) throw new Error("HTTP " + r.status);
                     return r.json();
@@ -702,12 +849,9 @@
                 .catch(function (e) {
                     /* Error de red o de API: se conserva en pantalla lo que ya
                        habia y se reintenta en el siguiente ciclo. */
-                    if (!(e && e.name === "AbortError")) {
-                        console.warn("[widget] consulta fallida:", e && e.message ? e.message : e);
-                    }
+                    logOnce("[widget] consulta fallida: " + (e && e.message ? e.message : e));
                 })
                 .then(function () {
-                    clearTimeout(to);
                     inFlight = false;
                 });
         }
