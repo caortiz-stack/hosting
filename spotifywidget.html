@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mini Premium OBS Overlay - HD Spaced Edition</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         /* =========================================
@@ -115,6 +116,7 @@
             box-shadow: 0 3px 10px rgba(0,0,0,0.4);
         }
 
+        /* Dos capas apiladas para hacer crossfade real entre portadas */
         .album-cover {
             width: 100%;
             height: 100%;
@@ -122,8 +124,10 @@
             background-position: center;
             position: absolute;
             top: 0; left: 0;
-            transition: background-image 0.8s ease-out;
+            transition: opacity 0.8s ease-out;
+            will-change: opacity;
         }
+        .album-cover.layer-b { opacity: 0; }
 
         .cover-overlay {
             position: absolute;
@@ -152,11 +156,21 @@
             border-radius: 1px;
             transform: scaleY(0.3);
             animation: spectrum-jump 0.8s infinite ease-in-out;
+            will-change: transform, opacity;
         }
 
         @keyframes spectrum-jump {
             0%, 100% { transform: scaleY(0.3); opacity: 0.3; }
             50% { transform: scaleY(1); opacity: 0.8; }
+        }
+
+        /* OPTIMIZACION OBS: congela TODA animacion mientras el widget
+           esta oculto. Sin esto, 7 animaciones siguen consumiendo GPU
+           las 24 h aunque no se vea nada en pantalla. */
+        .main-container:not(.active) .logo-section,
+        .main-container:not(.active) .logo-shimmer,
+        .main-container:not(.active) .bar {
+            animation-play-state: paused;
         }
 
         .glass-ring {
@@ -190,8 +204,13 @@
             margin-bottom: 2px;
             background: linear-gradient(90deg, var(--theme-color-1), #ffffff);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 0 3px rgba(0, 174, 255, 0.2));
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 320px;
         }
 
         .song-title {
@@ -203,13 +222,21 @@
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
-            overflow: visible;
-            word-wrap: break-word;
-            padding-right: 25px; 
+            /* line-clamp EXIGE overflow hidden; con 'visible' el corte
+               a 2 lineas no se aplicaba y los titulos largos se salian */
+            overflow: hidden;
+            overflow-wrap: break-word;
+            /* El recorte necesario para line-clamp cortaba el text-shadow.
+               Se agranda la caja de recorte y se compensa con margen
+               negativo: el texto queda EXACTAMENTE en la misma posicion
+               y el resplandor vuelve a verse completo. */
+            margin-left: -24px;
+            padding-left: 24px;
+            padding-right: 25px;
+            max-width: 344px;
             text-shadow: 
                 0 2px 6px rgba(0, 0, 0, 0.8),
                 0 3px 12px rgba(0, 0, 0, 0.4);
-            max-width: 320px;
         }
 
         /* BARRA DE PROGRESO COMPACTA */
@@ -238,6 +265,8 @@
             box-shadow: 0 0 6px rgba(0, 174, 255, 0.4);
             transition: width 1.1s linear;
         }
+        /* Al cambiar de cancion la barra vuelve a 0 sin animar hacia atras */
+        .progress-fill.no-anim { transition: none; }
 
         .emblem-marker {
             position: absolute;
@@ -285,7 +314,8 @@
             <div class="logo-base"></div>
             <div class="logo-shimmer"></div>
             <div class="cover-circle">
-                <div class="album-cover" id="cover"></div>
+                <div class="album-cover" id="cover-a"></div>
+                <div class="album-cover layer-b" id="cover-b"></div>
                 <div class="cover-overlay"></div>
                 <div class="spectrum-container">
                     <div class="bar" style="animation-delay: 0.1s"></div>
@@ -334,129 +364,363 @@
     </div>
 
     <script>
-        const LASTFM_USER = "imeachsd"; 
-        const LASTFM_API_KEY = "4a9f5581a9cdf20a699f540ac52a95c9"; 
-        const REFRESH_RATE = 2000;
+    (function () {
+        "use strict";
 
-        const widget = document.getElementById('main-widget');
-        const cover = document.getElementById('cover');
-        const artistEl = document.getElementById('artist-text');
-        const titleEl = document.getElementById('title-text');
-        const timeStartEl = document.getElementById('time-start');
-        const timeEndEl = document.getElementById('time-end');
+        /* =======================================================
+           CONFIGURACION
+           ======================================================= */
+        var LASTFM_USER    = "imeachsd";
+        var LASTFM_API_KEY = "4a9f5581a9cdf20a699f540ac52a95c9";
 
-        let currentId = "";
-        let progressInterval = null;
-        let currentMs = 0;
+        var REFRESH_RATE   = 4000;   // antes 2000. Ver nota al final.
+        var FETCH_TIMEOUT  = 6000;   // corta peticiones colgadas
+        var JSONP_TIMEOUT  = 5000;   // corta Deezer si no responde
+        var ART_CACHE_MAX  = 40;     // portadas recordadas
 
+        /* Portada de respaldo: SVG embebido, cero red.
+           Antes se usaba via.placeholder.com, que ya no responde. */
+        var FALLBACK_ART =
+            "data:image/svg+xml;charset=utf-8," +
+            encodeURIComponent(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300">' +
+                '<rect width="300" height="300" fill="#0a0a0a"/>' +
+                '<circle cx="150" cy="150" r="92" fill="none" stroke="#1b1b1b" stroke-width="13"/>' +
+                '<circle cx="150" cy="150" r="20" fill="#1b1b1b"/></svg>'
+            );
+
+        /* Last.fm devuelve esta imagen comodin (estrella gris) cuando no
+           tiene portada. Detectarla evita mostrar ese cuadro feo. */
+        var LASTFM_BLANK = "2a96cbd8b46e442fc41c2b86b821562f";
+
+        /* =======================================================
+           REFERENCIAS DOM
+           ======================================================= */
+        var widget     = document.getElementById("main-widget");
+        var coverA     = document.getElementById("cover-a");
+        var coverB     = document.getElementById("cover-b");
+        var artistEl   = document.getElementById("artist-text");
+        var titleEl    = document.getElementById("title-text");
+        var timeStart  = document.getElementById("time-start");
+        var timeEnd    = document.getElementById("time-end");
+        var barFill    = document.getElementById("bar-fill");
+        var rootStyle  = document.documentElement.style;
+
+        var currentId      = "";
+        var progressTimer  = null;
+        var trackStartedAt = 0;
+        var trackDuration  = 0;
+        var usingLayerA    = true;
+        var inFlight       = false;   // evita peticiones solapadas
+        var updateSeq      = 0;       // descarta respuestas viejas
+        var artCache       = Object.create(null);
+        var artCacheKeys   = [];
+
+        /* =======================================================
+           UTILIDADES
+           ======================================================= */
         function fmt(ms) {
-            const s = Math.floor(ms / 1000);
-            return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+            if (!isFinite(ms) || ms < 0) ms = 0;
+            var s = Math.floor(ms / 1000);
+            var m = Math.floor(s / 60);
+            return String(m).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
         }
 
-        async function preload(url) {
-            if (!url) return null;
-            return new Promise(res => {
-                const img = new Image();
-                img.crossOrigin = "anonymous";
-                img.onload = () => res(url);
-                img.onerror = () => res(null);
+        /* Normaliza titulos para que Deezer encuentre la pista.
+           "Asi - Remastered 2011 (feat. X)" -> "asi"
+           Esto sube bastante la tasa de acierto de la portada. */
+        function normalize(s) {
+            return String(s || "")
+                .toLowerCase()
+                /* Quita tildes y dieresis: Last.fm y Deezer no siempre
+                   coinciden ("Asi" vs "Asi" con tilde) y sin esto la
+                   validacion rechazaba portadas correctas. */
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/\s*[\(\[][^\)\]]*(remaster|remasterizad|version|versión|edit|mix|live|en vivo|feat|ft|with|bonus|deluxe|mono|stereo)[^\)\]]*[\)\]]/g, "")
+                .replace(/\s*-\s*(remaster|remasterizad|single|radio|album|deluxe|mono|stereo)[^-]*$/g, "")
+                .replace(/\s*(feat\.?|ft\.?|con)\s+.*$/g, "")
+                .replace(/[’`´]/g, "'")
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+
+        function cacheArt(key, val) {
+            if (!(key in artCache)) {
+                artCacheKeys.push(key);
+                if (artCacheKeys.length > ART_CACHE_MAX) {
+                    delete artCache[artCacheKeys.shift()];
+                }
+            }
+            artCache[key] = val;
+        }
+
+        /* Precarga la imagen antes de mostrarla: evita el parpadeo
+           de un circulo negro mientras baja la portada. */
+        function preload(url) {
+            return new Promise(function (res) {
+                if (!url) { res(null); return; }
+                var img = new Image();
+                var done = false;
+                var to = setTimeout(function () {
+                    if (!done) { done = true; img.src = ""; res(null); }
+                }, FETCH_TIMEOUT);
+                img.onload  = function () { if (!done) { done = true; clearTimeout(to); res(url); } };
+                img.onerror = function () { if (!done) { done = true; clearTimeout(to); res(null); } };
                 img.src = url;
             });
         }
 
-        function initCfg() {
-            const root = document.documentElement.style;
-            const savedC1 = localStorage.getItem('p_c1') || '#00AEFF';
-            const savedC2 = localStorage.getItem('p_c2') || '#0062FF';
-            root.setProperty('--theme-color-1', savedC1);
-            root.setProperty('--theme-color-2', savedC2);
-            document.getElementById('c1').value = savedC1;
-            document.getElementById('c2').value = savedC2;
+        /* =======================================================
+           PANEL DE COLORES  (doble clic)
+           ======================================================= */
+        function lsGet(k, d) {
+            /* En OBS el almacenamiento puede lanzar excepcion segun la
+               configuracion de la fuente. Sin try/catch, el widget
+               moria antes de arrancar. */
+            try { return localStorage.getItem(k) || d; } catch (e) { return d; }
+        }
+        function lsSet(k, v) {
+            try { localStorage.setItem(k, v); } catch (e) { /* sin persistencia, no es fatal */ }
         }
 
-        document.getElementById('save-cfg').onclick = () => {
-            const c1 = document.getElementById('c1').value;
-            const c2 = document.getElementById('c2').value;
-            localStorage.setItem('p_c1', c1);
-            localStorage.setItem('p_c2', c2);
-            document.documentElement.style.setProperty('--theme-color-1', c1);
-            document.documentElement.style.setProperty('--theme-color-2', c2);
-            document.getElementById('config-ui').classList.remove('show');
-        };
+        function initCfg() {
+            var c1 = lsGet("p_c1", "#00AEFF");
+            var c2 = lsGet("p_c2", "#0062FF");
+            rootStyle.setProperty("--theme-color-1", c1);
+            rootStyle.setProperty("--theme-color-2", c2);
+            var i1 = document.getElementById("c1");
+            var i2 = document.getElementById("c2");
+            if (i1) i1.value = c1;
+            if (i2) i2.value = c2;
+        }
 
-        document.body.ondblclick = () => document.getElementById('config-ui').classList.add('show');
+        document.getElementById("save-cfg").onclick = function () {
+            var c1 = document.getElementById("c1").value;
+            var c2 = document.getElementById("c2").value;
+            lsSet("p_c1", c1); lsSet("p_c2", c2);
+            rootStyle.setProperty("--theme-color-1", c1);
+            rootStyle.setProperty("--theme-color-2", c2);
+            document.getElementById("config-ui").classList.remove("show");
+        };
+        document.body.ondblclick = function () {
+            document.getElementById("config-ui").classList.add("show");
+        };
         initCfg();
 
-        async function getArt(title, artist) {
-            return new Promise(res => {
-                const q = encodeURIComponent(`artist:"${artist}" track:"${title}"`);
-                const cb = 'dz_' + Date.now() + Math.floor(Math.random()*100);
-                const s = document.createElement('script');
-                window[cb] = (d) => {
-                    s.remove();
-                    delete window[cb];
-                    if (d.data && d.data[0]) res({ url: d.data[0].album.cover_xl, dur: d.data[0].duration * 1000 });
-                    else res(null);
+        /* =======================================================
+           PORTADA + DURACION (Deezer via JSONP)
+           ======================================================= */
+        function getArt(title, artist) {
+            var key = normalize(artist) + "|" + normalize(title);
+            if (key in artCache) return Promise.resolve(artCache[key]);
+
+            return new Promise(function (res) {
+                var cb = "dz_" + Date.now() + "_" + Math.floor(Math.random() * 1e6);
+                var script = document.createElement("script");
+                var settled = false;
+
+                function finish(val) {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timer);
+                    /* Limpieza COMPLETA. El original solo borraba el script
+                       cuando Deezer respondia: cada fallo dejaba una etiqueta
+                       y una funcion global colgados para siempre. */
+                    try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+                    if (script.parentNode) script.parentNode.removeChild(script);
+                    cacheArt(key, val);
+                    res(val);
+                }
+
+                var timer = setTimeout(function () { finish(null); }, JSONP_TIMEOUT);
+
+                window[cb] = function (d) {
+                    var t = d && d.data && d.data[0];
+                    if (!t) { finish(null); return; }
+
+                    /* Comprueba que Deezer devolvio DE VERDAD esta cancion.
+                       Sin esta validacion, una busqueda fallida ponia la
+                       portada de otro tema completamente distinto. */
+                    var okArtist = normalize(t.artist && t.artist.name) === normalize(artist);
+                    var nT = normalize(t.title), nQ = normalize(title);
+                    var okTitle = nT === nQ || nT.indexOf(nQ) === 0 || nQ.indexOf(nT) === 0;
+
+                    if (!okArtist || !okTitle) { finish(null); return; }
+
+                    finish({
+                        url: t.album && (t.album.cover_xl || t.album.cover_big || t.album.cover_medium),
+                        dur: t.duration ? t.duration * 1000 : 0
+                    });
                 };
-                s.src = `https://api.deezer.com/search?q=${q}&limit=1&output=jsonp&callback=${cb}`;
-                document.body.appendChild(s);
+
+                script.onerror = function () { finish(null); };
+                script.src = "https://api.deezer.com/search?q=" +
+                             encodeURIComponent('artist:"' + artist + '" track:"' + title + '"') +
+                             "&limit=1&output=jsonp&callback=" + cb;
+                document.body.appendChild(script);
             });
         }
 
+        /* =======================================================
+           BARRA DE PROGRESO
+           ======================================================= */
+        function stopProgress() {
+            if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+        }
+
         function runProgress(dur) {
-            clearInterval(progressInterval);
-            currentMs = 0;
-            timeEndEl.innerText = fmt(dur);
-            progressInterval = setInterval(() => {
-                currentMs += 1000;
-                const p = Math.min(1, currentMs / dur);
-                document.documentElement.style.setProperty('--progress-width', `${p * 100}%`);
-                timeStartEl.innerText = fmt(currentMs);
-                if (p >= 1) clearInterval(progressInterval);
+            stopProgress();
+            trackDuration  = dur;
+            trackStartedAt = Date.now();
+            timeEnd.textContent = fmt(dur);
+
+            progressTimer = setInterval(function () {
+                /* Reloj real en vez de "currentMs += 1000".
+                   setInterval se retrasa cuando OBS tiene carga, asi que
+                   el contador anterior se desfasaba progresivamente del
+                   tiempo real de la cancion. */
+                var elapsed = Date.now() - trackStartedAt;
+                var p = Math.min(1, elapsed / trackDuration);
+                rootStyle.setProperty("--progress-width", (p * 100).toFixed(2) + "%");
+                timeStart.textContent = fmt(Math.min(elapsed, trackDuration));
+                if (p >= 1) stopProgress();
             }, 1000);
         }
 
-        async function update(playing, title, artist, fallback) {
-            const newId = (title + artist).toLowerCase();
-            if (playing && currentId !== newId) {
-                clearInterval(progressInterval);
-                document.documentElement.style.setProperty('--progress-width', '0%');
-                currentId = newId;
-
-                const data = await getArt(title, artist);
-                const imgUrl = await preload(data?.url || fallback || 'https://via.placeholder.com/300');
-                
-                artistEl.innerText = artist;
-                titleEl.innerText = title;
-                
-                if (imgUrl) cover.style.backgroundImage = `url('${imgUrl}')`;
-                widget.classList.add('active');
-
-                if (data?.dur) runProgress(data.dur);
-                else { timeStartEl.innerText = "00:00"; timeEndEl.innerText = "--:--"; }
-            } else if (!playing && currentId !== "") {
-                clearInterval(progressInterval);
-                widget.classList.remove('active');
-                setTimeout(() => { currentId = ""; }, 800);
-            }
+        function resetProgress() {
+            stopProgress();
+            barFill.classList.add("no-anim");
+            rootStyle.setProperty("--progress-width", "0%");
+            void barFill.offsetWidth;           // fuerza el repintado
+            barFill.classList.remove("no-anim");
+            timeStart.textContent = "00:00";
         }
 
-        async function loop() {
-            try {
-                const r = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${LASTFM_USER}&api_key=${LASTFM_API_KEY}&format=json&limit=1`);
-                const d = await r.json();
-                const t = d.recenttracks?.track?.[0];
-                if (t && t['@attr']?.nowplaying === 'true') {
-                    update(true, t.name, t.artist['#text'], t.image?.[t.image.length-1]?.['#text']);
-                } else {
-                    update(false);
-                }
-            } catch (e) {}
+        /* =======================================================
+           CROSSFADE DE PORTADA
+           ======================================================= */
+        function setCover(url) {
+            var incoming = usingLayerA ? coverB : coverA;
+            var outgoing = usingLayerA ? coverA : coverB;
+            incoming.style.backgroundImage = "url('" + url + "')";
+            incoming.style.opacity = "1";
+            outgoing.style.opacity = "0";
+            usingLayerA = !usingLayerA;
         }
 
-        loop();
-        setInterval(loop, REFRESH_RATE);
+        /* =======================================================
+           ACTUALIZACION PRINCIPAL
+           ======================================================= */
+        function show(title, artist, lastfmArt) {
+            var newId = normalize(artist) + "|" + normalize(title);
+            if (newId === currentId) return;      // misma cancion, nada que hacer
+            currentId = newId;
+
+            var seq = ++updateSeq;
+            resetProgress();
+
+            /* Texto primero: la cancion aparece al instante y la portada
+               entra despues. Antes el widget esperaba a Deezer para
+               mostrar incluso el nombre. */
+            artistEl.textContent = artist || "";
+            titleEl.textContent  = title  || "";
+            timeEnd.textContent  = "--:--";
+            widget.classList.add("active");
+
+            getArt(title, artist).then(function (data) {
+                if (seq !== updateSeq) return;    // ya suena otra cancion
+
+                var lfm = lastfmArt && lastfmArt.indexOf(LASTFM_BLANK) === -1 ? lastfmArt : null;
+                return preload((data && data.url) || lfm || null).then(function (ok) {
+                    if (seq !== updateSeq) return;
+                    setCover(ok || FALLBACK_ART);
+                    if (data && data.dur) runProgress(data.dur);
+                });
+            }).catch(function () {
+                if (seq !== updateSeq) return;
+                setCover(FALLBACK_ART);
+            });
+        }
+
+        function hide() {
+            if (currentId === "") return;
+            stopProgress();
+            widget.classList.remove("active");
+            currentId = "";
+            rootStyle.setProperty("--progress-width", "0%");
+        }
+
+        /* =======================================================
+           CONSULTA A LAST.FM
+           ======================================================= */
+        function poll() {
+            if (inFlight) return;   /* Si la red va lenta, el original lanzaba
+                                       una peticion nueva cada 2 s encima de la
+                                       anterior y las respuestas llegaban
+                                       desordenadas. */
+            inFlight = true;
+
+            var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+            var to = setTimeout(function () { if (ctrl) ctrl.abort(); }, FETCH_TIMEOUT);
+
+            var url = "https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks" +
+                      "&user="    + encodeURIComponent(LASTFM_USER) +
+                      "&api_key=" + encodeURIComponent(LASTFM_API_KEY) +
+                      "&format=json&limit=1";
+
+            fetch(url, ctrl ? { signal: ctrl.signal } : undefined)
+                .then(function (r) {
+                    if (!r.ok) throw new Error("HTTP " + r.status);
+                    return r.json();
+                })
+                .then(function (d) {
+                    if (d && d.error) throw new Error("Last.fm " + d.error + ": " + d.message);
+
+                    var t = d && d.recenttracks && d.recenttracks.track;
+                    if (Array.isArray(t)) t = t[0];
+                    if (!t) { hide(); return; }
+
+                    var nowPlaying = t["@attr"] && t["@attr"].nowplaying;
+                    nowPlaying = nowPlaying === true || nowPlaying === "true";
+
+                    if (!nowPlaying) { hide(); return; }
+
+                    /* GUARDA CONTRA EL BUG PRINCIPAL.
+                       Si falta el titulo o el artista se sale aqui, en vez de
+                       seguir y reventar al concatenar valores inexistentes. */
+                    var title  = t.name;
+                    var artist = t.artist && (t.artist["#text"] || t.artist.name);
+                    if (!title || !artist) { hide(); return; }
+
+                    var imgs = t.image;
+                    var art = Array.isArray(imgs) && imgs.length
+                              ? (imgs[imgs.length - 1] || {})["#text"]
+                              : null;
+
+                    show(String(title), String(artist), art);
+                })
+                .catch(function (e) {
+                    /* Error de red o de API: se conserva en pantalla lo que ya
+                       habia y se reintenta en el siguiente ciclo. */
+                    if (!(e && e.name === "AbortError")) {
+                        console.warn("[widget] consulta fallida:", e && e.message ? e.message : e);
+                    }
+                })
+                .then(function () {
+                    clearTimeout(to);
+                    inFlight = false;
+                });
+        }
+
+        poll();
+        setInterval(poll, REFRESH_RATE);
+
+        /* OBS puede dejar la fuente en segundo plano: al volver a mostrarse
+           se consulta de inmediato en vez de esperar el ciclo completo. */
+        document.addEventListener("visibilitychange", function () {
+            if (!document.hidden) poll();
+        });
+    })();
     </script>
 </body>
 </html>
